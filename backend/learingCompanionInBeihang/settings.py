@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'learingCompanionInBeihang.apps.utils',
     'learingCompanionInBeihang.apps.users',
+    'learingCompanionInBeihang.apps.images',
 ]
 
 MIDDLEWARE = [
@@ -118,6 +119,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [
+    MEDIA_ROOT
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
