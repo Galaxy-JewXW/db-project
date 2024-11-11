@@ -1,0 +1,38 @@
+/* highlightjs-line-numbers-custom.css */
+
+/* 容器样式 */
+.hljs {
+  position: relative;
+  padding-left: 3.8em; /* 为行号留出空间 */
+}
+
+/* 行号样式 */
+.hljs::before {
+  counter-reset: linenumber;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3.5em;
+  padding-right: 0.5em;
+  text-align: right;
+  border-right: 1px solid #ddd;
+  background-color: #f0f0f0;
+  color: #999;
+  user-select: none;
+}
+
+/* 每行的样式 */
+.hljs-ln-line {
+  display: block;
+  counter-increment: linenumber;
+}
+
+.hljs-ln-line::before {
+  content: counter(linenumber);
+  display: inline-block;
+  width: 2.5em;
+  margin-right: 0.5em;
+  text-align: right;
+  color: #999;
+}
