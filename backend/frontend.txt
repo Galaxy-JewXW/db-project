@@ -1,0 +1,181 @@
+commit 118cc71c6f4c7e894d1187aabf22f8b9e0a6cd09
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 23 13:19:28 2024 +0800
+
+    fix(个人信息): 添加昵称
+
+commit ce7ae70744f9a418554f85923bd5d4dac3e91050
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Wed Oct 16 23:57:38 2024 +0800
+
+    ？
+
+commit d3fba4cee991e1ede37ec21ed1f45151bebc89c7
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 16 20:00:28 2024 +0800
+
+    feat(个人信息): 添加个人信息显示卡
+
+commit 61afdf35bddd28485929fc6944878f31a9aca911
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 16 18:31:49 2024 +0800
+
+    feat(主页，404页): 修改主页格式，添加404页
+
+commit d8c018c9a9b7b466a6e1be9cb24152bb9d2386b6
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 16 14:45:15 2024 +0800
+
+    fix(刷新加载信息): 取消vuex缓存
+
+commit b8315f8fe81b4c7397ca186d2c0d6a769c7b6fad
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 16 14:26:30 2024 +0800
+
+    feat(路由，首页): 更改路由路径；完成首页设计
+    
+    题库页面刷新的时候会有bug
+
+commit bd78db97669039ae458cdf746cc8d6f45936fba9
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 16 11:22:14 2024 +0800
+
+    feat(主页): 添加做题进度雷达图
+
+commit b556dbe5473c3fca19fafb016ada4b17c43aa497
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Sat Oct 12 09:50:53 2024 +0800
+
+    🎈 perf(主页): 修改了列表的显示格式
+
+commit ce194dfe81356336baca648e426891dd8ce74c5a
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Sat Oct 12 01:48:50 2024 +0800
+
+    ✨ feat(首页): 添加了消息列表
+
+commit eee7925e44744ba10a948abf50711f1cb4d724ca
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Thu Oct 10 00:38:35 2024 +0800
+
+    🎈 perf(主页): 优化了主页公告列表的显示方式
+
+commit 6e6cf8a34746b3f912b1a15cd24befa91226d470
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Wed Oct 9 23:40:43 2024 +0800
+
+    🦄 refactor(主页、问题详情页): 使用kangc/v-md-editor解析markdown文件
+    
+    下一步处理主页的布局
+
+commit 9db2fa822a045b35375bc30bd0ee0830edc565b1
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 9 21:36:27 2024 +0800
+
+    refactor(公告栏首页): 待重构公告栏
+
+commit 35a6e1e4af4e74f6b600adb870dba7b9dc0f26cf
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 9 21:14:12 2024 +0800
+
+    feat(题目详情): 完成题目详情的显示
+    
+    题目详情页和公告页的markdown显示都存在bug
+
+commit 326b82e044f81cb5f827cf203e722638fb1a250c
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 9 19:05:31 2024 +0800
+
+    feat(题库详情): 添加了详情界面
+
+commit 49607bffdd1e44cec57591310bf8ee0e64955078
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 9 15:44:28 2024 +0800
+
+    feat(标题更新): 使用vuex维护标题等信息
+
+commit b6bb55e005d7323dd0cfdeae18dbef9533075140
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 9 14:26:10 2024 +0800
+
+    feat(题库): 题库详情扩展
+    
+    点击卡片内容显示详情描述；点击进入题库可跳转
+
+commit 80030d3ddf1b12df10b744f74ea2ac813a49c696
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 9 12:34:12 2024 +0800
+
+    feat(题库): 完成了题库样式设计
+    
+    添加了题库页面，可实现按照学科与时间筛选，同时对其他引导语进行修改
+
+commit bc7bf9b34cac23a18b4cae281664b5f4b58f0ade
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Wed Oct 9 08:10:53 2024 +0800
+
+    style(提示语): 更新了一些提示语的文字
+
+commit b63dcd4857797774bab291951fa8a8370397016a
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 23:20:47 2024 +0800
+
+    ✨ feat(个人中心): 添加个人中心占位界面
+
+commit 9594aa3a1e542f075cddee61b7afbe8d8d4d2d3e
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 22:22:56 2024 +0800
+
+    🌈 style(将真实姓名改为昵称):
+
+commit c26faa1fa1894683490f9ffea8792191a605fd54
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 21:34:33 2024 +0800
+
+    🐞 fix(登录注册): 修改了样式和错误检测的bug
+
+commit ace5b820235f2e9a21c195e80c95023d0dcc6b31
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 21:05:55 2024 +0800
+
+    ✨ feat(登录注册): 添加了登录注册页面
+
+commit 8e8ffe675a75942694f4cbc94ea077d370d2d28d
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 16:27:54 2024 +0800
+
+    ✨ feat(讨论区、题库): 重构了首页侧边栏结构，添加了讨论区和题库的占位页面
+    
+    待完成题库和讨论区列表
+
+commit 30facaf72cc8700b3dada0d48c86c0e247360a28
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 14:57:32 2024 +0800
+
+    ✨ feat(Board.vue，css): 支持md渲染，代码块行号与高亮渲染
+
+commit 43b44cc6b4d7e12098e9c9e3b3afe909d438d02d
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 01:12:54 2024 +0800
+
+    🌈 style(修改index.html):
+
+commit 441fb037122a6044c6ed193634c872ee5e0a65f9
+Author: Jew <22373498@buaa.edu.cn>
+Date:   Tue Oct 8 00:54:56 2024 +0800
+
+    ✨ feat(实现公告板): 新增Board.vue
+    
+    实现了主页显示公告，公告详情查看与翻页等部分内容
+
+commit c2557241efebcf4393bd8fb8d75f3d5fa574cc8a
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Mon Oct 7 21:19:56 2024 +0800
+
+    refactor(首页部分): 使用vuetify3
+
+commit dae1341bb6ad5f64c319fdcabd17d5e73745e25e
+Author: Jew <Zhu149248@buaa.edu.cn>
+Date:   Mon Oct 7 20:19:53 2024 +0800
+
+    🎉 init: 创建了前端模板
