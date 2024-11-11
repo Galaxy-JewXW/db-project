@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="mx-auto my-5" max-width="70%">
+    <v-card class="mx-auto my-5" max-width="60%">
       <v-card-title>
         <span class="text-h5 font-weight-bold">个人信息</span>
       </v-card-title>
