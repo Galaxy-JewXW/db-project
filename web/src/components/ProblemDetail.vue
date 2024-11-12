@@ -12,20 +12,122 @@
         </div>
       </v-col>
 
-      <!-- 右侧占位卡片区域，占 4 列（约 30%） -->
+      <!-- 右侧卡片区域，占 4 列（约 30%） -->
       <v-col cols="12" md="4">
-        <v-card class="placeholder-card" outlined>
-          <v-card-text style="padding-left: 16px; padding-top: 16px">
+        <v-card class="info-card" outlined>
+          <v-card-text class="card-text">
             <div class="problem-header" v-if="problem">
               <h1>题目 - {{ problem.id }}</h1>
               <v-chip class="ma-2 chip-item" color="primary" variant="outlined">
                 {{ problem.type }}
               </v-chip>
             </div>
+
+            <!-- 添加题目相关信息 -->
+            <div class="info-item">
+              <v-icon>mdi-school</v-icon>
+              <span class="info-title">学科：</span>
+              <span>{{ problem.subject }}</span>
+            </div>
+            <div class="info-item">
+              <v-icon>mdi-calendar</v-icon>
+              <span class="info-title">添加时间：</span>
+              <span>{{ problem.addedAt }}</span>
+            </div>
+            <div class="info-item">
+              <v-icon>mdi-source-branch</v-icon>
+              <span class="info-title">来源：</span>
+              <span>{{ problem.source }}</span>
+            </div>
+            <div class="info-item">
+              <v-icon>mdi-tag</v-icon>
+              <span class="info-title">标签：</span>
+              <span>{{ problem.tags.join(', ') }}</span>
+            </div>
+            <div class="info-item">
+              <v-icon>mdi-star-outline</v-icon>
+              <span class="info-title">难度：</span>
+              <span>{{ problem.difficulty }}</span>
+            </div>
+
+            <!-- 按钮区域，放置在同一行 -->
+            <v-row class="ma-2">
+              <v-col cols="6">
+                <v-btn
+                  prepend-icon="mdi-lightbulb"
+                  color="primary"
+                  @click="viewAnswer"
+                  block
+                >
+                  查看答案
+                </v-btn>
+              </v-col>
+              <v-col cols="6">
+                <v-btn
+                  prepend-icon="mdi-comment-text"
+                  color="secondary"
+                  @click="viewDiscussion"
+                  block
+                >
+                  相关讨论
+                </v-btn>
+              </v-col>
+            </v-row>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- 答案对话框 -->
+    <v-dialog
+      v-model="dialog"
+      transition="dialog-bottom-transition"
+      fullscreen
+    >
+      <v-card>
+        <v-toolbar>
+          <v-btn icon @click="closeDialog">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>答案</v-toolbar-title>
+          <v-spacer></v-spacer>
+        </v-toolbar>
+
+        <!-- 根据用户选择显示内容 -->
+        <div v-if="!answerResult">
+          <!-- 做对了、做错了按钮 -->
+          <v-card class="ma-4" style="max-width: 95%;">
+            <v-card-title class="headline text-h5 font-weight-bold">你做对了吗？</v-card-title>
+            <v-card-text class="d-flex justify-start">
+              <v-btn color="success" class="ma-2" outlined @click="handleAnswer(true)">
+                <v-icon left>mdi-check</v-icon> 做对了
+              </v-btn>
+              <v-btn color="error" class="ma-2" outlined @click="handleAnswer(false)">
+                <v-icon left>mdi-close</v-icon> 做错了
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </div>
+        <div v-else>
+          <!-- 显示对应的提示信息 -->
+          <v-alert
+            :type="answerResult === 'correct' ? 'success' : 'error'"
+            class="ma-4"
+            title="回答情况已记录"
+            style="max-width: 95%;"
+          >
+            {{ alertMessage }}
+          </v-alert>
+        </div>
+
+        <!-- Markdown 内容显示区域 -->
+        <v-card-text>
+          <div class="markdown-content" v-if="answer">
+            <v-md-preview :text="answer" />
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -37,6 +139,10 @@ export default {
   data() {
     return {
       problem: null, // 存储题目信息
+      dialog: false, // 控制答案弹框显示与隐藏
+      answer: null, // 存储答案内容
+      answerResult: null, // 存储用户的答案结果
+      alertMessage: "", // 存储提示信息
     };
   },
   created() {
@@ -45,11 +151,13 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
+
+    // 获取题目信息
     fetchProblemData(problemId) {
       // 模拟直接从后端获取数据
       const mockProblemData = {
         id: problemId,
-        type: "选择题", // 示例类型
+        type: "选择题",
         content: `
 # Markdown 测试文档
 
@@ -127,6 +235,11 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vehicula ex 
 
 Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium vulputate. Ut gravida lectus sit amet sapien tincidunt, non efficitur magna viverra. Fusce sed arcu eu odio euismod ullamcorper. Nulla facilisi. Aenean vitae orci dui. Phasellus sit amet maximus magna, vel ornare nisi. Donec euismod nulla eget libero dignissim, sit amet finibus lacus ultricies. Ut consequat mauris vitae sem volutpat, eget tempor orci auctor. Cras vestibulum diam vitae tellus vehicula, at consectetur sapien aliquet。
 `,
+        subject: "计算机科学",
+        addedAt: "2024-10-12",
+        source: "自出题",
+        tags: ["算法", "数据结构"],
+        difficulty: "中等",
       };
 
       this.problem = mockProblemData;
@@ -135,6 +248,40 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
       const title = `题目详情 - ${problemId}`;
       this.setAppTitle(title);
       this.setPageTitle(title);
+    },
+
+    // 查看答案
+    viewAnswer() {
+      // 模拟从后端获取答案内容
+      const mockAnswerData = `
+# 答案
+
+这是题目的答案部分，包含详细的解答步骤和说明。
+`;
+
+      this.answer = mockAnswerData;
+      this.dialog = true;
+    },
+
+    viewDiscussion() {
+      console.log("相关讨论");
+    },
+
+    // 处理用户点击“做对了”或“做错了”
+    handleAnswer(isCorrect) {
+      if (isCorrect) {
+        this.answerResult = 'correct';
+        this.alertMessage = '恭喜你，回答正确！';
+      } else {
+        this.answerResult = 'incorrect';
+        this.alertMessage = '别灰心，下次再接再厉！';
+      }
+    },
+
+    // 关闭对话框并重置状态
+    closeDialog() {
+      this.dialog = false;
+      this.answerResult = null;
     },
   },
 };
@@ -160,15 +307,15 @@ h1 {
 }
 
 .markdown-container {
-  max-height: calc(100vh - 150px); /* 调整这个值以适应你的布局 */
+  max-height: calc(100vh - 150px);
   overflow-y: auto;
   margin-left: -29px;
-  scrollbar-width: none; /* 火狐浏览器 */
-  -ms-overflow-style: none; /* IE 和 Edge 浏览器 */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .markdown-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, 和 Opera 浏览器 */
+  display: none;
 }
 
 .markdown-content {
@@ -178,11 +325,48 @@ h1 {
   word-wrap: break-word;
 }
 
-/* 右侧占位卡片样式 */
-.placeholder-card {
+.info-card {
   height: 95%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
+.card-text {
+  padding-left: 16px;
+  padding-top: 16px;
+  text-align: left;
+  overflow: hidden;
+}
+
+.v-btn {
+  margin-top: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  gap: 8px;
+  font-size: 16px;
+  text-align: left;
+}
+
+.info-title {
+  font-weight: bold;
+}
+
+.v-dialog {
+  z-index: 200;
+}
+
+.v-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+/* 隐藏 v-card 的边框 */
+.v-card {
+  border: none;
+}
 </style>
