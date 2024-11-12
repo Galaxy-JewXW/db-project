@@ -181,7 +181,7 @@
               <v-divider></v-divider>
             </div>
             <!-- 推荐练习内容 -->
-            <div style="flex: 1; padding: 16px; overflow-y: hidden">
+            <div style="flex: 1; padding: 16px">
               <div class="recommended-exercises">
                 <v-btn
                   v-for="exercise in recommendedExercises"
@@ -511,7 +511,7 @@ export default {
     },
     goToExercise(exerciseId) {
       console.log(`Navigate to exercise ID: ${exerciseId}`);
-      this.$router.push(`/exercise/id=${exerciseId}`);
+      this.$router.push(`/exercise/${exerciseId}`);
     },
   },
   mounted() {

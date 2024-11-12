@@ -268,7 +268,7 @@ export default {
     },
     enterProblemSet(problemSet) {
       // 导航到目标路由
-      this.$router.push(`/problemset/id=${problemSet.id}`);
+      this.$router.push(`/problemset/${problemSet.id}`);
     },
   },
 };
