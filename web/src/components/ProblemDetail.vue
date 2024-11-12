@@ -1,7 +1,8 @@
 <template>
-  <v-container fluid>
-    <v-row justify="start">
-      <v-col cols="12">
+  <v-container fluid class="problem-container">
+    <v-row>
+      <!-- 主内容区域 -->
+      <v-col cols="12" md="9" class="main-content">
         <div class="problem-header" v-if="problem">
           <h1>题目 - {{ problem.id }}</h1>
           <v-chip class="ma-2 chip-item" color="primary" variant="outlined">
@@ -11,6 +12,34 @@
         <div class="markdown-container">
           <v-md-preview :text="problem.content" class="markdown-content" v-if="problem"></v-md-preview>
         </div>
+      </v-col>
+
+      <!-- 侧边栏区域 -->
+      <v-col cols="12" md="3" class="sidebar no-scrollbar">
+        <v-card>
+          <v-card-title>其他板块</v-card-title>
+          <v-card-text>
+            <!-- 在这里添加你需要的内容 -->
+            <p>这是侧边栏的占位内容。</p>
+            <v-list>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>板块 1</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>板块 2</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title>板块 3</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -128,9 +157,17 @@ export default {
 </script>
 
 <style scoped>
-h1 {
-  margin-bottom: 8px;
-  text-align: left;
+.problem-container {
+  display: flex;
+  height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .problem-header {
@@ -147,21 +184,56 @@ h1 {
 }
 
 .markdown-container {
-  max-height: calc(100vh - 150px); /* 调整这个值以适应你的布局 */
+  flex: 1;
   overflow-y: auto;
-  margin-left: -29px;
-  scrollbar-width: none; /* 火狐浏览器 */
-  -ms-overflow-style: none; /* IE 和 Edge 浏览器 */
+  margin-top: 16px;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 .markdown-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, 和 Opera 浏览器 */
+  display: none;
+  /* Chrome, Safari, and Opera */
 }
 
 .markdown-content {
-  margin-top: 16px;
   text-align: left;
   overflow-wrap: break-word;
   word-wrap: break-word;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 80%;
+  padding-left: 16px;
+  box-sizing: border-box;
+}
+
+.v-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.v-card-title {
+  font-weight: bold;
+}
+
+.v-card-text {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 </style>
