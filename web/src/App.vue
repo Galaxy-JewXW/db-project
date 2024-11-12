@@ -74,6 +74,7 @@ export default {
       return [
         { title: "首页", icon: "mdi-home", value: "/home" },
         { title: "题库", icon: "mdi-database", value: "/problemset" },
+        { title: "模拟测试", icon: "mdi-file-sign", value: "/exam" },
         { title: "讨论区", icon: "mdi-forum", value: "/discussions" },
         { title: "个人中心", icon: "mdi-account-details", value: "/profile" },
         isLoginRoute
