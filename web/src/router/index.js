@@ -6,7 +6,7 @@ import NotFound from "@/components/NotFound.vue"; // 导入 404 页面组件
 // 手动添加的自定义路由
 const customRoutes = [
   {
-    path: "/problemset/id=:id",
+    path: "/problemset/:id",
     name: "ProblemSetDetail",
     component: () => import("@/components/ProblemSetDetail.vue"),
     props: true,
@@ -16,7 +16,7 @@ const customRoutes = [
     },
   },
   {
-    path: "/exercise/id=:id",
+    path: "/exercise/:id",
     name: "ProblemDetail",
     component: () => import("@/components/ProblemDetail.vue"),
     props: true,

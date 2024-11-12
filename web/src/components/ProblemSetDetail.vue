@@ -205,7 +205,7 @@ export default {
 
     goToQuestionDetail(questionId) {
       console.log(`Navigate to question detail for question ID: ${questionId}`);
-      this.$router.push(`/exercise/id=${questionId}`);
+      this.$router.push(`/exercise/${questionId}`);
     },
   },
 };
