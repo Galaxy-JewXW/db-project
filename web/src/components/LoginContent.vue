@@ -9,17 +9,16 @@
     <!-- 登录表单 -->
     <v-form ref="loginForm" v-model="isLoginValid">
       <v-row>
-        <!-- 学号输入字段 -->
+        <!-- 学工号输入字段 -->
         <v-col cols="12" class="field-spacing">
           <v-text-field
             v-model="studentNumber.value"
             :rules="studentNumberRules"
-            label="学号"
+            label="学工号"
             type="text"
             prepend-inner-icon="mdi-account"
             variant="outlined"
             validate-on-blur
-            hint="学号为8位数字"
             persistent-hint
           ></v-text-field>
         </v-col>
@@ -34,7 +33,6 @@
             prepend-inner-icon="mdi-lock"
             variant="outlined"
             validate-on-blur
-            hint="密码长度至少为6位"
             persistent-hint
           ></v-text-field>
         </v-col>
@@ -66,7 +64,7 @@
     </v-form>
 
     <!-- 注册对话框 -->
-    <v-dialog v-model="dialog" max-width="600px" persistent>
+    <v-dialog v-model="dialog" max-width="600px">
       <v-card
         prepend-icon="mdi-account-plus"
         title="快加入我们！"
@@ -87,15 +85,15 @@
                 ></v-text-field>
               </v-col>
 
-              <!-- 学号 -->
+              <!-- 学工号 -->
               <v-col cols="12">
                 <v-text-field
-                  label="学号"
+                  label="学工号"
                   v-model="studentNumberReg"
                   :rules="studentNumberRegRules"
                   variant="outlined"
                   validate-on-blur
-                  hint="学号为8位数字"
+                  hint="学工号在注册完成后无法更改，敬请留意。"
                   persistent-hint
                 ></v-text-field>
               </v-col>
@@ -265,16 +263,14 @@ export default {
       // 验证规则
       nameRules: [(v) => !!v || "昵称是必填项。"],
       studentNumberRules: [
-        (v) => !!v || "学号是必填项。",
-        (v) => /^\d{8}$/.test(v) || "学号必须是8位数字。",
+        (v) => !!v || "学工号是必填项。",
       ],
       passwordRules: [
         (v) => !!v || "密码是必填项。",
         (v) => (v && v.length >= 6) || "密码长度至少为6位。",
       ],
       studentNumberRegRules: [
-        (v) => !!v || "学号是必填项。",
-        (v) => /^\d{8}$/.test(v) || "学号必须是8位数字。",
+        (v) => !!v || "学工号是必填项。",
       ],
       collegeRules: [(v) => !!v || "学院/书院是必填项。"],
       emailRules: [
@@ -379,7 +375,7 @@ export default {
       this.confirmPassword = "";
       this.$refs.registerForm.resetValidation();
     },
-    // 根据学号推算入学年份
+    // 根据学工号推算入学年份
     calculateEntryYear(studentNumber) {
       if (/^\d{8}$/.test(studentNumber)) {
         const yearPrefix = studentNumber.substring(0, 2);

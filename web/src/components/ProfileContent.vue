@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card class="mx-auto my-5" max-width="60%">
+    <v-card class="mx-auto my-5" max-width="70%">
       <v-card-title>
         <span class="text-h5 font-weight-bold">个人信息</span>
       </v-card-title>
@@ -20,14 +20,28 @@
           </v-col>
 
           <!-- 右侧：个人信息 -->
+          <!-- 昵称 -->
           <v-col cols="12" md="8">
-            <!-- 学号 -->
+            <v-row class="mb-3 text-subtitle-1" align="center">
+              <v-col cols="1">
+                <v-icon>mdi-account-box</v-icon>
+              </v-col>
+              <v-col cols="3">
+                <strong>昵称</strong>
+              </v-col>
+              <v-col cols="8" class="text-subtitle-1">
+                <!-- 调大字体 -->
+                {{ username }}
+              </v-col>
+            </v-row>
+
+            <!-- 学工号 -->
             <v-row class="mb-3 text-subtitle-1" align="center">
               <v-col cols="1">
                 <v-icon>mdi-card-account-details</v-icon>
               </v-col>
               <v-col cols="3">
-                <strong>学号</strong>
+                <strong>学工号</strong>
               </v-col>
               <v-col cols="8" class="text-subtitle-1">
                 <!-- 调大字体 -->
@@ -109,13 +123,13 @@
                 ></v-text-field>
               </v-col>
 
-              <!-- 学号 -->
+              <!-- 学工号 -->
               <v-col cols="12">
                 <v-text-field
-                  label="学号"
+                  label="学工号"
                   v-model="this.studentNumber"
                   variant="outlined"
-                  hint="学号不可修改"
+                  hint="学工号不可修改"
                   persistent-hint
                   disabled
                 ></v-text-field>

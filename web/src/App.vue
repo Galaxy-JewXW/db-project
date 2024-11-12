@@ -74,8 +74,9 @@ export default {
       return [
         { title: "首页", icon: "mdi-home", value: "/home" },
         { title: "题库", icon: "mdi-database", value: "/problemset" },
+        { title: "模拟测试", icon: "mdi-file-sign", value: "/exam" },
         { title: "讨论区", icon: "mdi-forum", value: "/discussions" },
-        { title: "个人中心", icon: "mdi-account-circle", value: "/profile" },
+        { title: "个人中心", icon: "mdi-account-details", value: "/profile" },
         isLoginRoute
           ? { title: "登录", icon: "mdi-login", value: "/login" }
           : { title: "注销", icon: "mdi-logout", value: "/login" },
