@@ -86,7 +86,6 @@ export default {
   created() {
     this.updateTime();
     this.timer = setInterval(this.updateTime, 1000);
-    // 设置初始浏览器标签页标题
     document.title = this.pageTitle || "标题";
   },
   beforeUnmount() {
