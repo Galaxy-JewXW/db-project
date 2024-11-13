@@ -21,10 +21,7 @@
     <!-- Scrollable container for questions -->
     <div class="questions-container">
       <v-expansion-panels>
-        <v-expansion-panel
-          v-for="(group, index) in questions"
-          :key="index"
-        >
+        <v-expansion-panel v-for="(group, index) in questions" :key="index">
           <v-expansion-panel-title>
             <template v-slot:default="{ expanded }">
               <v-row no-gutters>
@@ -52,7 +49,9 @@
                   rounded="0"
                   @click="goToQuestionDetail(questionId)"
                 >
-                  <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
+                  <v-responsive class="text-truncate">{{
+                    questionId
+                  }}</v-responsive>
                 </v-btn>
               </div>
             </v-row>
@@ -69,13 +68,13 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations } from "vuex";
 
 export default {
   name: "ProblemSetDetail",
   data() {
     return {
-      problemSetData: null, // 本地存储题库数据
+      problemSetData: null, // 本地存储模拟测试数据
       questions: [],
       loading: false,
       error: null,
@@ -83,9 +82,11 @@ export default {
   },
   computed: {
     totalQuestions() {
-      return this.questions?.reduce((total, group) => {
-        return total + group.ids.length;
-      }, 0) || 0;
+      return (
+        this.questions?.reduce((total, group) => {
+          return total + group.ids.length;
+        }, 0) || 0
+      );
     },
     chips() {
       return [
@@ -98,20 +99,14 @@ export default {
         {
           color: "secondary",
           icon: "mdi-clock-outline",
-          label: "预计用时",
-          value: `${this.problemSetData?.estimatedTime || 0} 分钟`,
+          label: "时长",
+          value: `${this.problemSetData?.duration || 0} 分钟`,
         },
         {
           color: "success",
           icon: "mdi-calendar",
-          label: "创建日期",
-          value: this.formatDate(this.problemSetData?.createdAt),
-        },
-        {
-          color: "info",
-          icon: "mdi-account",
-          label: "创建者",
-          value: this.problemSetData?.createdBy || "N/A",
+          label: "考试开始时间",
+          value: this.formatDate2M(this.problemSetData?.starttime),
         },
         {
           color: "warning",
@@ -126,10 +121,10 @@ export default {
     const id = this.$route.params.id;
     // TODO: 这里是调试逻辑，以后记得删除
     if (id == 1) {
-      this.fetchProblemSetData(id); // 获取题库数据
+      this.fetchProblemSetData(id); // 获取模拟测试数据
     } else {
       console.log(id);
-      console.error("题库ID缺失，无法加载题库数据");
+      console.error("模拟测试ID缺失，无法加载模拟测试数据");
       this.$router.push(`/404`);
     }
   },
@@ -142,26 +137,26 @@ export default {
       this.error = null;
 
       try {
-        // 模拟从后端获取题库数据
+        // 模拟从后端获取模拟测试数据
         setTimeout(() => {
           this.problemSetData = {
             id: problemSetId,
             name: "2023-24数分上期中",
             createdAt: "2024-09-02",
             subject: "工科数学分析（上）",
-            createdBy: "fysszlr",
-            estimatedTime: 120,
+            starttime: "2024-09-02 19:00:00",
+            duration: 120,
             description: "2023-2024第一学期数分期中的真题，配套答案。",
           };
-          const title = '题库详情 - ' + this.problemSetData.name;
+          const title = "模拟测试详情 - " + this.problemSetData.name;
           this.setAppTitle(title);
           this.setPageTitle(title);
           this.fetchQuestionsById(problemSetId); // 获取题目列表
           this.loading = false;
         }, 1000); // 模拟网络延迟
       } catch (e) {
-        console.error("获取题库数据失败", e);
-        this.error = "获取题库数据失败";
+        console.error("获取模拟测试数据失败", e);
+        this.error = "获取模拟测试数据失败";
         this.loading = false;
       }
     },
@@ -177,15 +172,11 @@ export default {
           const questions = [
             {
               type: "选择题",
-              ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道选择题
-            },
-            {
-              type: "填空题",
-              ids: [101, 102, 103], // 填空题
+              ids: [301, 302, 303, 304, 305],
             },
             {
               type: "解答题",
-              ids: [201, 202], // 解答题
+              ids: [1911, 1912, 1913, 1914, 1915, 1916, 1917, 1918, 1919, 1920], // 解答题
             },
           ];
           this.questions = questions; // 更新组件本地的题目列表数据
@@ -202,6 +193,17 @@ export default {
       if (!dateStr) return "N/A";
       const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(dateStr).toLocaleDateString(undefined, options);
+    },
+
+    formatDate2M(dateStr) {
+      const options = {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return new Date(dateStr).toLocaleString(undefined, options);
     },
 
     goToQuestionDetail(questionId) {

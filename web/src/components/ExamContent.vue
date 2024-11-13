@@ -16,7 +16,7 @@
           <v-btn icon dark @click="showPastExamsDialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>查看过往测试</v-toolbar-title>
+          <v-toolbar-title>已结束的测试列表</v-toolbar-title>
         </v-toolbar>
         <v-card-text>
           <!-- Display pastExams here -->
@@ -33,11 +33,10 @@
                 <v-card class="w-100" hover>
                   <v-card-text>
                     <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
-
                     <div class="mt-2">
                       <div class="info-row">
                         <span>创建日期：</span>
-                        <span>{{ formatDate(exam.createdAt) }}</span>
+                        <span>{{ formatDate2M(exam.createdAt) }}</span>
                       </div>
                       <div class="info-row">
                         <span>所属科目：</span>
@@ -45,7 +44,7 @@
                       </div>
                       <div class="info-row">
                         <span>开始时间：</span>
-                        <span>{{ formatDate(exam.starttime) }}</span>
+                        <span>{{ formatDate2M(exam.starttime) }}</span>
                       </div>
                       <div class="info-row">
                         <span>时长：</span>
@@ -84,14 +83,14 @@
             md="3"
             class="pa-1"
           >
-            <v-card class="w-100" hover @click="openDialog(exam)">
+            <v-card class="w-100" hover>
               <v-card-text>
                 <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
 
                 <div class="mt-2">
                   <div class="info-row">
                     <span>创建日期：</span>
-                    <span>{{ formatDate(exam.createdAt) }}</span>
+                    <span>{{ formatDate2D(exam.createdAt) }}</span>
                   </div>
                   <div class="info-row">
                     <span>所属科目：</span>
@@ -99,7 +98,7 @@
                   </div>
                   <div class="info-row">
                     <span>开始时间：</span>
-                    <span>{{ formatDate(exam.starttime) }}</span>
+                    <span>{{ formatDate2M(exam.starttime) }}</span>
                   </div>
                   <div class="info-row">
                     <span>时长：</span>
@@ -130,7 +129,7 @@
 import { mapMutations } from "vuex";
 
 export default {
-  name: "ProblemSet",
+  name: "ExamList",
   data() {
     return {
       showPastExamsDialog: false,
@@ -180,7 +179,7 @@ export default {
     // 映射 Vuex 的 mutation
     ...mapMutations(["setAppTitle", "setPageTitle"]),
 
-    formatDate(dateStr) {
+    formatDate2M(dateStr) {
       const options = {
         year: "numeric",
         month: "long",
@@ -190,13 +189,13 @@ export default {
       };
       return new Date(dateStr).toLocaleString(undefined, options);
     },
-    openDialog(exam) {
-      this.selectedProblemSet = exam;
-      this.dialog = true;
+    formatDate2D(dateStr) {
+      const options = { year: "numeric", month: "long", day: "numeric" };
+      return new Date(dateStr).toLocaleDateString(undefined, options);
     },
     enterExam(exam) {
       // 导航到目标路由
-      this.$router.push(`/problemset/${exam.id}`);
+      this.$router.push(`/exam/${exam.id}`);
     },
     isExamComing(exam) {
       return this.comingExams.some((e) => e.id === exam.id);
