@@ -25,6 +25,16 @@ const customRoutes = [
       pageTitle: "题目详情",
     },
   },
+  {
+    path: "/exam/:id",
+    name: "ExamDetail",
+    component: () => import("@/components/ExamDetail.vue"),
+    props: true,
+    meta: {
+      appTitle: "测试详情",
+      pageTitle: "测试详情",
+    },
+  },
   // 可以在这里添加更多自定义路由
 ];
 

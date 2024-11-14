@@ -124,6 +124,7 @@ export default {
   },
   mounted() {
     const id = this.$route.params.id;
+    // TODO: 这里是调试逻辑，以后记得删除
     if (id == 1) {
       this.fetchProblemSetData(id); // 获取题库数据
     } else {
@@ -175,8 +176,8 @@ export default {
         setTimeout(() => {
           const questions = [
             {
-              type: "选择题",
-              ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道选择题
+              type: "单项选择题",
+              ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
             },
             {
               type: "填空题",

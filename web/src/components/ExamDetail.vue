@@ -1,0 +1,475 @@
+<template>
+  <div class="problem-set-detail" v-if="problemSetData">
+    <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px">
+      <v-alert :type="'info'" icon="mdi-clock-outline">
+        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
+        你已完成{{ this.totalQuestions }}题中的{{ this.finishedQuestions }}题。
+      </v-alert>
+    </div>
+    <div v-else-if="
+      remainingTime > 0 && this.finishedQuestions === this.totalQuestions
+    " style="padding-bottom: 15px">
+      <v-alert :type="'success'">
+        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
+        你已完成本次测试的所有题目。
+      </v-alert>
+    </div>
+    <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
+      <!-- 显示对应的提示信息 -->
+      <v-alert :type="'error'">
+        <v-alert-title>测试已结束</v-alert-title>
+      </v-alert>
+    </div>
+
+    <v-progress-linear v-if="remainingTime > 0" :model-value="progressPercentage" color="primary" height="9" rounded
+      style="margin-bottom: 10px"></v-progress-linear>
+
+    <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
+
+    <!-- Chip row: contains all fields as Chips in the same row -->
+    <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
+      <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
+        <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
+        {{ chip.label }}: {{ chip.value }}
+      </v-chip>
+    </div>
+
+    <!-- Scrollable container for questions -->
+    <div v-if="remainingTime > 0" class="questions-container">
+      <v-expansion-panels>
+        <v-expansion-panel v-for="(group, index) in questions" :key="index">
+          <v-expansion-panel-title>
+            <template v-slot:default="{ expanded }">
+              <v-row no-gutters>
+                <v-col class="d-flex justify-start text-bold" cols="4">
+                  {{ group.type }}
+                </v-col>
+                <v-col class="text-grey" cols="8">
+                  <v-fade-transition leave-absolute>
+                    <span> 本部分共 {{ group.ids.length }} 题 </span>
+                  </v-fade-transition>
+                </v-col>
+              </v-row>
+            </template>
+          </v-expansion-panel-title>
+
+          <!-- List of buttons for each question ID inside the content -->
+          <v-expansion-panel-text>
+            <v-row no-gutters>
+              <div class="question-squares">
+                <v-btn v-for="questionId in group.ids" :key="questionId" class="question-square text-none"
+                  color="blue-darken-4" rounded="0" @click="goToQuestionDetail(questionId)">
+                  <v-responsive class="text-truncate">{{
+                    questionId
+                  }}</v-responsive>
+                </v-btn>
+              </div>
+            </v-row>
+          </v-expansion-panel-text>
+        </v-expansion-panel>
+      </v-expansion-panels>
+    </div>
+    <div v-else>本次测试已结束，你无法再查看题目。</div>
+
+    <!-- Fullscreen Dialog for Question Answer -->
+    <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
+      <v-card class="fullscreen-card">
+        <v-toolbar dark color="primary">
+          <v-btn icon @click="closeDialog">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>题目 - {{ this.currentQuestionId }}</v-toolbar-title>
+        </v-toolbar>
+
+        <v-card-text>
+          <v-row>
+            <v-col cols="8">
+              <div v-if="question" class="markdown-content">
+                <v-md-preview :text="question" />
+              </div>
+              <!-- Loading or Error States -->
+              <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
+            </v-col>
+
+            <v-col cols="4">
+              <v-card class="pa-4" outlined>
+                <v-card-title style="padding-left: 0;" class="text-h5 font-weight-regular">提交题目 - {{
+                  this.currentQuestionId
+                }}</v-card-title>
+                <div v-if="this.choices === -1">
+                  <!--文件上传-->
+                  <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
+                    accept=".pdf,.docx,.jpg,.png,.md">
+                    >
+                    <template v-slot:selection="{ fileNames }">
+                      <template v-for="fileName in fileNames" :key="fileName">
+                        <v-chip class="me-2" color="primary" size="small" label>
+                          {{ fileName }}
+                        </v-chip>
+                      </template>
+                    </template>
+                  </v-file-input>
+                  <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files.length">
+                    上传答案
+                  </v-btn>
+                </div>
+                <div v-else-if="this.choices >= 3 && this.questionType === '单项选择题'">
+                  <!-- 单项选择题 -->
+                  <v-row no-gutters>
+                    <v-radio-group v-model="selectedOption" inline>
+                      <v-radio v-for="index in this.choices" :key="index" :label="getOptionLetter(index)"
+                        :value="getOptionLetter(index)" />
+                    </v-radio-group>
+                  </v-row>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>
+
+<script>
+import { mapMutations } from "vuex";
+
+export default {
+  name: "ProblemSetDetail",
+  data() {
+    return {
+      problemSetData: null,
+      questions: [],
+      loading: false,
+      error: null,
+      currentTime: new Date(), // 当前时间
+      intervalId: null, // 定时器ID
+      dialog: false, // 控制dialog显示
+      question: "", // 存储题面的Markdown文本
+      loadingQuestion: false, // 控制加载状态
+      finishedQuestions: 15, // 完成的题目数量
+      files: [],
+      selectedOption: null,
+    };
+  },
+  computed: {
+    totalQuestions() {
+      return (
+        this.questions?.reduce((total, group) => {
+          return total + group.ids.length;
+        }, 0) || 0
+      );
+    },
+    chips() {
+      return [
+        {
+          color: "primary",
+          icon: "mdi-book-open",
+          label: "所属科目",
+          value: this.problemSetData?.subject || "N/A",
+        },
+        {
+          color: "secondary",
+          icon: "mdi-clock-outline",
+          label: "时长",
+          value: `${this.problemSetData?.duration || 0} 分钟`,
+        },
+        {
+          color: "success",
+          icon: "mdi-calendar",
+          label: "测试开始时间",
+          value: this.formatDate2M(this.problemSetData?.starttime),
+        },
+        {
+          color: "warning",
+          icon: "mdi-format-list-numbered",
+          label: "题目数量",
+          value: `${this.totalQuestions} 题`,
+        },
+      ];
+    },
+    remainingTime() {
+      const startTime = new Date(this.problemSetData?.starttime);
+      const duration = this.problemSetData?.duration || 0; // duration in minutes
+      const endTime = new Date(startTime.getTime() + duration * 60000);
+      const timeRemaining = endTime - this.currentTime; // in milliseconds
+
+      return Math.max(timeRemaining, 0); // return 0 if timeRemaining is negative
+    },
+    progressPercentage() {
+      const startTime = new Date(this.problemSetData?.starttime);
+      const duration = this.problemSetData?.duration || 0; // duration in minutes
+      const endTime = new Date(startTime.getTime() + duration * 60000);
+      const totalDuration = endTime - startTime;
+
+      const elapsedTime = this.currentTime - startTime;
+
+      // Calculate the progress as a percentage
+      return Math.min((elapsedTime / totalDuration) * 100, 100); // Prevent it from going over 100%
+    },
+  },
+  mounted() {
+    const id = this.$route.params.id;
+    if (id == 1) {
+      this.fetchProblemSetData(id); // 获取模拟测试数据
+    } else {
+      console.log(id);
+      console.error("模拟测试ID缺失，无法加载模拟测试数据");
+      this.$router.push(`/404`);
+    }
+
+    // Start a timer to update remainingTime and progress every second
+    this.intervalId = setInterval(() => {
+      this.currentTime = new Date();
+    }, 1000); // Update every second
+  },
+  beforeDestroy() {
+    // Clear interval when component is destroyed
+    clearInterval(this.intervalId);
+  },
+  methods: {
+    ...mapMutations(["setAppTitle", "setPageTitle", "setProblemType"]),
+
+    async fetchProblemSetData(problemSetId) {
+      console.log(`Fetching problem set data for ID: ${problemSetId}`);
+      this.loading = true;
+      this.error = null;
+
+      try {
+        // 模拟从后端获取模拟测试数据
+        setTimeout(() => {
+          this.problemSetData = {
+            id: problemSetId,
+            name: "2023-24数分上期中",
+            subject: "工科数学分析（上）",
+            starttime: "2024-11-14 22:50:00",
+            duration: 1120,
+          };
+          const title = "模拟测试详情 - " + this.problemSetData.name;
+          this.setAppTitle(title);
+          this.setPageTitle(title);
+          this.fetchQuestionsById(problemSetId); // 获取题目列表
+          this.loading = false;
+        }, 1000); // 模拟网络延迟
+      } catch (e) {
+        console.error("获取模拟测试数据失败", e);
+        this.error = "获取模拟测试数据失败";
+        this.loading = false;
+      }
+    },
+
+    async fetchQuestionsById(problemSetId) {
+      console.log(`Fetching questions for problem set ID: ${problemSetId}`);
+      this.loading = true;
+      this.error = null;
+
+      try {
+        // 模拟从后端获取数据
+        setTimeout(() => {
+          const questions = [
+            {
+              type: "单项选择题",
+              ids: [301, 302, 303, 304, 305],
+            },
+            {
+              type: "解答题",
+              ids: [1911, 1912, 1913, 1914, 1915, 1916, 1917, 1918, 1919, 1920], // 解答题
+            },
+          ];
+          this.questions = questions; // 更新组件本地的题目列表数据
+          this.loading = false;
+        }, 100); // 模拟延迟
+      } catch (e) {
+        console.error("获取题目数据失败", e);
+        this.error = "获取题目数据失败";
+        this.loading = false;
+      }
+    },
+
+    formatDate(dateStr) {
+      if (!dateStr) return "N/A";
+      const options = { year: "numeric", month: "long", day: "numeric" };
+      return new Date(dateStr).toLocaleDateString(undefined, options);
+    },
+
+    formatDate2M(dateStr) {
+      const options = {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return new Date(dateStr).toLocaleString(undefined, options);
+    },
+
+    formatDuration(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+    },
+
+    getQuestionTypeById(id) {
+      for (const group of this.questions) {
+        if (group.ids.includes(id)) {
+          return group.type;
+        }
+      }
+      return null;
+    },
+
+    goToQuestionDetail(questionId) {
+      this.questionType = this.getQuestionTypeById(questionId);
+      console.log(`Fetching question for question ID: ${questionId} ${this.questionType}`);
+      this.loadingQuestion = true;
+      this.currentQuestionId = questionId;
+      // 模拟从后端获取Markdown文本数据
+      setTimeout(() => {
+        this.question = `## 这是题目 ${questionId} 的题面\n\n这是详细的Markdown格式题面说明。`;
+        this.loadingQuestion = false;
+        if (this.questionType === "单项选择题") {
+          this.choices = 4;
+        } else if (this.questionType === "解答题") {
+          this.choices = -1;
+        }
+        this.dialog = true; // 打开Dialog
+      }, 10); // 模拟网络延迟
+    },
+
+    closeDialog() {
+      this.dialog = false; // 关闭Dialog
+      this.question = ""; // 清空题面
+    },
+
+    getOptionLetter(index) {
+      return String.fromCharCode(65 + index - 1);  // 65 对应字母 'A'
+    },
+
+    // 选中某个选项
+    selectOption(letter) {
+      console.log(`选中的是选项 ${letter}`);
+      // 处理选项的选择逻辑
+    },
+
+    // 文件上传逻辑
+    async uploadFiles() {
+      if (!this.files.length) {
+        console.log("没有选择文件");
+        return;
+      }
+
+      // 创建一个 FormData 对象
+      const formData = new FormData();
+
+      // 将选中的文件添加到 FormData 中
+      this.files.forEach((file) => {
+        formData.append("files[]", file);
+      });
+      console.log("文件上传成功");
+      this.files = [];
+    },
+  },
+};
+</script>
+
+<style scoped>
+.problem-set-detail {
+  padding: 16px;
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.chip-item {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.chip-item:last-child {
+  margin-right: 0;
+}
+
+.chip-icon {
+  margin-right: 4px;
+}
+
+.questions-container {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+  padding: 16px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+}
+
+.questions-container::-webkit-scrollbar {
+  display: none;
+}
+
+.question-squares {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+}
+
+.question-square {
+  width: 70px;
+  height: 70px;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 0;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+.v-responsive {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+}
+
+.v-expansion-panel {
+  margin-bottom: 0px;
+}
+
+.markdown-content {
+  padding: 16px;
+  font-size: 16px;
+}
+
+.v-card {
+  margin-top: 16px;
+}
+
+.v-card-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.v-card-text {
+  font-size: 14px;
+}
+
+.fullscreen-card {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  margin: 0;
+}
+</style>

@@ -85,18 +85,17 @@
       fullscreen
     >
       <v-card>
-        <v-toolbar>
+        <v-toolbar dark color="primary">
           <v-btn icon @click="closeDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>答案</v-toolbar-title>
-          <v-spacer></v-spacer>
         </v-toolbar>
 
         <!-- 根据用户选择显示内容 -->
         <div v-if="!answerResult">
           <!-- 做对了、做错了按钮 -->
-          <v-card class="ma-4" style="max-width: 95%;">
+          <v-card class="ma-4" style="max-width: 100%;">
             <v-card-title class="headline text-h5 font-weight-bold">你做对了吗？</v-card-title>
             <v-card-text class="d-flex justify-start">
               <v-btn color="success" class="ma-2" outlined @click="handleAnswer(true)">
@@ -114,7 +113,7 @@
             :type="answerResult === 'correct' ? 'success' : 'error'"
             class="ma-4"
             title="回答情况已记录"
-            style="max-width: 95%;"
+            style="max-width: 100%;"
           >
             {{ alertMessage }}
           </v-alert>
@@ -157,7 +156,7 @@ export default {
       // 模拟直接从后端获取数据
       const mockProblemData = {
         id: problemId,
-        type: "选择题",
+        type: "单项选择题",
         content: `
 # Markdown 测试文档
 
@@ -326,7 +325,7 @@ h1 {
 }
 
 .info-card {
-  height: 95%;
+  height: 60%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -339,7 +338,7 @@ h1 {
   overflow: hidden;
 }
 
-.v-btn {
+.info-card .v-btn {
   margin-top: 8px;
 }
 
@@ -358,11 +357,6 @@ h1 {
 
 .v-dialog {
   z-index: 200;
-}
-
-.v-toolbar {
-  display: flex;
-  align-items: center;
 }
 
 /* 隐藏 v-card 的边框 */
