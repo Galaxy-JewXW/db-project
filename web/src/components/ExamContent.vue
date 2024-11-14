@@ -167,7 +167,7 @@ export default {
   },
   computed: {
     combinedExams() {
-      return [...this.comingExams, ...this.ongoingExams];
+      return [...this.ongoingExams, ...this.comingExams];
     },
   },
   mounted() {

@@ -156,7 +156,7 @@ export default {
       // 模拟直接从后端获取数据
       const mockProblemData = {
         id: problemId,
-        type: "选择题",
+        type: "单项选择题",
         content: `
 # Markdown 测试文档
 

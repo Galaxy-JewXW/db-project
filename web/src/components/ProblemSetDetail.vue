@@ -176,8 +176,8 @@ export default {
         setTimeout(() => {
           const questions = [
             {
-              type: "选择题",
-              ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道选择题
+              type: "单项选择题",
+              ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
             },
             {
               type: "填空题",

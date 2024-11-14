@@ -1,55 +1,34 @@
 <template>
   <div class="problem-set-detail" v-if="problemSetData">
-    <div
-      v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions"
-      style="padding-bottom: 15px"
-    >
+    <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px">
       <v-alert :type="'info'" icon="mdi-clock-outline">
-        <v-alert-title
-          >测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title
-        >
+        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
         你已完成{{ this.totalQuestions }}题中的{{ this.finishedQuestions }}题。
       </v-alert>
     </div>
-    <div
-      v-else-if="
-        remainingTime > 0 && this.finishedQuestions === this.totalQuestions
-      "
-      style="padding-bottom: 15px"
-    >
+    <div v-else-if="
+      remainingTime > 0 && this.finishedQuestions === this.totalQuestions
+    " style="padding-bottom: 15px">
       <v-alert :type="'success'">
-        <v-alert-title
-          >测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title
-        >
+        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
         你已完成本次测试的所有题目。
       </v-alert>
     </div>
-    <div v-else style="padding-bottom: 15px">
+    <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
       <!-- 显示对应的提示信息 -->
       <v-alert :type="'error'">
         <v-alert-title>测试已结束</v-alert-title>
       </v-alert>
     </div>
 
-    <v-progress-linear
-      v-if="remainingTime > 0"
-      :model-value="progressPercentage"
-      color="primary"
-      height="9"
-      rounded
-      style="margin-bottom: 10px"
-    ></v-progress-linear>
+    <v-progress-linear v-if="remainingTime > 0" :model-value="progressPercentage" color="primary" height="9" rounded
+      style="margin-bottom: 10px"></v-progress-linear>
 
     <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
 
     <!-- Chip row: contains all fields as Chips in the same row -->
     <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
-      <v-chip
-        v-for="(chip, index) in chips"
-        :key="index"
-        :color="chip.color"
-        class="ma-1 chip-item"
-      >
+      <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
         <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
         {{ chip.label }}: {{ chip.value }}
       </v-chip>
@@ -78,14 +57,8 @@
           <v-expansion-panel-text>
             <v-row no-gutters>
               <div class="question-squares">
-                <v-btn
-                  v-for="questionId in group.ids"
-                  :key="questionId"
-                  class="question-square text-none"
-                  color="blue-darken-4"
-                  rounded="0"
-                  @click="goToQuestionDetail(questionId)"
-                >
+                <v-btn v-for="questionId in group.ids" :key="questionId" class="question-square text-none"
+                  color="blue-darken-4" rounded="0" @click="goToQuestionDetail(questionId)">
                   <v-responsive class="text-truncate">{{
                     questionId
                   }}</v-responsive>
@@ -96,7 +69,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </div>
-    <div v-else>本场测试已结束，你无法再查看题目。</div>
+    <div v-else>本次测试已结束，你无法再查看题目。</div>
 
     <!-- Fullscreen Dialog for Question Answer -->
     <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
@@ -120,35 +93,35 @@
 
             <v-col cols="4">
               <v-card class="pa-4" outlined>
-                <!-- 文件输入框 -->
-                <v-file-input
-                  v-model="files"
-                  label="提交答案"
-                  variant="underlined"
-                  counter
-                  multiple
-                  show-size
-                  accept=".pdf,.docx,.jpg,.png,.md"
-                >
-                  >
-                  <template v-slot:selection="{ fileNames }">
-                    <template v-for="fileName in fileNames" :key="fileName">
-                      <v-chip class="me-2" color="primary" size="small" label>
-                        {{ fileName }}
-                      </v-chip>
+                <v-card-title style="padding-left: 0;" class="text-h5 font-weight-regular">提交题目 - {{
+                  this.currentQuestionId
+                }}</v-card-title>
+                <div v-if="this.choices === -1">
+                  <!--文件上传-->
+                  <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
+                    accept=".pdf,.docx,.jpg,.png,.md">
+                    >
+                    <template v-slot:selection="{ fileNames }">
+                      <template v-for="fileName in fileNames" :key="fileName">
+                        <v-chip class="me-2" color="primary" size="small" label>
+                          {{ fileName }}
+                        </v-chip>
+                      </template>
                     </template>
-                  </template>
-                </v-file-input>
-
-                <!-- 上传按钮 -->
-                <v-btn
-                  color="primary"
-                  variant="text"
-                  @click="uploadFiles"
-                  :disabled="!files.length"
-                >
-                  上传答案
-                </v-btn>
+                  </v-file-input>
+                  <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files.length">
+                    上传答案
+                  </v-btn>
+                </div>
+                <div v-else-if="this.choices >= 3 && this.questionType === '单项选择题'">
+                  <!-- 单项选择题 -->
+                  <v-row no-gutters>
+                    <v-radio-group v-model="selectedOption" inline>
+                      <v-radio v-for="index in this.choices" :key="index" :label="getOptionLetter(index)"
+                        :value="getOptionLetter(index)" />
+                    </v-radio-group>
+                  </v-row>
+                </div>
               </v-card>
             </v-col>
           </v-row>
@@ -174,8 +147,9 @@ export default {
       dialog: false, // 控制dialog显示
       question: "", // 存储题面的Markdown文本
       loadingQuestion: false, // 控制加载状态
-      finishedQuestions: 10, // 完成的题目数量
+      finishedQuestions: 15, // 完成的题目数量
       files: [],
+      selectedOption: null,
     };
   },
   computed: {
@@ -269,7 +243,7 @@ export default {
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
             starttime: "2024-11-14 22:50:00",
-            duration: 20,
+            duration: 1120,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.setAppTitle(title);
@@ -294,7 +268,7 @@ export default {
         setTimeout(() => {
           const questions = [
             {
-              type: "选择题",
+              type: "单项选择题",
               ids: [301, 302, 303, 304, 305],
             },
             {
@@ -339,14 +313,29 @@ export default {
         .padStart(2, "0")}`;
     },
 
+    getQuestionTypeById(id) {
+      for (const group of this.questions) {
+        if (group.ids.includes(id)) {
+          return group.type;
+        }
+      }
+      return null;
+    },
+
     goToQuestionDetail(questionId) {
-      console.log(`Fetching question for question ID: ${questionId}`);
+      this.questionType = this.getQuestionTypeById(questionId);
+      console.log(`Fetching question for question ID: ${questionId} ${this.questionType}`);
       this.loadingQuestion = true;
       this.currentQuestionId = questionId;
       // 模拟从后端获取Markdown文本数据
       setTimeout(() => {
-        this.question = `## 这是问题 ${questionId} 的题面\n\n这是详细的Markdown格式题面说明。`;
+        this.question = `## 这是题目 ${questionId} 的题面\n\n这是详细的Markdown格式题面说明。`;
         this.loadingQuestion = false;
+        if (this.questionType === "单项选择题") {
+          this.choices = 4;
+        } else if (this.questionType === "解答题") {
+          this.choices = -1;
+        }
         this.dialog = true; // 打开Dialog
       }, 10); // 模拟网络延迟
     },
@@ -354,6 +343,16 @@ export default {
     closeDialog() {
       this.dialog = false; // 关闭Dialog
       this.question = ""; // 清空题面
+    },
+
+    getOptionLetter(index) {
+      return String.fromCharCode(65 + index - 1);  // 65 对应字母 'A'
+    },
+
+    // 选中某个选项
+    selectOption(letter) {
+      console.log(`选中的是选项 ${letter}`);
+      // 处理选项的选择逻辑
     },
 
     // 文件上传逻辑
