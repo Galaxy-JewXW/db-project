@@ -124,6 +124,7 @@ export default {
   },
   mounted() {
     const id = this.$route.params.id;
+    // TODO: 这里是调试逻辑，以后记得删除
     if (id == 1) {
       this.fetchProblemSetData(id); // 获取题库数据
     } else {

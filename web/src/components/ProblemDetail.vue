@@ -90,7 +90,6 @@
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>答案</v-toolbar-title>
-          <v-spacer></v-spacer>
         </v-toolbar>
 
         <!-- 根据用户选择显示内容 -->
@@ -339,7 +338,7 @@ h1 {
   overflow: hidden;
 }
 
-.v-btn {
+.info-card .v-btn {
   margin-top: 8px;
 }
 
@@ -358,11 +357,6 @@ h1 {
 
 .v-dialog {
   z-index: 200;
-}
-
-.v-toolbar {
-  display: flex;
-  align-items: center;
 }
 
 /* 隐藏 v-card 的边框 */
