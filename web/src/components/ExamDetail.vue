@@ -1,9 +1,44 @@
 <template>
   <div class="problem-set-detail" v-if="problemSetData">
-    <h1>{{ problemSetData.name }}</h1>
+    <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px;">
+      <v-alert
+        :type="'info'"
+        icon="mdi-clock-outline"
+      >
+        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
+        你已完成{{ this.totalQuestions }}题中的{{ this.finishedQuestions }}题。
+      </v-alert>
+    </div>
+    <div v-else-if="remainingTime > 0 && this.finishedQuestions === this.totalQuestions" style="padding-bottom: 15px;">
+      <v-alert
+        :type="'success'"
+      >
+        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
+        你已完成测试的所有题目。
+      </v-alert>
+    </div>
+    <div v-else style="padding-bottom: 15px;">
+      <!-- 显示对应的提示信息 -->
+      <v-alert
+        :type="'error'"
+      >
+      <v-alert-title>测试已结束</v-alert-title>
+      </v-alert>
+    </div>
+
+    <v-progress-linear
+      v-if="remainingTime > 0"
+      :model-value="progressPercentage"
+      color="primary"
+      height="9"
+      rounded
+      style="margin-bottom: 10px"
+    ></v-progress-linear>
+
+    <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
 
     <!-- Chip row: contains all fields as Chips in the same row -->
-    <div class="chips-row">
+    <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
       <v-chip
         v-for="(chip, index) in chips"
         :key="index"
@@ -15,11 +50,8 @@
       </v-chip>
     </div>
 
-    <!-- Description -->
-    <p>{{ problemSetData.description }}</p>
-
     <!-- Scrollable container for questions -->
-    <div class="questions-container">
+    <div v-if="remainingTime > 0" class="questions-container">
       <v-expansion-panels>
         <v-expansion-panel v-for="(group, index) in questions" :key="index">
           <v-expansion-panel-title>
@@ -59,11 +91,30 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </div>
-  </div>
-  <!-- Loading indicator or error message -->
-  <div v-else>
-    <p v-if="loading">即将就绪……</p>
-    <p v-else-if="error">{{ error }}</p>
+    <div v-else>
+      本场测试已结束，你无法再查看题目。
+    </div>
+
+    <!-- Fullscreen Dialog for Question Answer -->
+    <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
+      <v-card>
+        <v-toolbar dark color="primary">
+          <v-btn icon @click="closeDialog">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+          <v-toolbar-title>题目 - {{ this.currentQuestionId }}</v-toolbar-title>
+        </v-toolbar>
+
+        <v-card-text>
+          <!-- Markdown content -->
+          <div v-if="question" class="markdown-content">
+            <v-md-preview :text="question" />
+          </div>
+          <!-- Loading or Error States -->
+          <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -74,10 +125,16 @@ export default {
   name: "ProblemSetDetail",
   data() {
     return {
-      problemSetData: null, // 本地存储模拟测试数据
+      problemSetData: null,
       questions: [],
       loading: false,
       error: null,
+      currentTime: new Date(), // 当前时间
+      intervalId: null, // 定时器ID
+      dialog: false, // 控制dialog显示
+      question: "", // 存储题面的Markdown文本
+      loadingQuestion: false, // 控制加载状态
+      finishedQuestions: 15, // 完成的题目数量
     };
   },
   computed: {
@@ -105,7 +162,7 @@ export default {
         {
           color: "success",
           icon: "mdi-calendar",
-          label: "考试开始时间",
+          label: "测试开始时间",
           value: this.formatDate2M(this.problemSetData?.starttime),
         },
         {
@@ -116,10 +173,28 @@ export default {
         },
       ];
     },
+    remainingTime() {
+      const startTime = new Date(this.problemSetData?.starttime);
+      const duration = this.problemSetData?.duration || 0; // duration in minutes
+      const endTime = new Date(startTime.getTime() + duration * 60000);
+      const timeRemaining = endTime - this.currentTime; // in milliseconds
+
+      return Math.max(timeRemaining, 0); // return 0 if timeRemaining is negative
+    },
+    progressPercentage() {
+      const startTime = new Date(this.problemSetData?.starttime);
+      const duration = this.problemSetData?.duration || 0; // duration in minutes
+      const endTime = new Date(startTime.getTime() + duration * 60000);
+      const totalDuration = endTime - startTime;
+
+      const elapsedTime = this.currentTime - startTime;
+
+      // Calculate the progress as a percentage
+      return Math.min((elapsedTime / totalDuration) * 100, 100); // Prevent it from going over 100%
+    },
   },
   mounted() {
     const id = this.$route.params.id;
-    // TODO: 这里是调试逻辑，以后记得删除
     if (id == 1) {
       this.fetchProblemSetData(id); // 获取模拟测试数据
     } else {
@@ -127,6 +202,15 @@ export default {
       console.error("模拟测试ID缺失，无法加载模拟测试数据");
       this.$router.push(`/404`);
     }
+
+    // Start a timer to update remainingTime and progress every second
+    this.intervalId = setInterval(() => {
+      this.currentTime = new Date();
+    }, 1000); // Update every second
+  },
+  beforeDestroy() {
+    // Clear interval when component is destroyed
+    clearInterval(this.intervalId);
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle", "setProblemType"]),
@@ -142,11 +226,9 @@ export default {
           this.problemSetData = {
             id: problemSetId,
             name: "2023-24数分上期中",
-            createdAt: "2024-09-02",
             subject: "工科数学分析（上）",
-            starttime: "2024-09-02 19:00:00",
-            duration: 120,
-            description: "2023-2024第一学期数分期中的真题，配套答案。",
+            starttime: "2024-11-14 21:30:00",
+            duration: 5,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.setAppTitle(title);
@@ -181,7 +263,7 @@ export default {
           ];
           this.questions = questions; // 更新组件本地的题目列表数据
           this.loading = false;
-        }, 1000); // 模拟延迟
+        }, 100); // 模拟延迟
       } catch (e) {
         console.error("获取题目数据失败", e);
         this.error = "获取题目数据失败";
@@ -206,9 +288,31 @@ export default {
       return new Date(dateStr).toLocaleString(undefined, options);
     },
 
+    formatDuration(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
+        .toString()
+        .padStart(2, "0")}`;
+    },
+
     goToQuestionDetail(questionId) {
-      console.log(`Navigate to question detail for question ID: ${questionId}`);
-      this.$router.push(`/exercise/${questionId}`);
+      console.log(`Fetching question for question ID: ${questionId}`);
+      this.loadingQuestion = true;
+      this.currentQuestionId = questionId;
+      // 模拟从后端获取Markdown文本数据
+      setTimeout(() => {
+        this.question = `## 这是问题 ${questionId} 的题面\n\n这是详细的Markdown格式题面说明。`;
+        this.loadingQuestion = false;
+        this.dialog = true; // 打开Dialog
+      }, 10); // 模拟网络延迟
+    },
+
+    closeDialog() {
+      this.dialog = false; // 关闭Dialog
+      this.question = ""; // 清空题面
     },
   },
 };
@@ -253,11 +357,6 @@ export default {
   display: none;
 }
 
-.questions-container {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 .question-squares {
   display: flex;
   flex-wrap: wrap;
@@ -288,5 +387,10 @@ export default {
 
 .v-expansion-panel {
   margin-bottom: 0px;
+}
+
+.markdown-content {
+  padding: 16px;
+  font-size: 16px;
 }
 </style>
