@@ -1,28 +1,33 @@
 <template>
   <div class="problem-set-detail" v-if="problemSetData">
-    <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px;">
-      <v-alert
-        :type="'info'"
-        icon="mdi-clock-outline"
-      >
-        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
+    <div
+      v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions"
+      style="padding-bottom: 15px"
+    >
+      <v-alert :type="'info'" icon="mdi-clock-outline">
+        <v-alert-title
+          >测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title
+        >
         你已完成{{ this.totalQuestions }}题中的{{ this.finishedQuestions }}题。
       </v-alert>
     </div>
-    <div v-else-if="remainingTime > 0 && this.finishedQuestions === this.totalQuestions" style="padding-bottom: 15px;">
-      <v-alert
-        :type="'success'"
-      >
-        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
-        你已完成测试的所有题目。
+    <div
+      v-else-if="
+        remainingTime > 0 && this.finishedQuestions === this.totalQuestions
+      "
+      style="padding-bottom: 15px"
+    >
+      <v-alert :type="'success'">
+        <v-alert-title
+          >测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title
+        >
+        你已完成本次测试的所有题目。
       </v-alert>
     </div>
-    <div v-else style="padding-bottom: 15px;">
+    <div v-else style="padding-bottom: 15px">
       <!-- 显示对应的提示信息 -->
-      <v-alert
-        :type="'error'"
-      >
-      <v-alert-title>测试已结束</v-alert-title>
+      <v-alert :type="'error'">
+        <v-alert-title>测试已结束</v-alert-title>
       </v-alert>
     </div>
 
@@ -91,13 +96,11 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </div>
-    <div v-else>
-      本场测试已结束，你无法再查看题目。
-    </div>
+    <div v-else>本场测试已结束，你无法再查看题目。</div>
 
     <!-- Fullscreen Dialog for Question Answer -->
     <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
-      <v-card>
+      <v-card class="fullscreen-card">
         <v-toolbar dark color="primary">
           <v-btn icon @click="closeDialog">
             <v-icon>mdi-close</v-icon>
@@ -106,12 +109,49 @@
         </v-toolbar>
 
         <v-card-text>
-          <!-- Markdown content -->
-          <div v-if="question" class="markdown-content">
-            <v-md-preview :text="question" />
-          </div>
-          <!-- Loading or Error States -->
-          <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
+          <v-row>
+            <v-col cols="8">
+              <div v-if="question" class="markdown-content">
+                <v-md-preview :text="question" />
+              </div>
+              <!-- Loading or Error States -->
+              <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
+            </v-col>
+
+            <v-col cols="4">
+              <v-card class="pa-4" outlined>
+                <!-- 文件输入框 -->
+                <v-file-input
+                  v-model="files"
+                  label="提交答案"
+                  variant="underlined"
+                  counter
+                  multiple
+                  show-size
+                  accept=".pdf,.docx,.jpg,.png,.md"
+                >
+                  >
+                  <template v-slot:selection="{ fileNames }">
+                    <template v-for="fileName in fileNames" :key="fileName">
+                      <v-chip class="me-2" color="primary" size="small" label>
+                        {{ fileName }}
+                      </v-chip>
+                    </template>
+                  </template>
+                </v-file-input>
+
+                <!-- 上传按钮 -->
+                <v-btn
+                  color="primary"
+                  variant="text"
+                  @click="uploadFiles"
+                  :disabled="!files.length"
+                >
+                  上传答案
+                </v-btn>
+              </v-card>
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -135,6 +175,7 @@ export default {
       question: "", // 存储题面的Markdown文本
       loadingQuestion: false, // 控制加载状态
       finishedQuestions: 15, // 完成的题目数量
+      files: [],
     };
   },
   computed: {
@@ -227,8 +268,8 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-14 21:30:00",
-            duration: 5,
+            starttime: "2024-11-14 21:50:00",
+            duration: 120,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.setAppTitle(title);
@@ -314,6 +355,24 @@ export default {
       this.dialog = false; // 关闭Dialog
       this.question = ""; // 清空题面
     },
+
+    // 文件上传逻辑
+    async uploadFiles() {
+      if (!this.files.length) {
+        console.log("没有选择文件");
+        return;
+      }
+
+      // 创建一个 FormData 对象
+      const formData = new FormData();
+
+      // 将选中的文件添加到 FormData 中
+      this.files.forEach((file) => {
+        formData.append("files[]", file);
+      });
+      console.log("文件上传成功");
+      this.files = [];
+    },
   },
 };
 </script>
@@ -392,5 +451,26 @@ export default {
 .markdown-content {
   padding: 16px;
   font-size: 16px;
+}
+
+.v-card {
+  margin-top: 16px;
+}
+
+.v-card-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.v-card-text {
+  font-size: 14px;
+}
+
+.fullscreen-card {
+  width: 100vw;
+  height: 100vh;
+  max-width: 100vw;
+  max-height: 100vh;
+  margin: 0;
 }
 </style>

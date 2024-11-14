@@ -113,7 +113,7 @@
                   :disabled="isExamComing(exam)"
                   @click.stop="enterExam(exam)"
                 >
-                  进入模拟测试
+                {{ isExamComing(exam) ? "测试尚未开始" : "进入模拟测试" }}
                 </v-btn>
               </v-card-actions>
             </v-card>
