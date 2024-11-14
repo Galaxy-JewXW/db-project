@@ -174,7 +174,7 @@ export default {
       dialog: false, // 控制dialog显示
       question: "", // 存储题面的Markdown文本
       loadingQuestion: false, // 控制加载状态
-      finishedQuestions: 15, // 完成的题目数量
+      finishedQuestions: 10, // 完成的题目数量
       files: [],
     };
   },
@@ -268,8 +268,8 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-14 21:50:00",
-            duration: 120,
+            starttime: "2024-11-14 22:50:00",
+            duration: 20,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.setAppTitle(title);
