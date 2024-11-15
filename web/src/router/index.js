@@ -57,7 +57,7 @@ const routesWithMeta = autoRoutes.map((route) => {
       appTitle = "模拟测试";
       pageTitle = "模拟测试";
       break;
-    case "/discussions":
+    case "/forum":
       appTitle = "讨论区";
       pageTitle = "讨论区";
       break;

@@ -301,6 +301,14 @@
           </v-row>
         </v-card-text>
       </v-card>
+      <v-snackbar v-model="snackbarOpen" :timeout="2000" :color="snackbarColor">
+        <div style="font-size: 16px;">{{ snackbarMessage }}</div>
+        <template #actions>
+          <v-btn icon @click="snackbarOpen = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-snackbar>
     </v-dialog>
   </div>
 </template>
@@ -319,6 +327,9 @@ export default {
       currentTime: new Date(), // 当前时间
       intervalId: null, // 定时器ID
       dialog: false, // 控制dialog显示
+      snackbarOpen: false,
+      snackbarMessage: "",
+      snackbarColor: "",
       question: "", // 存储题面的Markdown文本
       loadingQuestion: false, // 控制加载状态
       finishedQuestions: 15, // 完成的题目数量
@@ -423,7 +434,7 @@ export default {
             duration: 1200,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
-          this.finishedQuestions = 23;
+          this.finishedQuestions = 26;
           this.setAppTitle(title);
           this.setPageTitle(title);
           this.fetchQuestionsById(problemSetId); // 获取题目列表
@@ -555,7 +566,7 @@ export default {
       } else if (this.questionType === "多项选择题") {
         this.selectedOptions = [];
       } else if (this.questionType === "填空题") {
-        this.text = '';
+        this.text = "";
       }
     },
 
@@ -570,6 +581,19 @@ export default {
       } else if (this.questionType === "填空题") {
         console.log("提交的填空题答案", this.text);
       }
+
+      // 模拟提交结果，有50%的概率成功，50%的概率失败
+      const isSuccess = Math.random() < 0.5;
+
+      // 设置 Snackbar 的提示信息和颜色
+      if (isSuccess) {
+        this.snackbarMessage = "提交成功";
+        this.snackbarColor = "success";
+      } else {
+        this.snackbarMessage = "提交失败";
+        this.snackbarColor = "error";
+      }
+      this.snackbarOpen = true;
     },
 
     // 文件上传逻辑

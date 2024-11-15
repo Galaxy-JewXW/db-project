@@ -9,7 +9,7 @@
 import { mapMutations } from 'vuex'; // 引入 mapMutations
 
 export default {
-    name: 'DiscussionsContent',
+    name: 'ForumContent',
     mounted() {
         // 更新标题
         const title = '讨论区';
