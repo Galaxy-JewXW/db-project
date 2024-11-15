@@ -114,7 +114,7 @@
           <v-btn icon @click="closeDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>题目 - {{ this.currentQuestionId }}</v-toolbar-title>
+          <v-toolbar-title>{{ this.questionType }}：题目 - {{ this.currentQuestionId }}</v-toolbar-title>
         </v-toolbar>
 
         <v-card-text>
@@ -134,7 +134,9 @@
                   class="text-h5 font-weight-regular"
                   >提交题目 - {{ this.currentQuestionId }}</v-card-title
                 >
-                <v-chip color="primary" variant="outlined"> {{ this.questionType }} </v-chip>
+                <v-chip color="primary" variant="outlined">
+                  {{ this.questionType }}
+                </v-chip>
                 <v-spacer></v-spacer>
                 <div v-if="this.choices === -1">
                   <!--文件上传-->
@@ -200,6 +202,67 @@
                     </v-card-actions>
                   </v-row>
                 </div>
+                <div
+                  v-else-if="
+                    this.choices >= 3 && this.questionType === '多项选择题'
+                  "
+                >
+                  <!-- 单项选择题 -->
+                  <v-row no-gutters>
+                    <v-container>
+                      <v-checkbox
+                        v-for="index in this.choices"
+                        v-model="selectedOptions"
+                        :key="index"
+                        :label="getOptionLetter(index)"
+                        :value="getOptionLetter(index)"
+                        style="margin-bottom: -30px"
+                      />
+                    </v-container>
+                  </v-row>
+
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn
+                        color="primary"
+                        text="提交"
+                        variant="text"
+                        :disabled="selectedOptions.length === 0"
+                        @click="submitAnswer"
+                      ></v-btn>
+                      <v-btn
+                        text="清除"
+                        variant="plain"
+                        @click="clearSelection"
+                      ></v-btn>
+                    </v-card-actions>
+                  </v-row>
+                </div>
+                <div v-else-if="questionType === '判断题'">
+                  <!-- 判断题 -->
+                  <v-row no-gutters>
+                    <v-radio-group v-model="selectedOption" inline>
+                      <v-radio label="正确" value="True" dense />
+                      <v-radio label="错误" value="False" dense />
+                    </v-radio-group>
+                  </v-row>
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn
+                        color="primary"
+                        text
+                        variant="text"
+                        :disabled="!selectedOption"
+                        @click="submitAnswer"
+                      >
+                        提交
+                      </v-btn>
+                      <v-btn text variant="plain" @click="clearSelection">
+                        清除
+                      </v-btn>
+                    </v-card-actions>
+                  </v-row>
+                </div>
                 <div v-else>暂无提交方式。请联系负责人。</div>
               </v-card>
             </v-col>
@@ -228,7 +291,8 @@ export default {
       loadingQuestion: false, // 控制加载状态
       finishedQuestions: 15, // 完成的题目数量
       files: [],
-      selectedOption: null,
+      selectedOption: null, // 单项选择题
+      selectedOptions: [], // 多项选择题
     };
   },
   computed: {
@@ -321,7 +385,7 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-15 10:10:00",
+            starttime: "2024-11-15 12:20:00",
             duration: 120,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
@@ -358,6 +422,10 @@ export default {
             {
               type: "判断题",
               ids: [595, 1001],
+            },
+            {
+              type: "填空题",
+              ids: [9801, 9802, 7002],
             },
             {
               type: "解答题",
@@ -426,7 +494,7 @@ export default {
         } else if (this.questionType === "解答题") {
           this.choices = -1;
         } else if (this.questionType === "多项选择题") {
-          this.choices = 8;
+          this.choices = 4;
         } else if (this.questionType === "判断题") {
           this.choices = 2;
         }
@@ -437,25 +505,30 @@ export default {
     closeDialog() {
       this.dialog = false; // 关闭Dialog
       this.question = ""; // 清空题面
+      this.clearSelection(); // 清空选择缓存
     },
 
     getOptionLetter(index) {
       return String.fromCharCode(65 + index - 1); // 65 对应字母 'A'
     },
 
-    // 选中某个选项
-    selectOption(letter) {
-      console.log(`选中的是选项 ${letter}`);
-      // 处理选项的选择逻辑
-    },
-
     clearSelection() {
-      this.selectedOption = null; // 清空选择
+      if (this.questionType === "单项选择题" || this.questionType === "判断题") {
+        this.selectedOption = null;
+      } else if (this.questionType === "多项选择题") {
+        this.selectedOptions = [];
+      }
     },
 
     submitAnswer() {
-      // 在这里处理提交逻辑
-      console.log("提交答案:", this.selectedOption);
+      // 处理提交逻辑
+      if (this.questionType === "单项选择题") {
+        console.log("提交的单项选择答案:", this.selectedOption);
+      } else if (this.questionType === "多项选择题") {
+        console.log("提交的多项选择答案:", this.selectedOptions);
+      } else if (this.questionType === "判断题") {
+        console.log("提交的判断答案:", this.selectedOption);
+      }
     },
 
     // 文件上传逻辑
@@ -506,7 +579,7 @@ export default {
 }
 
 .questions-container {
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
   padding: 16px 16px 32px;
   display: flex;
