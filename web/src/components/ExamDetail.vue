@@ -1,34 +1,64 @@
 <template>
   <div class="problem-set-detail" v-if="problemSetData">
-    <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px">
-      <v-alert :type="'info'" icon="mdi-clock-outline">
-        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
-        你已完成{{ this.totalQuestions }}题中的{{ this.finishedQuestions }}题。
-      </v-alert>
-    </div>
-    <div v-else-if="
-      remainingTime > 0 && this.finishedQuestions === this.totalQuestions
-    " style="padding-bottom: 15px">
-      <v-alert :type="'success'">
-        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
-        你已完成本次测试的所有题目。
-      </v-alert>
-    </div>
-    <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
-      <!-- 显示对应的提示信息 -->
-      <v-alert :type="'error'">
-        <v-alert-title>测试已结束</v-alert-title>
-      </v-alert>
-    </div>
+    <v-scroll-y-transition mode="out-in">
+      <div
+        v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions"
+        style="padding-bottom: 15px"
+      >
+        <v-alert :type="'info'" icon="mdi-clock-outline">
+          <v-alert-title
+            >测试进行中，剩余时间：{{
+              formatDuration(remainingTime)
+            }}</v-alert-title
+          >
+          你已完成{{ this.totalQuestions }}题中的{{
+            this.finishedQuestions
+          }}题。
+        </v-alert>
+      </div>
+      <div
+        v-else-if="
+          remainingTime > 0 && this.finishedQuestions === this.totalQuestions
+        "
+        style="padding-bottom: 15px"
+      >
+        <v-alert :type="'success'">
+          <v-alert-title
+            >测试进行中，剩余时间：{{
+              formatDuration(remainingTime)
+            }}</v-alert-title
+          >
+          你已完成本次测试的所有题目。
+        </v-alert>
+      </div>
+      <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
+        <!-- 显示对应的提示信息 -->
+        <v-alert :type="'error'">
+          <v-alert-title>测试已结束</v-alert-title>
+          公布成绩前，你无法再次查看测试题。
+        </v-alert>
+      </div>
+    </v-scroll-y-transition>
 
-    <v-progress-linear v-if="remainingTime > 0" :model-value="progressPercentage" color="primary" height="9" rounded
-      style="margin-bottom: 10px"></v-progress-linear>
+    <v-progress-linear
+      v-if="remainingTime > 0"
+      :model-value="progressPercentage"
+      color="primary"
+      height="9"
+      rounded
+      style="margin-bottom: 10px"
+    ></v-progress-linear>
 
     <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
 
     <!-- Chip row: contains all fields as Chips in the same row -->
     <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
-      <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
+      <v-chip
+        v-for="(chip, index) in chips"
+        :key="index"
+        :color="chip.color"
+        class="ma-1 chip-item"
+      >
         <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
         {{ chip.label }}: {{ chip.value }}
       </v-chip>
@@ -57,8 +87,14 @@
           <v-expansion-panel-text>
             <v-row no-gutters>
               <div class="question-squares">
-                <v-btn v-for="questionId in group.ids" :key="questionId" class="question-square text-none"
-                  color="blue-darken-4" rounded="0" @click="goToQuestionDetail(questionId)">
+                <v-btn
+                  v-for="questionId in group.ids"
+                  :key="questionId"
+                  class="question-square text-none"
+                  color="blue-darken-4"
+                  rounded="0"
+                  @click="goToQuestionDetail(questionId)"
+                >
                   <v-responsive class="text-truncate">{{
                     questionId
                   }}</v-responsive>
@@ -93,13 +129,24 @@
 
             <v-col cols="4">
               <v-card class="pa-4" outlined>
-                <v-card-title style="padding-left: 0;" class="text-h5 font-weight-regular">提交题目 - {{
-                  this.currentQuestionId
-                }}</v-card-title>
+                <v-card-title
+                  style="padding-left: 0"
+                  class="text-h5 font-weight-regular"
+                  >提交题目 - {{ this.currentQuestionId }}</v-card-title
+                >
+                <v-chip color="primary" variant="outlined"> {{ this.questionType }} </v-chip>
+                <v-spacer></v-spacer>
                 <div v-if="this.choices === -1">
                   <!--文件上传-->
-                  <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
-                    accept=".pdf,.docx,.jpg,.png,.md">
+                  <v-file-input
+                    v-model="files"
+                    label="提交答案"
+                    variant="underlined"
+                    counter
+                    multiple
+                    show-size
+                    accept=".pdf,.docx,.jpg,.png,.md"
+                  >
                     >
                     <template v-slot:selection="{ fileNames }">
                       <template v-for="fileName in fileNames" :key="fileName">
@@ -109,19 +156,51 @@
                       </template>
                     </template>
                   </v-file-input>
-                  <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files.length">
+                  <v-btn
+                    color="primary"
+                    variant="text"
+                    @click="uploadFiles"
+                    :disabled="!files.length"
+                  >
                     上传答案
                   </v-btn>
                 </div>
-                <div v-else-if="this.choices >= 3 && this.questionType === '单项选择题'">
+                <div
+                  v-else-if="
+                    this.choices >= 3 && this.questionType === '单项选择题'
+                  "
+                >
                   <!-- 单项选择题 -->
                   <v-row no-gutters>
                     <v-radio-group v-model="selectedOption" inline>
-                      <v-radio v-for="index in this.choices" :key="index" :label="getOptionLetter(index)"
-                        :value="getOptionLetter(index)" />
+                      <v-radio
+                        v-for="index in this.choices"
+                        :key="index"
+                        :label="getOptionLetter(index)"
+                        :value="getOptionLetter(index)"
+                        dense
+                      />
                     </v-radio-group>
                   </v-row>
+
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn
+                        color="primary"
+                        text="提交"
+                        variant="text"
+                        :disabled="!selectedOption"
+                        @click="submitAnswer"
+                      ></v-btn>
+                      <v-btn
+                        text="清除"
+                        variant="plain"
+                        @click="clearSelection"
+                      ></v-btn>
+                    </v-card-actions>
+                  </v-row>
                 </div>
+                <div v-else>暂无提交方式。请联系负责人。</div>
               </v-card>
             </v-col>
           </v-row>
@@ -242,10 +321,11 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-14 22:50:00",
-            duration: 1120,
+            starttime: "2024-11-15 10:10:00",
+            duration: 120,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
+          this.finishedQuestions = 23;
           this.setAppTitle(title);
           this.setPageTitle(title);
           this.fetchQuestionsById(problemSetId); // 获取题目列表
@@ -270,6 +350,14 @@ export default {
             {
               type: "单项选择题",
               ids: [301, 302, 303, 304, 305],
+            },
+            {
+              type: "多项选择题",
+              ids: [441, 442, 443, 444, 445, 446],
+            },
+            {
+              type: "判断题",
+              ids: [595, 1001],
             },
             {
               type: "解答题",
@@ -324,7 +412,9 @@ export default {
 
     goToQuestionDetail(questionId) {
       this.questionType = this.getQuestionTypeById(questionId);
-      console.log(`Fetching question for question ID: ${questionId} ${this.questionType}`);
+      console.log(
+        `Fetching question for question ID: ${questionId} ${this.questionType}`
+      );
       this.loadingQuestion = true;
       this.currentQuestionId = questionId;
       // 模拟从后端获取Markdown文本数据
@@ -335,6 +425,10 @@ export default {
           this.choices = 4;
         } else if (this.questionType === "解答题") {
           this.choices = -1;
+        } else if (this.questionType === "多项选择题") {
+          this.choices = 8;
+        } else if (this.questionType === "判断题") {
+          this.choices = 2;
         }
         this.dialog = true; // 打开Dialog
       }, 10); // 模拟网络延迟
@@ -346,13 +440,22 @@ export default {
     },
 
     getOptionLetter(index) {
-      return String.fromCharCode(65 + index - 1);  // 65 对应字母 'A'
+      return String.fromCharCode(65 + index - 1); // 65 对应字母 'A'
     },
 
     // 选中某个选项
     selectOption(letter) {
       console.log(`选中的是选项 ${letter}`);
       // 处理选项的选择逻辑
+    },
+
+    clearSelection() {
+      this.selectedOption = null; // 清空选择
+    },
+
+    submitAnswer() {
+      // 在这里处理提交逻辑
+      console.log("提交答案:", this.selectedOption);
     },
 
     // 文件上传逻辑

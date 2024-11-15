@@ -7,7 +7,7 @@
         <v-card-text class="py-2">
           <v-row>
             <!-- Subject Filter -->
-            <v-col cols="12" class="filter-section">
+            <v-col cols="12" class="filter-section" style="padding-bottom: 0px;">
               <div class="filter-group">
                 <span class="filter-label">按科目筛选:</span>
                 <v-chip
@@ -28,7 +28,7 @@
             </v-col>
 
             <!-- Time Filter -->
-            <v-col cols="12" class="filter-section">
+            <v-col cols="12" class="filter-section" style="padding-top: 0px;">
               <div class="filter-group">
                 <span class="filter-label">按时间筛选:</span>
                 <v-chip
