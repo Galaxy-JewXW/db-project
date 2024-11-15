@@ -1,7 +1,12 @@
+<!-- components/ExamList.vue -->
 <template>
   <v-container fluid class="problemset-container">
     <!-- Button to open Past Exams Dialog -->
-    <v-btn class="align-self-start" color="primary" @click="showPastExamsDialog = true">
+    <v-btn
+      class="align-self-start"
+      color="primary"
+      @click="showPastExamsDialog = true"
+    >
       查看过往测试
     </v-btn>
 
@@ -19,11 +24,82 @@
           <v-toolbar-title>已结束的测试列表</v-toolbar-title>
         </v-toolbar>
         <v-card-text>
+          <!-- Filter Section -->
+          <div class="filter-container">
+            <v-card class="filter-card" flat elevation="0">
+              <v-card-text class="py-2">
+                <v-row>
+                  <!-- Subject Filter -->
+                  <v-col
+                    cols="12"
+                    class="filter-section"
+                    style="padding-bottom: 0px"
+                  >
+                    <div class="filter-group">
+                      <span class="filter-label">按科目筛选:</span>
+                      <v-chip
+                        v-for="subject in subjects"
+                        :key="subject"
+                        class="ma-2"
+                        color="primary"
+                        variant="outlined"
+                        :class="{
+                          'selected-chip': selectedSubject === subject,
+                        }"
+                        @click="toggleSubject(subject)"
+                      >
+                        {{ subject }}
+                        <v-icon
+                          v-if="selectedSubject === subject"
+                          class="ml-2"
+                          small
+                        >
+                          mdi-check
+                        </v-icon>
+                      </v-chip>
+                    </div>
+                  </v-col>
+
+                  <!-- Time Filter -->
+                  <v-col
+                    cols="12"
+                    class="filter-section"
+                    style="padding-top: 0px"
+                  >
+                    <div class="filter-group">
+                      <span class="filter-label">按时间筛选:</span>
+                      <v-chip
+                        v-for="range in timeRanges"
+                        :key="range.value"
+                        class="ma-2"
+                        color="primary"
+                        variant="outlined"
+                        :class="{
+                          'selected-chip': selectedTimeRange === range.value,
+                        }"
+                        @click="toggleTimeRange(range.value)"
+                      >
+                        {{ range.text }}
+                        <v-icon
+                          v-if="selectedTimeRange === range.value"
+                          class="ml-2"
+                          small
+                        >
+                          mdi-check
+                        </v-icon>
+                      </v-chip>
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </div>
+
           <!-- Display pastExams here -->
-          <template v-if="pastExams.length > 0">
+          <template v-if="filteredProblemSets.length > 0">
             <v-row dense class="justify-start">
               <v-col
-                v-for="exam in pastExams"
+                v-for="exam in filteredProblemSets"
                 :key="exam.id"
                 cols="12"
                 sm="6"
@@ -65,13 +141,13 @@
               </v-col>
             </v-row>
           </template>
-          <div v-else class="no-results">没有过往的测试</div>
+          <div v-else class="no-results">没有符合条件的测试</div>
         </v-card-text>
       </v-card>
     </v-dialog>
 
     <!-- Combined Exams Section -->
-    <h2 style="padding-top: 20px;">测试列表</h2>
+    <h2 style="padding-top: 20px">测试列表</h2>
     <div class="scroll-container">
       <template v-if="combinedExams.length > 0">
         <v-row dense class="justify-start">
@@ -113,7 +189,7 @@
                   :disabled="isExamComing(exam)"
                   @click.stop="enterExam(exam)"
                 >
-                {{ isExamComing(exam) ? "测试尚未开始" : "进入模拟测试" }}
+                  {{ isExamComing(exam) ? "测试尚未开始" : "进入模拟测试" }}
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -152,22 +228,84 @@ export default {
           starttime: "2024-01-15 09:00:00",
           duration: 120,
         },
+        // ... 其他过往测试数据
       ],
       comingExams: [
         {
           id: 2,
-          name: "2023-24数分上期末",
+          name: "2023-24数分期末模拟测试",
           createdAt: "2024-12-01",
           subject: "工科数学分析（上）",
           starttime: "2024-12-15 09:00:00",
           duration: 120,
         },
+        // ... 其他即将到来的测试数据
       ],
+      subjects: [
+        "工科数学分析（上）",
+        "工科数学分析（下）",
+        "工科高等代数",
+        "离散数学（信息类）",
+        "基础物理学A",
+      ],
+      timeRanges: [
+        { text: "最近7天", value: "7d" },
+        { text: "最近1个月", value: "1m" },
+        { text: "最近半年", value: "6m" },
+        { text: "最近一年", value: "1y" },
+      ],
+      selectedSubject: null,      // 新增: 当前选择的科目
+      selectedTimeRange: null,    // 新增: 当前选择的时间范围
     };
   },
   computed: {
     combinedExams() {
       return [...this.ongoingExams, ...this.comingExams];
+    },
+    filteredProblemSets() {
+      let filtered = this.pastExams;
+
+      // 按科目筛选
+      if (this.selectedSubject) {
+        filtered = filtered.filter(
+          (ps) => ps.subject === this.selectedSubject
+        );
+      }
+
+      // 按时间筛选
+      if (this.selectedTimeRange) {
+        const now = new Date();
+        let fromDate;
+
+        switch (this.selectedTimeRange) {
+          case "7d":
+            fromDate = new Date();
+            fromDate.setDate(now.getDate() - 7);
+            break;
+          case "1m":
+            fromDate = new Date();
+            fromDate.setMonth(now.getMonth() - 1);
+            break;
+          case "6m":
+            fromDate = new Date();
+            fromDate.setMonth(now.getMonth() - 6);
+            break;
+          case "1y":
+            fromDate = new Date();
+            fromDate.setFullYear(now.getFullYear() - 1);
+            break;
+          default:
+            fromDate = null;
+        }
+
+        if (fromDate) {
+          filtered = filtered.filter(
+            (ps) => new Date(ps.createdAt) >= fromDate
+          );
+        }
+      }
+
+      return filtered;
     },
   },
   mounted() {
@@ -199,6 +337,20 @@ export default {
     },
     isExamComing(exam) {
       return this.comingExams.some((e) => e.id === exam.id);
+    },
+    toggleSubject(subject) {
+      if (this.selectedSubject === subject) {
+        this.selectedSubject = null;
+      } else {
+        this.selectedSubject = subject;
+      }
+    },
+    toggleTimeRange(range) {
+      if (this.selectedTimeRange === range) {
+        this.selectedTimeRange = null;
+      } else {
+        this.selectedTimeRange = range;
+      }
     },
   },
 };
@@ -232,6 +384,49 @@ export default {
   display: none;
 }
 
+/* Reduce vertical height of the filter card */
+.filter-card {
+  margin-bottom: 4px;
+}
+
+.filter-card .v-card-text {
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+}
+
+/* Adjust the padding inside the filter sections */
+.filter-section {
+  margin-bottom: 0.1rem;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.filter-label {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.v-chip {
+  margin: 1px;
+  border: 1px solid #1867c0;
+  cursor: pointer;
+  color: #1867c0;
+}
+
+.selected-chip {
+  background-color: #1867c0 !important;
+  color: white !important;
+}
+
+.selected-chip .v-icon {
+  color: white !important;
+}
+
 .mt-2 {
   margin-top: 0.5rem;
 }
@@ -250,11 +445,17 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 40%;
 }
 
 .enter-button {
   color: #1867c0 !important;
+}
+
+.total-count {
+  margin-left: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 
 @media (min-width: 960px) {
