@@ -114,7 +114,10 @@
           <v-btn icon @click="closeDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>{{ this.questionType }}：题目 - {{ this.currentQuestionId }}</v-toolbar-title>
+          <v-toolbar-title
+            >{{ this.questionType }}：题目 -
+            {{ this.currentQuestionId }}</v-toolbar-title
+          >
         </v-toolbar>
 
         <v-card-text>
@@ -263,6 +266,35 @@
                     </v-card-actions>
                   </v-row>
                 </div>
+                <div v-else-if="questionType === '填空题'">
+                  <v-card-text
+                    style="padding-left: 0"
+                    class="text-subtitle-3 font-weight-regular"
+                    >使用markdown在左侧输入框输入答案，右侧为预览。</v-card-text
+                  >
+                  <v-md-editor
+                    v-model="text"
+                    height="200px"
+                    left-toolbar=""
+                    right-toolbar=""
+                  ></v-md-editor>
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn
+                        color="primary"
+                        text
+                        variant="text"
+                        :disabled="!text"
+                        @click="submitAnswer"
+                      >
+                        提交
+                      </v-btn>
+                      <v-btn text variant="plain" @click="clearSelection">
+                        清除
+                      </v-btn>
+                    </v-card-actions>
+                  </v-row>
+                </div>
                 <div v-else>暂无提交方式。请联系负责人。</div>
               </v-card>
             </v-col>
@@ -291,8 +323,10 @@ export default {
       loadingQuestion: false, // 控制加载状态
       finishedQuestions: 15, // 完成的题目数量
       files: [],
+      choices: -2,
       selectedOption: null, // 单项选择题
       selectedOptions: [], // 多项选择题
+      text: "",
     };
   },
   computed: {
@@ -385,8 +419,8 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-15 12:20:00",
-            duration: 120,
+            starttime: "2024-11-15 14:20:00",
+            duration: 1200,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.finishedQuestions = 23;
@@ -513,10 +547,15 @@ export default {
     },
 
     clearSelection() {
-      if (this.questionType === "单项选择题" || this.questionType === "判断题") {
+      if (
+        this.questionType === "单项选择题" ||
+        this.questionType === "判断题"
+      ) {
         this.selectedOption = null;
       } else if (this.questionType === "多项选择题") {
         this.selectedOptions = [];
+      } else if (this.questionType === "填空题") {
+        this.text = '';
       }
     },
 
@@ -528,6 +567,8 @@ export default {
         console.log("提交的多项选择答案:", this.selectedOptions);
       } else if (this.questionType === "判断题") {
         console.log("提交的判断答案:", this.selectedOption);
+      } else if (this.questionType === "填空题") {
+        console.log("提交的填空题答案", this.text);
       }
     },
 
