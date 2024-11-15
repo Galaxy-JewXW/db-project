@@ -1,4 +1,3 @@
-<!-- components/DiscussionArea.vue -->
 <template>
   <v-container fluid class="discussion-container">
     <!-- Filter Section -->
@@ -10,15 +9,8 @@
             <v-col cols="12" class="filter-section" style="padding-bottom: 0px">
               <div class="filter-group">
                 <span class="filter-label">按标签筛选:</span>
-                <v-chip
-                  v-for="tag in subjects"
-                  :key="tag"
-                  class="ma-2"
-                  color="primary"
-                  variant="outlined"
-                  :class="{ 'selected-chip': selectedTag === tag }"
-                  @click="toggleTag(tag)"
-                >
+                <v-chip v-for="tag in subjects" :key="tag" class="ma-2" color="primary" variant="outlined"
+                  :class="{ 'selected-chip': selectedTag === tag }" @click="toggleTag(tag)">
                   {{ tag }}
                   <v-icon v-if="selectedTag === tag" class="ml-2" small>
                     mdi-check
@@ -31,23 +23,12 @@
             <v-col cols="12" class="filter-section" style="padding-top: 0px">
               <div class="filter-group">
                 <span class="filter-label">按时间筛选:</span>
-                <v-chip
-                  v-for="range in timeRanges"
-                  :key="range.value"
-                  class="ma-2"
-                  color="primary"
-                  variant="outlined"
+                <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary" variant="outlined"
                   :class="{
                     'selected-chip': selectedTimeRange === range.value,
-                  }"
-                  @click="toggleTimeRange(range.value)"
-                >
+                  }" @click="toggleTimeRange(range.value)">
                   {{ range.text }}
-                  <v-icon
-                    v-if="selectedTimeRange === range.value"
-                    class="ml-2"
-                    small
-                  >
+                  <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
                     mdi-check
                   </v-icon>
                 </v-chip>
@@ -66,91 +47,45 @@
     <!-- Scroll Container -->
     <div class="scroll-container">
       <template v-if="filteredDiscussions.length > 0">
-        <!-- 讨论贴卡片 -->
-        <v-row dense class="justify-start">
-          <v-col
-            v-for="discussion in filteredDiscussions"
-            :key="discussion.id"
-            cols="12"
-            sm="6"
-            md="4"
-            lg="3"
-            class="pa-2"
-          >
-            <v-card class="w-100" hover @click="openDialog(discussion)">
-              <v-card-text>
-                <p class="text-h5 font-weight-bold">{{ discussion.title }}</p>
-
-                <div class="mt-2">
+        <!-- 讨论贴列表 -->
+        <v-list dense density="compact">
+          <v-list-item-group v-for="(discussion, index) in filteredDiscussions" :key="discussion.id">
+            <v-list-item @click="openDiscussion(discussion)">
+              <v-list-item-content>
+                <v-list-item-title class="text-subtitle-1 font-weight-bold">
+                  <v-row align="center">
+                    <v-col cols="auto">
+                      {{ discussion.title }}
+                    </v-col>
+                    <v-col cols="auto" class="text-body-2">
+                      @ {{ discussion.publisher }} 发布于 {{ formatDate(discussion.publishTime) }}
+                    </v-col>
+                  </v-row>
+                </v-list-item-title>
+                <v-list-item-subtitle>
                   <div class="info-row">
-                    <span>发布者：</span>
-                    <span>{{ discussion.publisher }}</span>
-                  </div>
-                  <div class="info-row">
-                    <span>发布时间：</span>
-                    <span>{{ formatDate(discussion.publishTime) }}</span>
-                  </div>
-                  <div class="info-row">
-                    <span>标签：</span>
-                    <v-chip small color="secondary" class="ma-1">
+                    <v-chip size="small" class="ma-1" variant="outlined">
                       {{ discussion.tag }}
                     </v-chip>
+                    {{ discussion.summary.length > 60 ? discussion.summary.slice(0, 60) + '...' : discussion.summary }}
                   </div>
-                  <div class="info-row">
-                    <span>概要：</span>
-                    <span>{{ discussion.summary }}</span>
-                  </div>
-                </div>
-              </v-card-text>
+                </v-list-item-subtitle>
 
-              <v-card-actions>
-                <v-btn
-                  class="view-button"
-                  text
-                  @click.stop="viewDiscussion(discussion)"
-                >
-                  查看详情
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-col>
-        </v-row>
+              </v-list-item-content>
+              <template v-slot:append>
+                最后更新于 {{ formatLastUpdated(discussion.lastUpdated) }}
+              </template>
+            </v-list-item>
+            <!-- 添加分割线，每个item后面 -->
+            <v-divider v-if="index < filteredDiscussions.length - 1" />
+          </v-list-item-group>
+        </v-list>
+
       </template>
 
       <!-- 无结果提示 -->
       <div v-else class="no-results">没有满足条件的讨论贴</div>
     </div>
-
-    <!-- 详情对话框 -->
-    <v-dialog v-model="dialog" max-width="800px" scrollable>
-      <v-card>
-        <v-card-title class="headline">{{
-          selectedDiscussion.title
-        }}</v-card-title>
-        <v-card-subtitle>
-          <span class="text--secondary"
-            >发布者：{{ selectedDiscussion.publisher }}</span
-          >
-          &nbsp;
-          <span class="text--secondary"
-            >发布时间：{{ formatDate(selectedDiscussion.publishTime) }}</span
-          >
-          &nbsp;
-          <span class="text--secondary"
-            >标签：{{ selectedDiscussion.tag }}</span
-          >
-        </v-card-subtitle>
-        <v-card-text>
-          <div class="info-row">
-            <span>{{ selectedDiscussion.description }}</span>
-          </div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="dialog = false">关闭</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
@@ -162,27 +97,24 @@ export default {
   data() {
     return {
       discussions: [
-        // 示例数据，包含 description 字段
         {
           id: 1,
           title: "关于工科数学分析的疑问",
           publisher: "张三",
           publishTime: "2024-10-01",
+          lastUpdated: "2024-11-16T04:23:45",
           tag: "工科数学分析（上）",
-          summary:
-            "在学习工科数学分析时，对积分部分有些疑问，特别是多重积分的应用。",
-          description: "详细讨论工科数学分析中的多重积分应用及相关问题。",
+          summary: "在学习工科数学分析时，对积分部分有些疑问，特别是多重积分的应用。",
         },
         {
           id: 2,
           title: "离散数学在计算机科学中的应用",
           publisher: "李四",
           publishTime: "2024-09-25",
+          lastUpdated: "2024-11-15T15:30:00",
           tag: "离散数学（信息类）",
           summary: "探讨离散数学在算法设计和数据结构中的实际应用。",
-          description: "深入分析离散数学在计算机科学中的关键作用和具体案例。",
         },
-        // ... 其他讨论贴数据
       ],
       subjects: [
         "工科数学分析（上）",
@@ -199,7 +131,6 @@ export default {
       ],
       selectedTag: null,
       selectedTimeRange: null,
-      dialog: false,
       selectedDiscussion: {},
     };
   },
@@ -250,20 +181,35 @@ export default {
         }
       }
 
+      // 按 lastUpdated 排序，最近更新的排在前面
+      filtered = filtered.sort((a, b) => {
+        const dateA = new Date(a.lastUpdated);
+        const dateB = new Date(b.lastUpdated);
+        return dateB - dateA;  // 返回负数表示 a 排在前面，正数表示 b 排在前面
+      });
       return filtered;
     },
   },
   methods: {
-    // 映射 Vuex 的 mutation
     ...mapMutations(["setAppTitle", "setPageTitle"]),
 
     formatDate(dateStr) {
       const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
-    openDialog(discussion) {
-      this.selectedDiscussion = discussion;
-      this.dialog = true;
+    formatLastUpdated(dateStr) {
+      const options = {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      };
+      return new Date(dateStr).toLocaleString(undefined, options);
+    },
+    openDiscussion(discussion) {
+      this.$router.push(`/discussion/${discussion.id}`);
     },
     toggleTag(tag) {
       if (this.selectedTag === tag) {
@@ -279,16 +225,11 @@ export default {
         this.selectedTimeRange = range;
       }
     },
-    viewDiscussion(discussion) {
-      // 导航到讨论贴详情页，例如 /discussion/1
-      this.$router.push(`/discussion/${discussion.id}`);
-    },
   },
 };
 </script>
 
 <style scoped>
-/* 全局设置 box-sizing */
 * {
   box-sizing: border-box;
 }
@@ -304,7 +245,6 @@ export default {
   flex-shrink: 0;
 }
 
-/* 减少过滤卡片的垂直高度 */
 .filter-card {
   margin-bottom: 4px;
 }
@@ -314,19 +254,15 @@ export default {
   padding-bottom: 4px !important;
 }
 
-/* 调整过滤部分的内边距 */
 .filter-section {
   margin-bottom: 0.1rem;
 }
 
-/* 滚动容器 */
 .scroll-container {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: 16px;
   padding-bottom: 80px;
-
-  /* 隐藏滚动条 */
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -335,7 +271,6 @@ export default {
   display: none;
 }
 
-/* 其他样式 */
 .filter-group {
   display: flex;
   align-items: center;
@@ -400,6 +335,7 @@ export default {
     margin-left: -8px;
     margin-right: -8px;
   }
+
   .v-col.pa-2 {
     padding-left: 8px !important;
     padding-right: 8px !important;

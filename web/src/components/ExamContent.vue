@@ -84,7 +84,7 @@
                     </div>
                   </v-card-text>
                   <v-card-actions>
-                    <v-btn class="enter-button" text @click.stop="enterExam(exam)">
+                    <v-btn class="enter-button" text @click.stop="this.$router.push(`/exam/${exam.id}`)">
                       查看
                     </v-btn>
                   </v-card-actions>
