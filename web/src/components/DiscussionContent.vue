@@ -1,7 +1,6 @@
 <template>
     <div>
-        <h1>讨论区页面</h1>
-        <!-- 在这里添加更多讨论区的内容 -->
+        <h1>讨论页面，这个应该是具体的讨论页面</h1>
     </div>
 </template>
 
@@ -9,10 +8,10 @@
 import { mapMutations } from 'vuex'; // 引入 mapMutations
 
 export default {
-    name: 'DiscussionsContent',
+    name: 'ForumContent',
     mounted() {
         // 更新标题
-        const title = '讨论区';
+        const title = '讨论';
         this.setAppTitle(title);
         this.setPageTitle(title);
     },

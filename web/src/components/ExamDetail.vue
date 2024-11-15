@@ -1,33 +1,23 @@
 <template>
   <div class="problem-set-detail" v-if="problemSetData">
     <v-scroll-y-transition mode="out-in">
-      <div
-        v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions"
-        style="padding-bottom: 15px"
-      >
+      <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px">
         <v-alert :type="'info'" icon="mdi-clock-outline">
-          <v-alert-title
-            >测试进行中，剩余时间：{{
-              formatDuration(remainingTime)
-            }}</v-alert-title
-          >
+          <v-alert-title>测试进行中，剩余时间：{{
+            formatDuration(remainingTime)
+          }}</v-alert-title>
           你已完成{{ this.totalQuestions }}题中的{{
             this.finishedQuestions
           }}题。
         </v-alert>
       </div>
-      <div
-        v-else-if="
-          remainingTime > 0 && this.finishedQuestions === this.totalQuestions
-        "
-        style="padding-bottom: 15px"
-      >
+      <div v-else-if="
+        remainingTime > 0 && this.finishedQuestions === this.totalQuestions
+      " style="padding-bottom: 15px">
         <v-alert :type="'success'">
-          <v-alert-title
-            >测试进行中，剩余时间：{{
-              formatDuration(remainingTime)
-            }}</v-alert-title
-          >
+          <v-alert-title>测试进行中，剩余时间：{{
+            formatDuration(remainingTime)
+          }}</v-alert-title>
           你已完成本次测试的所有题目。
         </v-alert>
       </div>
@@ -40,25 +30,14 @@
       </div>
     </v-scroll-y-transition>
 
-    <v-progress-linear
-      v-if="remainingTime > 0"
-      :model-value="progressPercentage"
-      color="primary"
-      height="9"
-      rounded
-      style="margin-bottom: 10px"
-    ></v-progress-linear>
+    <v-progress-linear v-if="remainingTime > 0" :model-value="progressPercentage" color="primary" height="9" rounded
+      style="margin-bottom: 10px"></v-progress-linear>
 
     <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
 
     <!-- Chip row: contains all fields as Chips in the same row -->
     <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
-      <v-chip
-        v-for="(chip, index) in chips"
-        :key="index"
-        :color="chip.color"
-        class="ma-1 chip-item"
-      >
+      <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
         <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
         {{ chip.label }}: {{ chip.value }}
       </v-chip>
@@ -87,14 +66,8 @@
           <v-expansion-panel-text>
             <v-row no-gutters>
               <div class="question-squares">
-                <v-btn
-                  v-for="questionId in group.ids"
-                  :key="questionId"
-                  class="question-square text-none"
-                  color="blue-darken-4"
-                  rounded="0"
-                  @click="goToQuestionDetail(questionId)"
-                >
+                <v-btn v-for="questionId in group.ids" :key="questionId" class="question-square text-none"
+                  color="blue-darken-4" rounded="0" @click="goToQuestionDetail(questionId)">
                   <v-responsive class="text-truncate">{{
                     questionId
                   }}</v-responsive>
@@ -114,10 +87,8 @@
           <v-btn icon @click="closeDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title
-            >{{ this.questionType }}：题目 -
-            {{ this.currentQuestionId }}</v-toolbar-title
-          >
+          <v-toolbar-title>{{ this.questionType }}：题目 -
+            {{ this.currentQuestionId }}</v-toolbar-title>
         </v-toolbar>
 
         <v-card-text>
@@ -132,26 +103,17 @@
 
             <v-col cols="4">
               <v-card class="pa-4" outlined>
-                <v-card-title
-                  style="padding-left: 0"
-                  class="text-h5 font-weight-regular"
-                  >提交题目 - {{ this.currentQuestionId }}</v-card-title
-                >
+                <v-card-title style="padding-left: 0" class="text-h5 font-weight-regular">提交题目 - {{
+                  this.currentQuestionId
+                  }}</v-card-title>
                 <v-chip color="primary" variant="outlined">
                   {{ this.questionType }}
                 </v-chip>
                 <v-spacer></v-spacer>
                 <div v-if="this.choices === -1">
                   <!--文件上传-->
-                  <v-file-input
-                    v-model="files"
-                    label="提交答案"
-                    variant="underlined"
-                    counter
-                    multiple
-                    show-size
-                    accept=".pdf,.docx,.jpg,.png,.md"
-                  >
+                  <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
+                    accept=".pdf,.docx,.jpg,.png,.md">
                     >
                     <template v-slot:selection="{ fileNames }">
                       <template v-for="fileName in fileNames" :key="fileName">
@@ -161,83 +123,45 @@
                       </template>
                     </template>
                   </v-file-input>
-                  <v-btn
-                    color="primary"
-                    variant="text"
-                    @click="uploadFiles"
-                    :disabled="!files.length"
-                  >
+                  <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files.length">
                     上传答案
                   </v-btn>
                 </div>
-                <div
-                  v-else-if="
-                    this.choices >= 3 && this.questionType === '单项选择题'
-                  "
-                >
+                <div v-else-if="
+                  this.choices >= 3 && this.questionType === '单项选择题'
+                ">
                   <!-- 单项选择题 -->
                   <v-row no-gutters>
                     <v-radio-group v-model="selectedOption" inline>
-                      <v-radio
-                        v-for="index in this.choices"
-                        :key="index"
-                        :label="getOptionLetter(index)"
-                        :value="getOptionLetter(index)"
-                        dense
-                      />
+                      <v-radio v-for="index in this.choices" :key="index" :label="getOptionLetter(index)"
+                        :value="getOptionLetter(index)" dense />
                     </v-radio-group>
                   </v-row>
 
                   <v-row no-gutters>
                     <v-card-actions>
-                      <v-btn
-                        color="primary"
-                        text="提交"
-                        variant="text"
-                        :disabled="!selectedOption"
-                        @click="submitAnswer"
-                      ></v-btn>
-                      <v-btn
-                        text="清除"
-                        variant="plain"
-                        @click="clearSelection"
-                      ></v-btn>
+                      <v-btn color="primary" text="提交" variant="text" :disabled="!selectedOption"
+                        @click="submitAnswer"></v-btn>
+                      <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
                     </v-card-actions>
                   </v-row>
                 </div>
-                <div
-                  v-else-if="
-                    this.choices >= 3 && this.questionType === '多项选择题'
-                  "
-                >
+                <div v-else-if="
+                  this.choices >= 3 && this.questionType === '多项选择题'
+                ">
                   <!-- 单项选择题 -->
                   <v-row no-gutters>
                     <v-container>
-                      <v-checkbox
-                        v-for="index in this.choices"
-                        v-model="selectedOptions"
-                        :key="index"
-                        :label="getOptionLetter(index)"
-                        :value="getOptionLetter(index)"
-                        style="margin-bottom: -30px"
-                      />
+                      <v-checkbox v-for="index in this.choices" v-model="selectedOptions" :key="index"
+                        :label="getOptionLetter(index)" :value="getOptionLetter(index)" style="margin-bottom: -30px" />
                     </v-container>
                   </v-row>
 
                   <v-row no-gutters>
                     <v-card-actions>
-                      <v-btn
-                        color="primary"
-                        text="提交"
-                        variant="text"
-                        :disabled="selectedOptions.length === 0"
-                        @click="submitAnswer"
-                      ></v-btn>
-                      <v-btn
-                        text="清除"
-                        variant="plain"
-                        @click="clearSelection"
-                      ></v-btn>
+                      <v-btn color="primary" text="提交" variant="text" :disabled="selectedOptions.length === 0"
+                        @click="submitAnswer"></v-btn>
+                      <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
                     </v-card-actions>
                   </v-row>
                 </div>
@@ -251,13 +175,7 @@
                   </v-row>
                   <v-row no-gutters>
                     <v-card-actions>
-                      <v-btn
-                        color="primary"
-                        text
-                        variant="text"
-                        :disabled="!selectedOption"
-                        @click="submitAnswer"
-                      >
+                      <v-btn color="primary" text variant="text" :disabled="!selectedOption" @click="submitAnswer">
                         提交
                       </v-btn>
                       <v-btn text variant="plain" @click="clearSelection">
@@ -267,26 +185,15 @@
                   </v-row>
                 </div>
                 <div v-else-if="questionType === '填空题'">
-                  <v-card-text
-                    style="padding-left: 0"
-                    class="text-subtitle-3 font-weight-regular"
-                    >使用markdown在左侧输入框输入答案，右侧为预览。</v-card-text
-                  >
-                  <v-md-editor
-                    v-model="text"
-                    height="200px"
-                    left-toolbar=""
-                    right-toolbar=""
-                  ></v-md-editor>
+                  <v-card-text style="padding-left: 0"
+                    class="text-subtitle-3 font-weight-regular">使用markdown在左侧输入框输入答案，右侧为预览。
+                    <br />
+                    <a href="https://freeopen.github.io/mathjax/">在markdown中写数学公式</a></v-card-text>
+
+                  <v-md-editor v-model="text" height="200px" left-toolbar="" right-toolbar=""></v-md-editor>
                   <v-row no-gutters>
                     <v-card-actions>
-                      <v-btn
-                        color="primary"
-                        text
-                        variant="text"
-                        :disabled="!text"
-                        @click="submitAnswer"
-                      >
+                      <v-btn color="primary" text variant="text" :disabled="!text" @click="submitAnswer">
                         提交
                       </v-btn>
                       <v-btn text variant="plain" @click="clearSelection">
@@ -302,6 +209,14 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="snackbarColor">
+      <div style="font-size: 16px">{{ snackbarMessage }}</div>
+      <template #actions>
+        <v-btn icon @click="snackbarOpen = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -319,6 +234,9 @@ export default {
       currentTime: new Date(), // 当前时间
       intervalId: null, // 定时器ID
       dialog: false, // 控制dialog显示
+      snackbarOpen: false,
+      snackbarMessage: "",
+      snackbarColor: "",
       question: "", // 存储题面的Markdown文本
       loadingQuestion: false, // 控制加载状态
       finishedQuestions: 15, // 完成的题目数量
@@ -423,7 +341,7 @@ export default {
             duration: 1200,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
-          this.finishedQuestions = 23;
+          this.finishedQuestions = 26;
           this.setAppTitle(title);
           this.setPageTitle(title);
           this.fetchQuestionsById(problemSetId); // 获取题目列表
@@ -555,7 +473,7 @@ export default {
       } else if (this.questionType === "多项选择题") {
         this.selectedOptions = [];
       } else if (this.questionType === "填空题") {
-        this.text = '';
+        this.text = "";
       }
     },
 
@@ -564,12 +482,27 @@ export default {
       if (this.questionType === "单项选择题") {
         console.log("提交的单项选择答案:", this.selectedOption);
       } else if (this.questionType === "多项选择题") {
-        console.log("提交的多项选择答案:", this.selectedOptions);
+        console.log("提交的多项选择答案:", [...this.selectedOptions].sort());
       } else if (this.questionType === "判断题") {
         console.log("提交的判断答案:", this.selectedOption);
       } else if (this.questionType === "填空题") {
-        console.log("提交的填空题答案", this.text);
+        console.log(`提交的填空题答案: ${JSON.stringify(this.text)}`);
+      } else if (this.questionType === "解答题") {
+        console.log('提交了解答题答案');
       }
+
+      // 模拟提交结果，有50%的概率成功，50%的概率失败
+      const isSuccess = Math.random() < 0.5;
+
+      // 设置 Snackbar 的提示信息和颜色
+      if (isSuccess) {
+        this.snackbarMessage = "题目 - " + this.currentQuestionId + " 提交成功";
+        this.snackbarColor = "success";
+      } else {
+        this.snackbarMessage = "题目 - " + this.currentQuestionId + " 提交失败";
+        this.snackbarColor = "error";
+      }
+      this.snackbarOpen = true;
     },
 
     // 文件上传逻辑
@@ -588,6 +521,7 @@ export default {
       });
       console.log("文件上传成功");
       this.files = [];
+      this.submitAnswer();
     },
   },
 };

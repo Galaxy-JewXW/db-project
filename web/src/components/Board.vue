@@ -249,7 +249,7 @@ import { mapMutations } from "vuex";
 import * as echarts from "echarts";
 
 export default {
-  name: "DiscussionsContent",
+  name: "ForumContent",
   data() {
     return {
       notices: [

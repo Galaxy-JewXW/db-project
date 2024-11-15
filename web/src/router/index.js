@@ -35,7 +35,16 @@ const customRoutes = [
       pageTitle: "测试详情",
     },
   },
-  // 可以在这里添加更多自定义路由
+  {
+    path: "/discussion/:id",
+    name: "DiscussionContent",
+    component: () => import("@/components/DiscussionContent.vue"),
+    props: true,
+    meta: {
+      appTitle: "讨论详情",
+      pageTitle: "讨论详情",
+    },
+  },
 ];
 
 // 为自动生成的路由添加 meta 字段
@@ -57,7 +66,7 @@ const routesWithMeta = autoRoutes.map((route) => {
       appTitle = "模拟测试";
       pageTitle = "模拟测试";
       break;
-    case "/discussions":
+    case "/forum":
       appTitle = "讨论区";
       pageTitle = "讨论区";
       break;
