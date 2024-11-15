@@ -270,8 +270,13 @@
                   <v-card-text
                     style="padding-left: 0"
                     class="text-subtitle-3 font-weight-regular"
-                    >使用markdown在左侧输入框输入答案，右侧为预览。</v-card-text
+                    >使用markdown在左侧输入框输入答案，右侧为预览。
+                    <br />
+                    <a href="https://freeopen.github.io/mathjax/"
+                      >在markdown中写数学公式</a
+                    ></v-card-text
                   >
+
                   <v-md-editor
                     v-model="text"
                     height="200px"
@@ -302,7 +307,7 @@
         </v-card-text>
       </v-card>
       <v-snackbar v-model="snackbarOpen" :timeout="2000" :color="snackbarColor">
-        <div style="font-size: 16px;">{{ snackbarMessage }}</div>
+        <div style="font-size: 16px">{{ snackbarMessage }}</div>
         <template #actions>
           <v-btn icon @click="snackbarOpen = false">
             <v-icon>mdi-close</v-icon>
@@ -575,11 +580,11 @@ export default {
       if (this.questionType === "单项选择题") {
         console.log("提交的单项选择答案:", this.selectedOption);
       } else if (this.questionType === "多项选择题") {
-        console.log("提交的多项选择答案:", this.selectedOptions);
+        console.log("提交的多项选择答案:", [...this.selectedOptions].sort());
       } else if (this.questionType === "判断题") {
         console.log("提交的判断答案:", this.selectedOption);
       } else if (this.questionType === "填空题") {
-        console.log("提交的填空题答案", this.text);
+        console.log(`提交的填空题答案: ${JSON.stringify(this.text)}`);
       }
 
       // 模拟提交结果，有50%的概率成功，50%的概率失败
