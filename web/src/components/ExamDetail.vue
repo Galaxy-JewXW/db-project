@@ -1,25 +1,34 @@
 <template>
   <div class="problem-set-detail" v-if="problemSetData">
-    <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px">
-      <v-alert :type="'info'" icon="mdi-clock-outline">
-        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
-        你已完成{{ this.totalQuestions }}题中的{{ this.finishedQuestions }}题。
-      </v-alert>
-    </div>
-    <div v-else-if="
-      remainingTime > 0 && this.finishedQuestions === this.totalQuestions
-    " style="padding-bottom: 15px">
-      <v-alert :type="'success'">
-        <v-alert-title>测试剩余时间：{{ formatDuration(remainingTime) }}</v-alert-title>
-        你已完成本次测试的所有题目。
-      </v-alert>
-    </div>
-    <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
-      <!-- 显示对应的提示信息 -->
-      <v-alert :type="'error'">
-        <v-alert-title>测试已结束</v-alert-title>
-      </v-alert>
-    </div>
+    <v-scroll-y-transition mode="out-in">
+      <div v-if="remainingTime > 0 && this.finishedQuestions < this.totalQuestions" style="padding-bottom: 15px">
+        <v-alert :type="'info'" icon="mdi-clock-outline">
+          <v-alert-title>测试进行中，剩余时间：{{
+            formatDuration(remainingTime)
+          }}</v-alert-title>
+          你已完成{{ this.totalQuestions }}题中的{{
+            this.finishedQuestions
+          }}题。
+        </v-alert>
+      </div>
+      <div v-else-if="
+        remainingTime > 0 && this.finishedQuestions === this.totalQuestions
+      " style="padding-bottom: 15px">
+        <v-alert :type="'success'">
+          <v-alert-title>测试进行中，剩余时间：{{
+            formatDuration(remainingTime)
+          }}</v-alert-title>
+          你已完成本次测试的所有题目。
+        </v-alert>
+      </div>
+      <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
+        <!-- 显示对应的提示信息 -->
+        <v-alert :type="'error'">
+          <v-alert-title>测试已结束</v-alert-title>
+          公布成绩前，你无法再次查看测试题。
+        </v-alert>
+      </div>
+    </v-scroll-y-transition>
 
     <v-progress-linear v-if="remainingTime > 0" :model-value="progressPercentage" color="primary" height="9" rounded
       style="margin-bottom: 10px"></v-progress-linear>
@@ -78,7 +87,8 @@
           <v-btn icon @click="closeDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>题目 - {{ this.currentQuestionId }}</v-toolbar-title>
+          <v-toolbar-title>{{ this.questionType }}：题目 -
+            {{ this.currentQuestionId }}</v-toolbar-title>
         </v-toolbar>
 
         <v-card-text>
@@ -93,9 +103,13 @@
 
             <v-col cols="4">
               <v-card class="pa-4" outlined>
-                <v-card-title style="padding-left: 0;" class="text-h5 font-weight-regular">提交题目 - {{
+                <v-card-title style="padding-left: 0" class="text-h5 font-weight-regular">提交题目 - {{
                   this.currentQuestionId
-                }}</v-card-title>
+                  }}</v-card-title>
+                <v-chip color="primary" variant="outlined">
+                  {{ this.questionType }}
+                </v-chip>
+                <v-spacer></v-spacer>
                 <div v-if="this.choices === -1">
                   <!--文件上传-->
                   <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
@@ -113,21 +127,96 @@
                     上传答案
                   </v-btn>
                 </div>
-                <div v-else-if="this.choices >= 3 && this.questionType === '单项选择题'">
+                <div v-else-if="
+                  this.choices >= 3 && this.questionType === '单项选择题'
+                ">
                   <!-- 单项选择题 -->
                   <v-row no-gutters>
                     <v-radio-group v-model="selectedOption" inline>
                       <v-radio v-for="index in this.choices" :key="index" :label="getOptionLetter(index)"
-                        :value="getOptionLetter(index)" />
+                        :value="getOptionLetter(index)" dense />
                     </v-radio-group>
                   </v-row>
+
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn color="primary" text="提交" variant="text" :disabled="!selectedOption"
+                        @click="submitAnswer"></v-btn>
+                      <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
+                    </v-card-actions>
+                  </v-row>
                 </div>
+                <div v-else-if="
+                  this.choices >= 3 && this.questionType === '多项选择题'
+                ">
+                  <!-- 单项选择题 -->
+                  <v-row no-gutters>
+                    <v-container>
+                      <v-checkbox v-for="index in this.choices" v-model="selectedOptions" :key="index"
+                        :label="getOptionLetter(index)" :value="getOptionLetter(index)" style="margin-bottom: -30px" />
+                    </v-container>
+                  </v-row>
+
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn color="primary" text="提交" variant="text" :disabled="selectedOptions.length === 0"
+                        @click="submitAnswer"></v-btn>
+                      <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
+                    </v-card-actions>
+                  </v-row>
+                </div>
+                <div v-else-if="questionType === '判断题'">
+                  <!-- 判断题 -->
+                  <v-row no-gutters>
+                    <v-radio-group v-model="selectedOption" inline>
+                      <v-radio label="正确" value="True" dense />
+                      <v-radio label="错误" value="False" dense />
+                    </v-radio-group>
+                  </v-row>
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn color="primary" text variant="text" :disabled="!selectedOption" @click="submitAnswer">
+                        提交
+                      </v-btn>
+                      <v-btn text variant="plain" @click="clearSelection">
+                        清除
+                      </v-btn>
+                    </v-card-actions>
+                  </v-row>
+                </div>
+                <div v-else-if="questionType === '填空题'">
+                  <v-card-text style="padding-left: 0"
+                    class="text-subtitle-3 font-weight-regular">使用markdown在左侧输入框输入答案，右侧为预览。
+                    <br />
+                    <a href="https://freeopen.github.io/mathjax/">在markdown中写数学公式</a></v-card-text>
+
+                  <v-md-editor v-model="text" height="200px" left-toolbar="" right-toolbar=""></v-md-editor>
+                  <v-row no-gutters>
+                    <v-card-actions>
+                      <v-btn color="primary" text variant="text" :disabled="!text" @click="submitAnswer">
+                        提交
+                      </v-btn>
+                      <v-btn text variant="plain" @click="clearSelection">
+                        清除
+                      </v-btn>
+                    </v-card-actions>
+                  </v-row>
+                </div>
+                <div v-else>暂无提交方式。请联系负责人。</div>
               </v-card>
             </v-col>
           </v-row>
         </v-card-text>
       </v-card>
     </v-dialog>
+    <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="snackbarColor">
+      <div style="font-size: 16px">{{ snackbarMessage }}</div>
+      <template #actions>
+        <v-btn icon @click="snackbarOpen = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </div>
 </template>
 
@@ -145,11 +234,17 @@ export default {
       currentTime: new Date(), // 当前时间
       intervalId: null, // 定时器ID
       dialog: false, // 控制dialog显示
+      snackbarOpen: false,
+      snackbarMessage: "",
+      snackbarColor: "",
       question: "", // 存储题面的Markdown文本
       loadingQuestion: false, // 控制加载状态
       finishedQuestions: 15, // 完成的题目数量
       files: [],
-      selectedOption: null,
+      choices: -2,
+      selectedOption: null, // 单项选择题
+      selectedOptions: [], // 多项选择题
+      text: "",
     };
   },
   computed: {
@@ -242,10 +337,11 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-14 22:50:00",
-            duration: 1120,
+            starttime: "2024-11-16 12:30:00",
+            duration: 60,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
+          this.finishedQuestions = 26;
           this.setAppTitle(title);
           this.setPageTitle(title);
           this.fetchQuestionsById(problemSetId); // 获取题目列表
@@ -270,6 +366,18 @@ export default {
             {
               type: "单项选择题",
               ids: [301, 302, 303, 304, 305],
+            },
+            {
+              type: "多项选择题",
+              ids: [441, 442, 443, 444, 445, 446],
+            },
+            {
+              type: "判断题",
+              ids: [595, 1001],
+            },
+            {
+              type: "填空题",
+              ids: [9801, 9802, 7002],
             },
             {
               type: "解答题",
@@ -324,7 +432,9 @@ export default {
 
     goToQuestionDetail(questionId) {
       this.questionType = this.getQuestionTypeById(questionId);
-      console.log(`Fetching question for question ID: ${questionId} ${this.questionType}`);
+      console.log(
+        `Fetching question for question ID: ${questionId} ${this.questionType}`
+      );
       this.loadingQuestion = true;
       this.currentQuestionId = questionId;
       // 模拟从后端获取Markdown文本数据
@@ -335,6 +445,10 @@ export default {
           this.choices = 4;
         } else if (this.questionType === "解答题") {
           this.choices = -1;
+        } else if (this.questionType === "多项选择题") {
+          this.choices = 4;
+        } else if (this.questionType === "判断题") {
+          this.choices = 2;
         }
         this.dialog = true; // 打开Dialog
       }, 10); // 模拟网络延迟
@@ -343,16 +457,52 @@ export default {
     closeDialog() {
       this.dialog = false; // 关闭Dialog
       this.question = ""; // 清空题面
+      this.clearSelection(); // 清空选择缓存
     },
 
     getOptionLetter(index) {
-      return String.fromCharCode(65 + index - 1);  // 65 对应字母 'A'
+      return String.fromCharCode(65 + index - 1); // 65 对应字母 'A'
     },
 
-    // 选中某个选项
-    selectOption(letter) {
-      console.log(`选中的是选项 ${letter}`);
-      // 处理选项的选择逻辑
+    clearSelection() {
+      if (
+        this.questionType === "单项选择题" ||
+        this.questionType === "判断题"
+      ) {
+        this.selectedOption = null;
+      } else if (this.questionType === "多项选择题") {
+        this.selectedOptions = [];
+      } else if (this.questionType === "填空题") {
+        this.text = "";
+      }
+    },
+
+    submitAnswer() {
+      // 处理提交逻辑
+      if (this.questionType === "单项选择题") {
+        console.log("提交的单项选择答案:", this.selectedOption);
+      } else if (this.questionType === "多项选择题") {
+        console.log("提交的多项选择答案:", [...this.selectedOptions].sort());
+      } else if (this.questionType === "判断题") {
+        console.log("提交的判断答案:", this.selectedOption);
+      } else if (this.questionType === "填空题") {
+        console.log(`提交的填空题答案: ${JSON.stringify(this.text)}`);
+      } else if (this.questionType === "解答题") {
+        console.log('提交了解答题答案');
+      }
+
+      // 模拟提交结果，有50%的概率成功，50%的概率失败
+      const isSuccess = Math.random() < 0.5;
+
+      // 设置 Snackbar 的提示信息和颜色
+      if (isSuccess) {
+        this.snackbarMessage = "题目 - " + this.currentQuestionId + " 提交成功";
+        this.snackbarColor = "success";
+      } else {
+        this.snackbarMessage = "题目 - " + this.currentQuestionId + " 提交失败";
+        this.snackbarColor = "error";
+      }
+      this.snackbarOpen = true;
     },
 
     // 文件上传逻辑
@@ -371,6 +521,7 @@ export default {
       });
       console.log("文件上传成功");
       this.files = [];
+      this.submitAnswer();
     },
   },
 };
@@ -403,7 +554,7 @@ export default {
 }
 
 .questions-container {
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
   padding: 16px 16px 32px;
   display: flex;

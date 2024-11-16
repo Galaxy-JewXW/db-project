@@ -95,7 +95,7 @@
         <!-- 根据用户选择显示内容 -->
         <div v-if="!answerResult">
           <!-- 做对了、做错了按钮 -->
-          <v-card class="ma-4" style="max-width: 100%;">
+          <v-card flat elevation="0" class="ma-4" style="max-width: 100%;">
             <v-card-title class="headline text-h5 font-weight-bold">你做对了吗？</v-card-title>
             <v-card-text class="d-flex justify-start">
               <v-btn color="success" class="ma-2" outlined @click="handleAnswer(true)">
@@ -121,7 +121,7 @@
 
         <!-- Markdown 内容显示区域 -->
         <v-card-text>
-          <div class="markdown-content" v-if="answer">
+          <div class="markdown-content" style="margin-left: -20px;" v-if="answer">
             <v-md-preview :text="answer" />
           </div>
         </v-card-text>
