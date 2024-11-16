@@ -337,8 +337,8 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-15 14:20:00",
-            duration: 1200,
+            starttime: "2024-11-16 12:30:00",
+            duration: 60,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.finishedQuestions = 26;

@@ -121,7 +121,7 @@
 
         <!-- Markdown 内容显示区域 -->
         <v-card-text>
-          <div class="markdown-content" v-if="answer">
+          <div class="markdown-content" style="margin-left: -20px;" v-if="answer">
             <v-md-preview :text="answer" />
           </div>
         </v-card-text>

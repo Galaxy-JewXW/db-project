@@ -36,6 +36,16 @@ const customRoutes = [
     },
   },
   {
+    path: "/discussion/new",
+    name: "NewPost",
+    component: () => import("@/components/NewPost.vue"),
+    props: true,
+    meta: {
+      appTitle: "发布新讨论",
+      pageTitle: "发布新讨论",
+    },
+  },
+  {
     path: "/discussion/:id",
     name: "DiscussionContent",
     component: () => import("@/components/DiscussionContent.vue"),

@@ -2,12 +2,20 @@
 <template>
   <v-container fluid class="problemset-container">
     <!-- Button to open Past Exams Dialog -->
-    <v-btn class="align-self-start" color="primary" @click="showPastExamsDialog = true">
+    <v-btn
+      class="align-self-start"
+      color="primary"
+      @click="showPastExamsDialog = true"
+    >
       查看过往测试
     </v-btn>
 
     <!-- Past Exams Dialog -->
-    <v-dialog v-model="showPastExamsDialog" transition="dialog-bottom-transition" fullscreen>
+    <v-dialog
+      v-model="showPastExamsDialog"
+      transition="dialog-bottom-transition"
+      fullscreen
+    >
       <v-card>
         <v-toolbar dark color="primary">
           <v-btn icon dark @click="showPastExamsDialog = false">
@@ -22,15 +30,30 @@
               <v-card-text class="py-2">
                 <v-row>
                   <!-- Subject Filter -->
-                  <v-col cols="12" class="filter-section" style="padding-bottom: 0px">
+                  <v-col
+                    cols="12"
+                    class="filter-section"
+                    style="padding-bottom: 0px"
+                  >
                     <div class="filter-group">
                       <span class="filter-label">按科目筛选:</span>
-                      <v-chip v-for="subject in subjects" :key="subject" class="ma-2" color="primary" variant="outlined"
+                      <v-chip
+                        v-for="subject in subjects"
+                        :key="subject"
+                        class="ma-2"
+                        color="primary"
+                        variant="outlined"
                         :class="{
                           'selected-chip': selectedSubject === subject,
-                        }" @click="toggleSubject(subject)">
+                        }"
+                        @click="toggleSubject(subject)"
+                      >
                         {{ subject }}
-                        <v-icon v-if="selectedSubject === subject" class="ml-2" small>
+                        <v-icon
+                          v-if="selectedSubject === subject"
+                          class="ml-2"
+                          small
+                        >
                           mdi-check
                         </v-icon>
                       </v-chip>
@@ -38,15 +61,30 @@
                   </v-col>
 
                   <!-- Time Filter -->
-                  <v-col cols="12" class="filter-section" style="padding-top: 0px">
+                  <v-col
+                    cols="12"
+                    class="filter-section"
+                    style="padding-top: 0px"
+                  >
                     <div class="filter-group">
                       <span class="filter-label">按时间筛选:</span>
-                      <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary"
-                        variant="outlined" :class="{
+                      <v-chip
+                        v-for="range in timeRanges"
+                        :key="range.value"
+                        class="ma-2"
+                        color="primary"
+                        variant="outlined"
+                        :class="{
                           'selected-chip': selectedTimeRange === range.value,
-                        }" @click="toggleTimeRange(range.value)">
+                        }"
+                        @click="toggleTimeRange(range.value)"
+                      >
                         {{ range.text }}
-                        <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
+                        <v-icon
+                          v-if="selectedTimeRange === range.value"
+                          class="ml-2"
+                          small
+                        >
                           mdi-check
                         </v-icon>
                       </v-chip>
@@ -60,7 +98,14 @@
           <!-- Display pastExams here -->
           <template v-if="filteredProblemSets.length > 0">
             <v-row dense class="justify-start">
-              <v-col v-for="exam in filteredProblemSets" :key="exam.id" cols="12" sm="6" md="3" class="pa-1">
+              <v-col
+                v-for="exam in filteredProblemSets"
+                :key="exam.id"
+                cols="12"
+                sm="6"
+                md="3"
+                class="pa-1"
+              >
                 <v-card class="w-100" hover>
                   <v-card-text>
                     <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
@@ -84,7 +129,11 @@
                     </div>
                   </v-card-text>
                   <v-card-actions>
-                    <v-btn class="enter-button" text @click.stop="this.$router.push(`/exam/${exam.id}`)">
+                    <v-btn
+                      class="enter-button"
+                      text
+                      @click.stop="this.$router.push(`/exam/${exam.id}`)"
+                    >
                       查看
                     </v-btn>
                   </v-card-actions>
@@ -102,7 +151,14 @@
     <div class="scroll-container">
       <template v-if="combinedExams.length > 0">
         <v-row dense class="justify-start">
-          <v-col v-for="exam in combinedExams" :key="exam.id" cols="12" sm="6" md="3" class="pa-1">
+          <v-col
+            v-for="exam in combinedExams"
+            :key="exam.id"
+            cols="12"
+            sm="6"
+            md="3"
+            class="pa-1"
+          >
             <v-card class="w-100" hover>
               <v-card-text>
                 <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
@@ -128,17 +184,44 @@
               </v-card-text>
               <v-card-actions>
                 <div v-if="isExamComing(exam)">
-                  <v-btn class="enter-button" text @click.stop="modifyEnrollmentStatus(exam)">
-                    {{ this.enrolledExams.includes(exam.id) ? "取消报名" : "报名测试" }}
+                  <v-btn
+                    class="enter-button"
+                    text
+                    @click.stop="modifyEnrollmentStatus(exam)"
+                  >
+                    {{
+                      this.enrolledExams.includes(exam.id)
+                        ? "取消报名"
+                        : "报名测试"
+                    }}
                   </v-btn>
                 </div>
                 <div v-else>
-                  <v-btn class="enter-button" text @click.stop="enterExam(exam)">
-                    {{ this.enrolledExams.includes(exam.id) ? "进入测试" : "报名测试" }}
-                  </v-btn>
-                  <v-btn v-if="this.enrolledExams.includes(exam.id)" class="enter-button" text @click.stop="modifyEnrollmentStatus(exam)">
-                    取消报名
-                  </v-btn>
+                  <div v-if="this.enrolledExams.includes(exam.id)">
+                    <v-btn class="enter-button" @click.stop="enterExam(exam)">
+                      进入测试
+                    </v-btn>
+                    <v-btn
+                      v-if="this.enrolledExams.includes(exam.id)"
+                      variant="plain"
+                      @click.stop="modifyEnrollmentStatus(exam)"
+                    >
+                      取消报名
+                    </v-btn>
+                  </div>
+                  <div v-else>
+                    <v-btn
+                      class="enter-button"
+                      text
+                      @click.stop="enterExam(exam)"
+                    >
+                      {{
+                        this.enrolledExams.includes(exam.id)
+                          ? "进入测试"
+                          : "报名测试"
+                      }}
+                    </v-btn>
+                  </div>
                 </div>
               </v-card-actions>
             </v-card>
@@ -148,7 +231,12 @@
       <div v-else class="no-results">没有测试</div>
     </div>
   </v-container>
-  <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="`success`" min-width="45%">
+  <v-snackbar
+    v-model="snackbarOpen"
+    :timeout="1000"
+    :color="`success`"
+    min-width="45%"
+  >
     <div style="font-size: 16px">{{ snackbarMessage }}</div>
     <template #actions>
       <v-btn icon @click="snackbarOpen = false">
@@ -166,7 +254,7 @@ export default {
   data() {
     return {
       snackbarOpen: false,
-      snackbarMessage: '',
+      snackbarMessage: "",
       showPastExamsDialog: false,
       ongoingExams: [
         {
@@ -237,8 +325,8 @@ export default {
         { text: "最近半年", value: "6m" },
         { text: "最近一年", value: "1y" },
       ],
-      selectedSubject: null,      // 新增: 当前选择的科目
-      selectedTimeRange: null,    // 新增: 当前选择的时间范围
+      selectedSubject: null, // 新增: 当前选择的科目
+      selectedTimeRange: null, // 新增: 当前选择的时间范围
       enrolledExams: [2, 3],
     };
   },
@@ -251,9 +339,7 @@ export default {
 
       // 按科目筛选
       if (this.selectedSubject) {
-        filtered = filtered.filter(
-          (ps) => ps.subject === this.selectedSubject
-        );
+        filtered = filtered.filter((ps) => ps.subject === this.selectedSubject);
       }
 
       // 按时间筛选
@@ -327,7 +413,7 @@ export default {
     },
     modifyEnrollmentStatus(exam) {
       if (this.enrolledExams.includes(exam.id)) {
-        this.enrolledExams = this.enrolledExams.filter(id => id !== exam.id);
+        this.enrolledExams = this.enrolledExams.filter((id) => id !== exam.id);
         this.snackbarMessage = "成功取消报名：" + exam.name;
       } else {
         this.enrolledExams.push(exam.id);
