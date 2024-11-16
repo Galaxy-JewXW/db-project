@@ -9,8 +9,15 @@
             <v-col cols="12" class="filter-section" style="padding-bottom: 0px">
               <div class="filter-group">
                 <span class="filter-label">按标签筛选:</span>
-                <v-chip v-for="tag in subjects" :key="tag" class="ma-2" color="primary" variant="outlined"
-                  :class="{ 'selected-chip': selectedTag === tag }" @click="toggleTag(tag)">
+                <v-chip
+                  v-for="tag in subjects"
+                  :key="tag"
+                  class="ma-2"
+                  color="primary"
+                  variant="outlined"
+                  :class="{ 'selected-chip': selectedTag === tag }"
+                  @click="toggleTag(tag)"
+                >
                   {{ tag }}
                   <v-icon v-if="selectedTag === tag" class="ml-2" small>
                     mdi-check
@@ -23,12 +30,23 @@
             <v-col cols="12" class="filter-section" style="padding-top: 0px">
               <div class="filter-group">
                 <span class="filter-label">按时间筛选:</span>
-                <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary" variant="outlined"
+                <v-chip
+                  v-for="range in timeRanges"
+                  :key="range.value"
+                  class="ma-2"
+                  color="primary"
+                  variant="outlined"
                   :class="{
                     'selected-chip': selectedTimeRange === range.value,
-                  }" @click="toggleTimeRange(range.value)">
+                  }"
+                  @click="toggleTimeRange(range.value)"
+                >
                   {{ range.text }}
-                  <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
+                  <v-icon
+                    v-if="selectedTimeRange === range.value"
+                    class="ml-2"
+                    small
+                  >
                     mdi-check
                   </v-icon>
                 </v-chip>
@@ -49,8 +67,14 @@
       <template v-if="filteredDiscussions.length > 0">
         <!-- 讨论贴列表 -->
         <v-list dense density="compact">
-          <v-list-item-group v-for="(discussion, index) in filteredDiscussions" :key="discussion.id">
-            <v-list-item @click="openDiscussion(discussion)">
+          <v-list-item-group
+            v-for="(discussion, index) in filteredDiscussions"
+            :key="discussion.id"
+          >
+            <v-list-item
+              :prepend-avatar="discussion.avatar"
+              @click="openDiscussion(discussion)"
+            >
               <v-list-item-content>
                 <v-list-item-title class="text-subtitle-1 font-weight-bold">
                   <v-row align="center">
@@ -58,7 +82,8 @@
                       {{ discussion.title }}
                     </v-col>
                     <v-col cols="auto" class="text-body-2">
-                      @ {{ discussion.publisher }} 发布于 {{ formatDate(discussion.publishTime) }}
+                      @ {{ discussion.publisher }} 发布于
+                      {{ formatDate(discussion.publishTime) }}
                     </v-col>
                   </v-row>
                 </v-list-item-title>
@@ -67,26 +92,31 @@
                     <v-chip size="small" class="ma-1" variant="outlined">
                       {{ discussion.tag }}
                     </v-chip>
-                    {{ discussion.summary.length > 60 ? discussion.summary.slice(0, 60) + '...' : discussion.summary }}
+                    {{
+                      discussion.summary.length > 60
+                        ? discussion.summary.slice(0, 60) + "..."
+                        : discussion.summary
+                    }}
                   </div>
                 </v-list-item-subtitle>
-
               </v-list-item-content>
               <template v-slot:append>
-                最后更新于 {{ formatLastUpdated(discussion.lastUpdated) }}
+                {{ formatLastUpdated(discussion.lastUpdated) }}
               </template>
             </v-list-item>
             <!-- 添加分割线，每个item后面 -->
             <v-divider v-if="index < filteredDiscussions.length - 1" />
           </v-list-item-group>
         </v-list>
-
       </template>
 
       <!-- 无结果提示 -->
       <div v-else class="no-results">没有满足条件的讨论贴</div>
     </div>
   </v-container>
+  <v-btn class="floating-btn" fab color="primary" @click="openNewPost()">
+    <v-icon size="32">mdi-plus</v-icon>
+  </v-btn>
 </template>
 
 <script>
@@ -101,15 +131,18 @@ export default {
           id: 1,
           title: "关于工科数学分析的疑问",
           publisher: "张三",
+          avatar: "https://randomuser.me/api/portraits/women/85.jpg",
           publishTime: "2024-10-01",
           lastUpdated: "2024-11-16T04:23:45",
           tag: "工科数学分析（上）",
-          summary: "在学习工科数学分析时，对积分部分有些疑问，特别是多重积分的应用。",
+          summary:
+            "在学习工科数学分析时，对积分部分有些疑问，特别是多重积分的应用。",
         },
         {
           id: 2,
           title: "离散数学在计算机科学中的应用",
           publisher: "李四",
+          avatar: "https://randomuser.me/api/portraits/women/70.jpg",
           publishTime: "2024-09-25",
           lastUpdated: "2024-11-15T15:30:00",
           tag: "离散数学（信息类）",
@@ -185,7 +218,7 @@ export default {
       filtered = filtered.sort((a, b) => {
         const dateA = new Date(a.lastUpdated);
         const dateB = new Date(b.lastUpdated);
-        return dateB - dateA;  // 返回负数表示 a 排在前面，正数表示 b 排在前面
+        return dateB - dateA; // 返回负数表示 a 排在前面，正数表示 b 排在前面
       });
       return filtered;
     },
@@ -210,6 +243,9 @@ export default {
     },
     openDiscussion(discussion) {
       this.$router.push(`/discussion/${discussion.id}`);
+    },
+    openNewPost() {
+      this.$router.push(`/discussion/new`);
     },
     toggleTag(tag) {
       if (this.selectedTag === tag) {
@@ -340,5 +376,23 @@ export default {
     padding-left: 8px !important;
     padding-right: 8px !important;
   }
+}
+
+.floating-btn {
+  position: fixed;
+  right: 4%;
+  bottom: 10%;
+  z-index: 9999;
+  border-radius: 75%;
+  width: 64px;
+  height: 64px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.v-icon {
+  color: white;
 }
 </style>

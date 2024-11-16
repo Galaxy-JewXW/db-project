@@ -150,66 +150,6 @@ body {
   overflow-y: hidden;
 }
 
-/* Markdown 内容的全局样式 */
-.markdown-content h1 {
-  border-bottom: 2px solid #eaecef;
-  padding-bottom: 0.3rem;
-  margin-bottom: 1rem;
-}
-
-.markdown-content pre {
-  background-color: #2d2d2d;
-  padding: 1rem;
-  border-radius: 8px;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  color: #fff;
-}
-
-.markdown-content code {
-  font-family: "Source Code Pro", monospace;
-  font-size: 0.9rem;
-}
-
-.markdown-content ul {
-  padding-left: 1.5rem;
-}
-
-.markdown-content ul li {
-  list-style-type: disc;
-  margin-left: 0.5rem;
-}
-
-/* 表格样式 */
-.markdown-content table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
-  border: 1px solid #ddd;
-}
-
-.markdown-content table th,
-.markdown-content table td {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-}
-
-.markdown-content table th {
-  background-color: #f5f5f5;
-  font-weight: bold;
-}
-
-/* 链接样式 */
-.markdown-content a {
-  color: #3498db;
-  text-decoration: none;
-}
-
-.markdown-content a:hover {
-  text-decoration: underline;
-}
-
 /* 自定义链接样式，确保链接不影响列表项样式 */
 .text-decoration-none {
   text-decoration: none;
