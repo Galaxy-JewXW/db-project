@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-with open('learingCompanionInBeihang/env.json') as env:
+with open('/Users/zhengguangyi/Desktop/数据库/大作业/db_project/backend/learingCompanionInBeihang/env.json') as env:
     ENV = json.load(env)
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'learingCompanionInBeihang.apps.utils',
     'learingCompanionInBeihang.apps.users',
     'learingCompanionInBeihang.apps.images',
+    'learingCompanionInBeihang.apps.message',
 ]
 
 MIDDLEWARE = [
