@@ -36,7 +36,12 @@ class MessageViewTests(TestCase):
             content='Hello Sender!',
             is_read=False
         )
-
+        self.message3 = Message.objects.create(
+            sender=self.receiver,
+            receiver=self.sender,
+            content='Hello Sender2!',
+            is_read=False
+        )
         # 初始化API客户端
         self.client = APIClient()
 
@@ -47,10 +52,11 @@ class MessageViewTests(TestCase):
             "user_id": "1",
         }
         response = self.client.post(url, data=json.dumps(data), content_type='application/json')
+        print(response.data['messages'])
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertEqual(response.data['message'], 'success')
-        self.assertEqual(len(response.data['messages']), 1)
-        self.assertEqual(response.data['messages'][0]['content'], 'Hello Sender!')
+        self.assertEqual(len(response.data['messages']), 2)
+        self.assertEqual(response.data['messages'][0]['content'], 'Hello Sender2!')
 
     def test_mark_message_as_read(self):
         # 测试标记消息为已读
