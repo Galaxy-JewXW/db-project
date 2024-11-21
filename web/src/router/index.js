@@ -2,9 +2,19 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { routes as autoRoutes } from "vue-router/auto-routes";
 import NotFound from "@/components/NotFound.vue"; // 导入 404 页面组件
+import store from "@/store";
 
 // 手动添加的自定义路由
 const customRoutes = [
+  {
+    path: "/logout",
+    name: "登出",
+    beforeEnter: (to, from, next) => {
+      store.commit("cleanUserId");
+      next("/login");
+    },
+    meta: { requiresAuth: true },
+  },
   {
     path: "/problemset/:id",
     name: "ProblemSetDetail",
@@ -13,6 +23,7 @@ const customRoutes = [
     meta: {
       appTitle: "题库详情",
       pageTitle: "题库详情",
+      requiresAuth: true,
     },
   },
   {
@@ -23,6 +34,7 @@ const customRoutes = [
     meta: {
       appTitle: "题目详情",
       pageTitle: "题目详情",
+      requiresAuth: true,
     },
   },
   {
@@ -33,6 +45,7 @@ const customRoutes = [
     meta: {
       appTitle: "测试详情",
       pageTitle: "测试详情",
+      requiresAuth: true,
     },
   },
   {
@@ -43,6 +56,7 @@ const customRoutes = [
     meta: {
       appTitle: "发布新讨论",
       pageTitle: "发布新讨论",
+      requiresAuth: true,
     },
   },
   {
@@ -53,6 +67,7 @@ const customRoutes = [
     meta: {
       appTitle: "讨论详情",
       pageTitle: "讨论详情",
+      requiresAuth: true,
     },
   },
 ];
@@ -61,6 +76,7 @@ const customRoutes = [
 const routesWithMeta = autoRoutes.map((route) => {
   let appTitle = "加载中"; // 默认应用栏标题
   let pageTitle = "加载中"; // 默认浏览器标签页标题
+  let requiresAuth = true;
 
   // 根据路由路径或名称设置具体标题
   switch (route.path) {
@@ -94,11 +110,25 @@ const routesWithMeta = autoRoutes.map((route) => {
       pageTitle = route.name || "即将就绪";
   }
 
+  // 如果路由是登录页，设置 requiresGuest 为 true
+  if (route.path === "/login") {
+    return {
+      ...route,
+      meta: {
+        appTitle,
+        pageTitle,
+        requiresGuest: true, // 仅限未认证用户
+      },
+    };
+  }
+
+  // 其他路由默认需要认证
   return {
     ...route,
     meta: {
       appTitle,
       pageTitle,
+      requiresAuth, // 根据前面的逻辑设置
     },
   };
 });
@@ -112,12 +142,12 @@ const routes = [
   ...routesWithMeta,
   // 添加通配符路由，匹配所有未定义的路径
   {
-    path: '/:pathMatch(.*)*',
-    name: 'NotFound',
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
     component: NotFound,
     meta: {
-      appTitle: '出错了！',
-      pageTitle: '出错了！',
+      appTitle: "出错了！",
+      pageTitle: "出错了！",
     },
   },
 ];
@@ -140,6 +170,20 @@ router.onError((err, to) => {
     }
   } else {
     console.error(err);
+  }
+});
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = store.getters.isAuthenticated;
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    // 如果目标路由需要认证但用户未认证，重定向到登录页
+    next({ path: '/login', query: { redirect: to.fullPath } });
+  } else if (to.meta.requiresGuest && isAuthenticated) {
+    // 如果目标路由仅限未认证用户且用户已认证，重定向到首页
+    next({ path: '/home' });
+  } else {
+    // 否则，允许导航
+    next();
   }
 });
 
