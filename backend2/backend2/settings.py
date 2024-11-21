@@ -54,6 +54,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend2.urls'
+ALLOWED_HOSTS = ['*'] 
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -99,6 +100,12 @@ WSGI_APPLICATION = 'backend2.wsgi.application'
 #         'PASSWORD': 'Aa961886',  # 密码
 #     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [

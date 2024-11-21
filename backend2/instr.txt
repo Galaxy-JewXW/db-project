@@ -1,0 +1,5 @@
+python manage.py flush
+python manage.py makemigrations
+python manage.py migrate
+pip install django-cors-headers
+python manage.py runserver

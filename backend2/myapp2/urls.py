@@ -1,8 +1,7 @@
-# myapp/urls.py
-
 from django.urls import path
-from .views import AuthView
+from .views import login_view, register_view
 
 urlpatterns = [
-    path('auth/', AuthView.as_view(), name='auth'),  # 合并后的登录和注册接口
+    path('login/', login_view, name='login'),         # 登录接口
+    path('register/', register_view, name='register'), # 注册接口
 ]

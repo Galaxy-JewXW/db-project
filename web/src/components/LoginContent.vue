@@ -7,7 +7,7 @@
     </div>
 
     <!-- 登录表单 -->
-    <v-form ref="loginForm" v-model="isLoginValid">
+    <v-form ref="loginForm" v-model="isLoginValid" @submit.prevent="submitLogin">
       <v-row>
         <!-- 学工号输入字段 -->
         <v-col cols="12" class="field-spacing">
@@ -42,7 +42,6 @@
           <!-- 登录按钮 -->
           <v-btn
             class="w-100 mb-2"
-            type="submit"
             :disabled="!isLoginValid"
             color="primary"
             @click="submitLogin"
@@ -188,7 +187,7 @@
 
 <script>
 import { mapMutations } from "vuex"; // 引入 mapMutations
-
+import axios from "axios";
 export default {
   name: "LoginContent",
   data() {
@@ -211,8 +210,10 @@ export default {
       entryYear: "",
       passwordReg: "",
       confirmPassword: "",
+      role: "",
       // 入学年份选项
       entryYears: [],
+      avatar: "",
       // 学院/书院列表
       colleges: [
         "材料科学与工程学院",
@@ -286,6 +287,7 @@ export default {
         (v) => !!v || "确认密码是必填项。",
         (v) => v === this.passwordReg || "两次输入的密码不一致。",
       ],
+
     };
   },
   mounted() {
@@ -329,18 +331,44 @@ export default {
     },
     // 提交登录表单
     submitLogin() {
-      if (this.$refs.loginForm.validate()) {
-        console.log("登录表单已提交:", {
-          studentNumber: this.studentNumber.value,
-          password: this.password.value,
-        });
-        this.handleResetLogin();
-        // 登录成功后，可以跳转到首页或其他页面
+  if (this.$refs.loginForm.validate()) {
+    const loginData = {
+      studentNumber: this.studentNumber.value,
+      password: this.password.value,
+    };
+    axios
+      .post("http://127.0.0.1:8000/api/login/", loginData)
+      .then((response) => {
+        console.log("后端返回url:", response.data.urls);
+        this.avatar = response.data.urls;
         this.$router.push("/home");
-      } else {
-        console.log("登录表单验证失败");
-      }
-    },
+      })
+      .catch((error) => {
+        alert(error.response.data.message);
+        console.error("请求失败:", error.response.data.message);
+      });
+  } else {
+    console.error("表单验证未通过！");
+  }
+},
+
+
+    // getUserInfo() {
+    //   axios
+    //     .get("http://127.0.0.1:8000/api/user-info/") // 请求后端接口
+    //     .then((response) => {
+    //       console.log("从后端获取的用户信息:", response.data);
+    //     // 将后端返回的数据存储到组件的 data 中
+    //       this.studentNumber.value = response.data.studentNumber;
+    //       this.name = response.data.name;
+    //       this.role = response.data.role;
+    //       this.college = response.data.college;
+    //       this.entryYear = response.data.entryYear;
+    //      })
+    //     .catch((error) => {
+    //       console.error("获取用户信息失败:", error);
+    //     });
+    // },
     handleResetLogin() {
       this.studentNumber.value = "";
       this.password.value = "";
@@ -349,7 +377,7 @@ export default {
     // 提交注册表单
     handleRegister() {
       if (this.$refs.registerForm.validate()) {
-        console.log("注册表单已提交:", {
+        const registerData = {
           name: this.name,
           studentNumber: this.studentNumberReg,
           college: this.college,
@@ -357,11 +385,21 @@ export default {
           entryYear: this.entryYear,
           password: this.passwordReg,
           confirmPassword: this.confirmPassword,
+        }
+        console.log("注册表单已提交:", registerData);
+        axios
+        .post("http://127.0.0.1:8000/api/register/", registerData)
+        .then((response) => {
+          alert("注册成功");
+        })
+        .catch((error) => {
+          alert(error.response.data.message);
+          console.log(error);
         });
-        this.handleClear();
-        this.dialog = false;
+        // this.handleClear();
+        // this.dialog = false;
       } else {
-        console.log("注册表单验证失败");
+        alert("注册表单验证失败");
       }
     },
     // 清空注册表单内容
