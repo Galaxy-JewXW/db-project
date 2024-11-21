@@ -11,51 +11,25 @@
       <v-row>
         <!-- 学工号输入字段 -->
         <v-col cols="12" class="field-spacing">
-          <v-text-field
-            v-model="studentNumber.value"
-            :rules="studentNumberRules"
-            label="学工号"
-            type="text"
-            prepend-inner-icon="mdi-account"
-            variant="outlined"
-            validate-on-blur
-            persistent-hint
-          ></v-text-field>
+          <v-text-field v-model="studentNumber.value" :rules="studentNumberRules" label="学工号" type="text"
+            prepend-inner-icon="mdi-account" variant="outlined" validate-on-blur persistent-hint></v-text-field>
         </v-col>
 
         <!-- 密码输入字段 -->
         <v-col cols="12" class="field-spacing">
-          <v-text-field
-            v-model="password.value"
-            :rules="passwordRules"
-            label="密码"
-            type="password"
-            prepend-inner-icon="mdi-lock"
-            variant="outlined"
-            validate-on-blur
-            persistent-hint
-          ></v-text-field>
+          <v-text-field v-model="password.value" :rules="passwordRules" label="密码" type="password"
+            prepend-inner-icon="mdi-lock" variant="outlined" validate-on-blur persistent-hint></v-text-field>
         </v-col>
 
         <!-- 按钮区域 -->
         <v-col cols="12">
           <!-- 登录按钮 -->
-          <v-btn
-            class="w-100 mb-2"
-            :disabled="!isLoginValid"
-            color="primary"
-            @click="submitLogin"
-          >
+          <v-btn class="w-100 mb-2" :disabled="!isLoginValid" color="primary" @click="submitLogin">
             登录
           </v-btn>
 
           <!-- 注册按钮 -->
-          <v-btn
-            class="w-100"
-            variant="outlined"
-            @click="dialog = true"
-            color="info"
-          >
+          <v-btn class="w-100" variant="outlined" @click="dialog = true" color="info">
             没有账号？注册
           </v-btn>
         </v-col>
@@ -64,101 +38,50 @@
 
     <!-- 注册对话框 -->
     <v-dialog v-model="dialog" max-width="600px">
-      <v-card
-        prepend-icon="mdi-account-plus"
-        title="快加入我们！"
-        subtitle="要继续注册，请填写以下个人信息。"
-        class="no-scrollbar"
-      >
+      <v-card prepend-icon="mdi-account-plus" title="快加入我们！" subtitle="要继续注册，请填写以下个人信息。" class="no-scrollbar">
         <v-card-text>
           <v-form ref="registerForm" v-model="isRegisterValid">
             <v-row dense>
               <!-- 姓名/昵称 -->
               <v-col cols="12">
-                <v-text-field
-                  label="昵称"
-                  v-model="name"
-                  :rules="nameRules"
-                  variant="outlined"
-                  validate-on-blur
-                ></v-text-field>
+                <v-text-field label="昵称" v-model="name" :rules="nameRules" variant="outlined"
+                  validate-on-blur></v-text-field>
               </v-col>
 
               <!-- 学工号 -->
               <v-col cols="12">
-                <v-text-field
-                  label="学工号"
-                  v-model="studentNumberReg"
-                  :rules="studentNumberRegRules"
-                  variant="outlined"
-                  validate-on-blur
-                  hint="学工号在注册完成后无法更改，敬请留意。"
-                  persistent-hint
-                ></v-text-field>
+                <v-text-field label="学工号" v-model="studentNumberReg" :rules="studentNumberRegRules" variant="outlined"
+                  validate-on-blur hint="学工号在注册完成后无法更改，敬请留意。" persistent-hint></v-text-field>
               </v-col>
 
               <!-- 学院/书院 -->
               <v-col cols="12">
-                <v-autocomplete
-                  clearable
-                  label="学院/书院"
-                  v-model="college"
-                  :items="colleges"
-                  :rules="collegeRules"
-                  variant="outlined"
-                  validate-on-blur
-                ></v-autocomplete>
+                <v-autocomplete clearable label="学院/书院" v-model="college" :items="colleges" :rules="collegeRules"
+                  variant="outlined" validate-on-blur></v-autocomplete>
               </v-col>
 
               <!-- 邮箱 -->
               <v-col cols="12">
-                <v-text-field
-                  label="邮箱"
-                  v-model="email"
-                  :rules="emailRules"
-                  variant="outlined"
-                  validate-on-blur
-                  hint="请输入有效的邮箱地址"
-                  persistent-hint
-                ></v-text-field>
+                <v-text-field label="邮箱" v-model="email" :rules="emailRules" variant="outlined" validate-on-blur
+                  hint="请输入有效的邮箱地址" persistent-hint></v-text-field>
               </v-col>
 
               <!-- 入学年份 -->
               <v-col cols="12">
-                <v-select
-                  :items="entryYears"
-                  label="入学年份"
-                  v-model="entryYear"
-                  :rules="entryYearRules"
-                  variant="outlined"
-                  validate-on-blur
-                ></v-select>
+                <v-select :items="entryYears" label="入学年份" v-model="entryYear" :rules="entryYearRules"
+                  variant="outlined" validate-on-blur></v-select>
               </v-col>
 
               <!-- 密码 -->
               <v-col cols="12">
-                <v-text-field
-                  label="密码"
-                  v-model="passwordReg"
-                  :rules="passwordRegRules"
-                  type="password"
-                  variant="outlined"
-                  validate-on-blur
-                  hint="密码长度至少为6位"
-                  persistent-hint
-                ></v-text-field>
+                <v-text-field label="密码" v-model="passwordReg" :rules="passwordRegRules" type="password"
+                  variant="outlined" validate-on-blur hint="密码长度至少为6位" persistent-hint></v-text-field>
               </v-col>
 
               <!-- 确认密码 -->
               <v-col cols="12">
-                <v-text-field
-                  label="确认密码"
-                  v-model="confirmPassword"
-                  :rules="confirmPasswordRules"
-                  type="password"
-                  variant="outlined"
-                  validate-on-blur
-                ></v-text-field>
+                <v-text-field label="确认密码" v-model="confirmPassword" :rules="confirmPasswordRules" type="password"
+                  variant="outlined" validate-on-blur></v-text-field>
               </v-col>
             </v-row>
           </v-form>
@@ -166,23 +89,21 @@
         <v-divider></v-divider>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn
-            text="已有账号？登录"
-            variant="plain"
-            @click="dialog = false"
-          ></v-btn>
+          <v-btn text="已有账号？登录" variant="plain" @click="dialog = false"></v-btn>
           <v-btn text="清除" variant="plain" @click="handleClear"></v-btn>
-          <v-btn
-            color="primary"
-            text="注册"
-            variant="tonal"
-            :disabled="!isRegisterValid"
-            @click="handleRegister"
-          ></v-btn>
+          <v-btn color="primary" text="注册" variant="tonal" :disabled="!isRegisterValid" @click="handleRegister"></v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
+  <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="snackbarColor" min-width="25%">
+    <div style="font-size: 16px">{{ snackbarMessage }}</div>
+    <template #actions>
+      <v-btn icon @click="snackbarOpen = false">
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script>
@@ -215,6 +136,9 @@ export default {
       entryYears: [],
       avatar: "",
       // 学院/书院列表
+      snackbarOpen: false,
+      snackbarMessage: "",
+      snackbarColor: "error",
       colleges: [
         "材料科学与工程学院",
         "电子信息工程学院",
@@ -331,44 +255,29 @@ export default {
     },
     // 提交登录表单
     submitLogin() {
-  if (this.$refs.loginForm.validate()) {
-    const loginData = {
-      studentNumber: this.studentNumber.value,
-      password: this.password.value,
-    };
-    axios
-      .post("http://127.0.0.1:8000/api/login/", loginData)
-      .then((response) => {
-        console.log("后端返回url:", response.data.urls);
-        this.avatar = response.data.urls;
-        this.$router.push("/home");
-      })
-      .catch((error) => {
-        alert(error.response.data.message);
-        console.error("请求失败:", error.response.data.message);
-      });
-  } else {
-    console.error("表单验证未通过！");
-  }
-},
-
-
-    // getUserInfo() {
-    //   axios
-    //     .get("http://127.0.0.1:8000/api/user-info/") // 请求后端接口
-    //     .then((response) => {
-    //       console.log("从后端获取的用户信息:", response.data);
-    //     // 将后端返回的数据存储到组件的 data 中
-    //       this.studentNumber.value = response.data.studentNumber;
-    //       this.name = response.data.name;
-    //       this.role = response.data.role;
-    //       this.college = response.data.college;
-    //       this.entryYear = response.data.entryYear;
-    //      })
-    //     .catch((error) => {
-    //       console.error("获取用户信息失败:", error);
-    //     });
-    // },
+      if (this.$refs.loginForm.validate()) {
+        const loginData = {
+          studentNumber: this.studentNumber.value,
+          password: this.password.value,
+        };
+        axios
+          .post("http://127.0.0.1:8000/api/login/", loginData)
+          .then((response) => {
+            console.log("后端返回url:", response.data.urls);
+            this.avatar = response.data.urls;
+            this.$router.push("/home");
+          })
+          .catch((error) => {
+            this.snackbarMessage = error.response.data.message;
+            this.snackbarColor = "error";
+            this.snackbarOpen = true;
+          });
+      } else {
+        this.snackbarMessage = "表单验证失败，请重试";
+        this.snackbarColor = "error";
+        this.snackbarOpen = true;
+      }
+    },
     handleResetLogin() {
       this.studentNumber.value = "";
       this.password.value = "";
@@ -388,18 +297,24 @@ export default {
         }
         console.log("注册表单已提交:", registerData);
         axios
-        .post("http://127.0.0.1:8000/api/register/", registerData)
-        .then((response) => {
-          alert("注册成功");
-        })
-        .catch((error) => {
-          alert(error.response.data.message);
-          console.log(error);
-        });
-        // this.handleClear();
-        // this.dialog = false;
+          .post("http://127.0.0.1:8000/api/register/", registerData)
+          .then((response) => {
+            this.snackbarMessage = "注册成功";
+            this.snackbarColor = "success";
+            this.snackbarOpen = true;
+            this.dialog = false;
+            this.studentNumber.value = this.studentNumberReg;
+            this.password.value = this.confirmPassword;
+          })
+          .catch((error) => {
+            this.snackbarMessage = error.response.data.message;
+            this.snackbarColor = "error";
+            this.snackbarOpen = true;
+          });
       } else {
-        alert("注册表单验证失败");
+        this.snackbarMessage = "注册验证失败";
+        this.snackbarColor = "error";
+        this.snackbarOpen = true;
       }
     },
     // 清空注册表单内容
@@ -491,8 +406,10 @@ export default {
 }
 
 .no-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 .no-scrollbar::-webkit-scrollbar {
