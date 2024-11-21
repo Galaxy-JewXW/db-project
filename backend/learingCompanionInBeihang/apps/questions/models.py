@@ -2,6 +2,19 @@ from django.db import models
 from learingCompanionInBeihang.apps.users.models import User
 
 
+class QuestionBank(models.Model):
+    id = models.AutoField(primary_key=True)  # 主键
+    subject = models.CharField(max_length=100)  # 所属科目
+    estimated_time = models.IntegerField()  # 预计用时（分钟）
+    created_at = models.DateTimeField(auto_now_add=True)  # 创建日期
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_question_banks")  # 创建者
+    description = models.TextField(blank=True, null=True)  # 题库描述
+    question_count = models.IntegerField(default=0)  # 题目数量（可定期更新）
+
+    def __str__(self):
+        return f"{self.subject} - {self.id} - {self.question_count} questions"
+
+
 class Question(models.Model):
     TYPE_CHOICES = [
         ("单项选择题", "单项选择题"),
@@ -26,7 +39,7 @@ class Question(models.Model):
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)  # 难度
     answer = models.TextField(blank=True, null=True)  # 答案内容
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="added_questions")  # 创建者
-    question_banks = models.ManyToManyField('QuestionBank', related_name="questions")  # 题库关系
+    question_banks = models.ManyToManyField(QuestionBank, related_name="questions")  # 题库关系
 
     def __str__(self):
         return f"{self.type} - {self.subject} - {self.id}"
@@ -48,14 +61,30 @@ class UserQuestionRecord(models.Model):
         return f"User {self.user.id} - Question {self.question.id} - {'Correct' if self.is_correct else 'Incorrect'}"
 
 
-class QuestionBank(models.Model):
+class QuestionDiscussion(models.Model):
     id = models.AutoField(primary_key=True)  # 主键
-    subject = models.CharField(max_length=100)  # 所属科目
-    estimated_time = models.IntegerField()  # 预计用时（分钟）
-    created_at = models.DateTimeField(auto_now_add=True)  # 创建日期
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_question_banks")  # 创建者
-    description = models.TextField(blank=True, null=True)  # 题库描述
-    question_count = models.IntegerField(default=0)  # 题目数量（可定期更新）
+    question = models.OneToOneField(Question, on_delete=models.CASCADE, related_name="discussion")  # 关联的题目
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_discussions")  # 发布者
+    created_at = models.DateTimeField(auto_now_add=True)  # 创建时间
+    content = models.TextField()  # 讨论内容
 
     def __str__(self):
-        return f"{self.subject} - {self.id} - {self.question_count} questions"
+        return f"QuestionDiscussion for Question {self.question.id} by {self.created_by.name}"
+
+
+# 评论
+class QuestionComment(models.Model):
+    id = models.AutoField(primary_key=True)  # 主键
+    discussion = models.ForeignKey(QuestionDiscussion, on_delete=models.CASCADE, related_name="comments")  # 所属讨论
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_comments")  # 发布者
+    creator_avatar = models.URLField(blank=True, null=True)  # 发件人头像
+    created_at = models.DateTimeField(auto_now_add=True)  # 创建时间
+    content = models.TextField()  # 评论内容
+    likes = models.ManyToManyField(User, related_name="liked_comments", blank=True)  # 点赞的用户
+
+    def like_count(self):
+        """返回点赞数"""
+        return self.likes.count()
+
+    def __str__(self):
+        return f"QuestionComment by {self.created_by.name} on QuestionDiscussion {self.discussion.id}"
