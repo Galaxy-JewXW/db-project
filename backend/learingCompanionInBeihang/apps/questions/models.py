@@ -3,8 +3,16 @@ from learingCompanionInBeihang.apps.users.models import User
 
 
 class QuestionBank(models.Model):
+    SUBJECT_CHOICES = [
+        ("工科数学分析（上）", "工科数学分析（上）"),
+        ("工科数学分析（下）", "工科数学分析（下）"),
+        ("工科高等代数", "工科高等代数"),
+        ("离散数学（信息类）", "离散数学（信息类）"),
+        ("基础物理学A", "基础物理学A"),
+    ]
+
     id = models.AutoField(primary_key=True)  # 主键
-    subject = models.CharField(max_length=100)  # 所属科目
+    subject = models.CharField(max_length=100, choices=SUBJECT_CHOICES)  # 所属科目，限制为可选科目
     estimated_time = models.IntegerField()  # 预计用时（分钟）
     created_at = models.DateTimeField(auto_now_add=True)  # 创建日期
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_question_banks")  # 创建者
@@ -29,10 +37,18 @@ class Question(models.Model):
         ("困难", "困难"),
     ]
 
+    SUBJECT_CHOICES = [
+        ("工科数学分析（上）", "工科数学分析（上）"),
+        ("工科数学分析（下）", "工科数学分析（下）"),
+        ("工科高等代数", "工科高等代数"),
+        ("离散数学（信息类）", "离散数学（信息类）"),
+        ("基础物理学A", "基础物理学A"),
+    ]
+
     id = models.AutoField(primary_key=True)  # 题目ID
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)  # 题目类型
     content = models.TextField()  # 题目内容（Markdown 格式）
-    subject = models.CharField(max_length=100)  # 所属学科
+    subject = models.CharField(max_length=100, choices=SUBJECT_CHOICES)  # 所属科目，限制为可选科目
     added_at = models.DateField()  # 添加时间
     source = models.CharField(max_length=100, blank=True, null=True)  # 题目来源
     tags = models.JSONField()  # JSON 格式
@@ -40,6 +56,21 @@ class Question(models.Model):
     answer = models.TextField(blank=True, null=True)  # 答案内容
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="added_questions")  # 创建者
     question_banks = models.ManyToManyField(QuestionBank, related_name="questions")  # 题库关系
+
+    def get_user_status(self, user):
+        """
+        获取用户对该题目的做题状态：
+        - 未做过
+        - 已做对
+        - 做错
+        """
+        try:
+            record = self.user_records.get(user=user)
+            if record.is_correct is None:
+                return "未做过"
+            return "已做对" if record.is_correct else "做错"
+        except UserQuestionRecord.DoesNotExist:
+            return "未做过"
 
     def __str__(self):
         return f"{self.type} - {self.subject} - {self.id}"
@@ -49,7 +80,7 @@ class Question(models.Model):
 class UserQuestionRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="question_records")
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="user_records")
-    is_correct = models.BooleanField()  # 是否做对
+    is_correct = models.BooleanField(null=True, blank=True)  # 是否做对
     attempted_at = models.DateTimeField(auto_now_add=True)  # 做题时间
 
     class Meta:

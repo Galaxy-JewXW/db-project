@@ -223,3 +223,199 @@ class GetQuestionComments(APIView):
 
         except Question.DoesNotExist:
             return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
+
+
+# 获取所有 QuestionBank
+class GetAllQuestionBanks(APIView):
+    def post(self, request):
+        # 获取所有题库
+        user_id = request.data['user_id']
+        user = User.objects.get(id=user_id)
+
+        question_banks = QuestionBank.objects.all()
+
+        # 构造返回的数据
+        question_banks_data = []
+        for qb in question_banks:
+            question_banks_data.append({
+                "id": qb.id,
+                "subject": qb.subject,
+                "estimated_time": qb.estimated_time,
+                "created_at": qb.created_at,
+                "creator": qb.creator.name,
+                "question_count": qb.question_count,
+            })
+
+        return Response({
+            "success": True,
+            "question_banks": question_banks_data
+        }, status=HTTP_200_OK)
+
+
+# 获取所有 Question
+class GetAllQuestions(APIView):
+    def post(self, request):
+        # 获取所有题目
+        user_id = request.data['user_id']
+        user = User.objects.get(id=user_id)
+        questions = Question.objects.all()
+
+        # 构造返回的数据
+        questions_data = []
+        for question in questions:
+            questions_data.append({
+                "id": question.id,
+                "type": question.type,
+                "content": question.content,
+                "subject": question.subject,
+                "added_at": question.added_at,
+                "difficulty": question.difficulty,
+                "answer": question.answer,
+                "tags": question.tags,
+                "added_by": question.added_by.name,
+                "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
+            })
+
+        return Response({
+            "success": True,
+            "questions": questions_data
+        }, status=HTTP_200_OK)
+
+
+# 获取某一科目的所有 Question
+class GetQuestionsBySubject(APIView):
+    def post(self, request):
+        # 获取某一科目的所有题目
+        user_id = request.data['user_id']
+        user = User.objects.get(id=user_id)
+        subject = request.data['subject']
+        questions = Question.objects.filter(subject=subject)
+
+        # 如果没有找到该科目的题目
+        if not questions:
+            return Response({
+                "error": "No questions found for the given subject."
+            }, status=HTTP_404_NOT_FOUND)
+
+        # 构造返回的数据
+        questions_data = []
+        for question in questions:
+            questions_data.append({
+                "id": question.id,
+                "type": question.type,
+                "content": question.content,
+                "subject": question.subject,
+                "added_at": question.added_at,
+                "difficulty": question.difficulty,
+                "answer": question.answer,
+                "tags": question.tags,
+                "added_by": question.added_by.name,
+                "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
+            })
+
+        return Response({
+            "success": True,
+            "questions": questions_data
+        }, status=HTTP_200_OK)
+
+
+# 获取某一科目的所有 QuestionBank
+class GetQuestionBanksBySubject(APIView):
+    def post(self, request):
+        subject = request.data['subject']
+        # 获取某一科目的所有题库
+        question_banks = QuestionBank.objects.filter(subject=subject)
+
+        # 如果没有找到该科目的题库
+        if not question_banks:
+            return Response({
+                "error": "No question banks found for the given subject."
+            }, status=HTTP_404_NOT_FOUND)
+
+        # 构造返回的数据
+        question_banks_data = []
+        for qb in question_banks:
+            question_banks_data.append({
+                "id": qb.id,
+                "subject": qb.subject,
+                "estimated_time": qb.estimated_time,
+                "created_at": qb.created_at,
+                "creator": qb.creator.name,
+                "question_count": qb.question_count
+            })
+
+        return Response({
+            "success": True,
+            "question_banks": question_banks_data
+        }, status=HTTP_200_OK)
+
+
+# 获取某一 QuestionBank 内的所有 Question
+class GetQuestionsByQuestionBank(APIView):
+    def post(self, request):
+        try:
+            # 获取指定题库
+            user_id = request.data['user_id']
+            user = User.objects.get(id=user_id)
+            question_bank_id = request.data['question_bank_id']
+            question_bank = QuestionBank.objects.get(id=question_bank_id)
+
+            # 获取该题库内所有的题目
+            questions = question_bank.questions.all()
+
+            # 构造返回的数据
+            questions_data = []
+            for question in questions:
+                questions_data.append({
+                    "id": question.id,
+                    "type": question.type,
+                    "content": question.content,
+                    "subject": question.subject,
+                    "added_at": question.added_at,
+                    "difficulty": question.difficulty,
+                    "answer": question.answer,
+                    "tags": question.tags,
+                    "added_by": question.added_by.username,
+                    "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
+                })
+
+            return Response({
+                "success": True,
+                "questions": questions_data
+            }, status=HTTP_200_OK)
+
+        except QuestionBank.DoesNotExist:
+            return Response({"error": "QuestionBank not found."}, status=HTTP_404_NOT_FOUND)
+
+
+# 获取某一特定 id 的 Question 详细信息
+class GetQuestionById(APIView):
+    def post(self, request):
+        try:
+            # 获取指定题目
+            user_id = request.data['user_id']
+            user = User.objects.get(id=user_id)
+            question_id = request.data['question_id']
+            question = Question.objects.get(id=question_id)
+
+            # 构造返回的数据
+            question_data = {
+                "id": question.id,
+                "type": question.type,
+                "content": question.content,
+                "subject": question.subject,
+                "added_at": question.added_at,
+                "difficulty": question.difficulty,
+                "answer": question.answer,
+                "tags": question.tags,
+                "added_by": question.added_by.username,
+                "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
+            }
+
+            return Response({
+                "success": True,
+                "question": question_data
+            }, status=HTTP_200_OK)
+
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
