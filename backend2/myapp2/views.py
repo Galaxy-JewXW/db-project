@@ -19,11 +19,27 @@ def login_view(request):
                  gender = random.choice(['women', 'men'])
                  number = random.randint(0, 99)
                  urls = f"https://randomuser.me/api/portraits/{gender}/{number}.jpg"
-
+            try:
+                role = user.profile.role  # 访问 UserProfile 的 urls 属性
+            except UserProfile.DoesNotExist:
+                role = 0
+            try:
+                entry_year = user.profile.entry_year  # 访问 UserProfile 的 urls 属性
+            except UserProfile.DoesNotExist:
+                entry_year = "114514"
+            try:
+                college = user.profile.college  # 访问 UserProfile 的 urls 属性
+            except UserProfile.DoesNotExist:
+                college = "buaa"
+            print(role)
             return JsonResponse({
                 "success": True,
                 "message": "登录成功",
-                "urls": urls
+                "urls": urls,
+                "name": user.first_name,
+                "role": role,
+                "entry_year": entry_year,
+                "college": college,
             })
         else:
             return JsonResponse({"success": False, "message": "用户名或密码错误"}, status=401)
@@ -43,6 +59,7 @@ def register_view(request):
             confirm_password = data.get('confirmPassword')
             gender = random.choice(['women', 'men'])
             number = random.randint(0, 99)
+            role = 0
             urls = f"https://randomuser.me/api/portraits/{gender}/{number}.jpg"
 
             if User.objects.filter(username=student_number).exists():
@@ -57,7 +74,9 @@ def register_view(request):
                 password=password,
                 first_name=name
             )
-
+            user.profile.college = college
+            user.profile.entry_year = entry_year
+            user.profile.role = role
             user.profile.urls = urls
             user.profile.save()
 
