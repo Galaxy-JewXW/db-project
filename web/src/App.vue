@@ -4,8 +4,7 @@
     <!-- 左侧可扩展侧边栏 -->
     <v-navigation-drawer v-if="!isLoginRoute" app expand-on-hover rail permanent>
       <v-list>
-        <v-list-item prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg" title="时间的彷徨"
-          subtitle="计算机学院 2025级"></v-list-item>
+        <v-list-item :prepend-avatar="userAvatar" :title="userTitle" :subtitle="userSubtitle"></v-list-item>
       </v-list>
 
       <v-divider></v-divider>
@@ -54,11 +53,10 @@ export default {
       datePart: "",
       weekday: "",
       timePart: "",
-      // appTitle 已经从 Vuex 中获取，不需要在 data 中定义
     };
   },
   computed: {
-    ...mapState(["appTitle", "pageTitle"]),
+    ...mapState(["appTitle", "pageTitle", "user"]),
     isLoginRoute() {
       return this.$route.path === "/login";
     },
@@ -74,6 +72,22 @@ export default {
           ? { title: "登录", icon: "mdi-login", value: "/login" }
           : { title: "注销", icon: "mdi-logout", value: "/logout" },
       ];
+    },
+    userAvatar() {
+      // 如果 user 存在并且包含 urls.avatar 字段，则使用它，否则提供默认头像
+      return this.user && this.user.urls
+        ? this.user.urls
+        : "https://randomuser.me/api/portraits/lego/1.jpg";
+    },
+    userTitle() {
+      // 如果 user 存在并且有 name 字段，则返回 name，否则提供默认名称
+      return this.user && this.user.name ? this.user.name : "未登录用户";
+    },
+    userSubtitle() {
+      // 如果 user 存在，则格式化 entry_year 和 college，否则提供默认副标题
+      return this.user && this.user.entry_year && this.user.college
+        ? `${this.user.college} ${this.user.entry_year}级`
+        : "请登录";
     },
   },
   created() {
