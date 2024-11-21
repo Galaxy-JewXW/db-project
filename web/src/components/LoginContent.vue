@@ -242,7 +242,7 @@ export default {
     },
   },
   methods: {
-    ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
+    ...mapMutations(["setAppTitle", "setPageTitle", "setUserId", "setUserInfo"]), // 映射 Vuex 的 mutations
 
     // 生成从当前年份向前 10 年的入学年份列表
     getEntryYears() {
@@ -263,8 +263,11 @@ export default {
         axios
           .post("http://127.0.0.1:8000/api/login/", loginData)
           .then((response) => {
-            console.log("后端返回url:", response.data.urls);
-            this.avatar = response.data.urls;
+            const token = this.studentNumber.value;
+            const user = response.data;
+            this.setUserId(token);
+            this.setUserInfo(user);
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
             this.$router.push("/home");
           })
           .catch((error) => {

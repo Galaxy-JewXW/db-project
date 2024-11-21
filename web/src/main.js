@@ -6,6 +6,7 @@
 
 // Plugins
 import { registerPlugins } from '@/plugins'
+import axios from "axios";
 
 // Components
 import App from './App.vue'
@@ -39,6 +40,18 @@ VueMarkdownEditor.use(githubTheme, {
 });
 VueMarkdownEditor.use(createKatexPlugin());
 VueMarkdownEditor.use(createLineNumbertPlugin());
+
+const userId = localStorage.getItem("userId");
+if (userId) {
+  console.log("got userId");
+  axios.defaults.headers.common["Authorization"] = `Bearer ${userId}`;
+  store.commit("setUserId", userId);
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (user) {
+    console.log("got User");
+    store.commit("setUserInfo", user);
+  }
+}
 
 // Composables
 import { createApp } from 'vue'

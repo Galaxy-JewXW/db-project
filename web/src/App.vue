@@ -2,25 +2,16 @@
 <template>
   <v-app>
     <!-- 左侧可扩展侧边栏 -->
-    <v-navigation-drawer app expand-on-hover rail permanent>
+    <v-navigation-drawer v-if="!isLoginRoute" app expand-on-hover rail permanent>
       <v-list>
-        <v-list-item
-          prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg"
-          title="时间的彷徨"
-          subtitle="计算机学院 2025级"
-        ></v-list-item>
+        <v-list-item prepend-avatar="https://randomuser.me/api/portraits/women/85.jpg" title="时间的彷徨"
+          subtitle="计算机学院 2025级"></v-list-item>
       </v-list>
 
       <v-divider></v-divider>
 
       <v-list density="compact" nav>
-        <v-list-item
-          v-for="item in menuItems"
-          :key="item.value"
-          :prepend-icon="item.icon"
-          :to="item.value"
-          link
-        >
+        <v-list-item v-for="item in menuItems" :key="item.value" :prepend-icon="item.icon" :to="item.value" link>
           <v-list-item-title class="text-subtitle-1">{{
             item.title
           }}</v-list-item-title>
@@ -68,9 +59,11 @@ export default {
   },
   computed: {
     ...mapState(["appTitle", "pageTitle"]),
+    isLoginRoute() {
+      return this.$route.path === "/login";
+    },
     menuItems() {
-      // 根据当前路由是否为 '/login' 动态修改第四个 item
-      const isLoginRoute = this.$route.path === "/login";
+      const isLoginRoute = this.isLoginRoute;
       return [
         { title: "首页", icon: "mdi-home", value: "/home" },
         { title: "题库", icon: "mdi-database", value: "/problemset" },
@@ -79,7 +72,7 @@ export default {
         { title: "个人中心", icon: "mdi-account-details", value: "/profile" },
         isLoginRoute
           ? { title: "登录", icon: "mdi-login", value: "/login" }
-          : { title: "注销", icon: "mdi-logout", value: "/login" },
+          : { title: "注销", icon: "mdi-logout", value: "/logout" },
       ];
     },
   },
@@ -95,10 +88,6 @@ export default {
     pageTitle(newTitle) {
       document.title = newTitle || "标题";
     },
-    // 如果需要监听路由变化，可以保留以下代码
-    // '$route'(to) {
-    //     // 可以在这里处理路由变化时的逻辑
-    // }
   },
   methods: {
     updateTime() {
@@ -109,7 +98,6 @@ export default {
       this.weekday = now.toLocaleDateString("zh-CN", weekdayOptions);
       this.timePart = now.toLocaleTimeString("zh-CN");
     },
-    // 已经不需要 setTitle 方法，因为标题由 Vuex 管理
   },
 };
 </script>
@@ -133,24 +121,19 @@ export default {
 
 .v-navigation-drawer {
   z-index: 1000;
-  /* 确保侧边栏在顶部标题栏之上 */
 }
 
 .v-app-bar {
   z-index: 999;
-  /* 确保顶部标题栏在侧边栏之下 */
 }
 </style>
 
 <style>
-/* 全局样式 */
-
 html,
 body {
   overflow-y: hidden;
 }
 
-/* 自定义链接样式，确保链接不影响列表项样式 */
 .text-decoration-none {
   text-decoration: none;
   color: inherit;
