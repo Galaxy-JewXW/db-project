@@ -110,7 +110,9 @@ class BoardViewTests(TestCase):
         self.message1 = Message.objects.create(sender=self.other_user, receiver=self.user, content="Message 1", is_read=False)
         self.message2 = Message.objects.create(sender=self.user, receiver=self.other_user, content="Message 2", is_read=False)
         self.message3 = Message.objects.create(sender=self.user, receiver=self.user, content="Message 3", is_read=False)
-
+        self.message4 = Message.objects.create(sender=self.other_user, receiver=self.user, content="Message 4", is_read=True)
+        self.message5 = Message.objects.create(sender=self.other_user, receiver=self.user, content="Message 5",
+                                               is_read=True)
         # 初始化 API 客户端
         self.client = APIClient()
 
