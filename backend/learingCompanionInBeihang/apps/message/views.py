@@ -12,47 +12,58 @@ from learingCompanionInBeihang.apps.users.models import User
 
 class GetAllMessage(APIView):
     def post(self, request):
-        user_id = request.data['user_id']
-        user = User.objects.get(id=user_id)
+        try:
+            user_id = request.data['user_id']
+            user = User.objects.get(id=user_id)
 
-        # 获取用户作为发件人或收件人的消息
-        received_messages = Message.objects.filter(receiver=user, is_read=False)
+            # 获取用户作为发件人或收件人的消息
+            received_messages = Message.objects.filter(receiver=user, is_read=False)
 
-        all_messages = received_messages.order_by('-sent_at')  # 按发送时间倒序排列
+            all_messages = received_messages.order_by('-sent_at')  # 按发送时间倒序排列
 
-        messages_data = [
-            {
-                'id': message.id,
-                'sender': message.sender.id,
-                'receiver': message.receiver.id,
-                'content': message.content,
-                'is_read': message.is_read,
-                'sent_at': message.sent_at,
-                'sender_avatar': message.sender_avatar,
-            }
-            for message in all_messages
-        ]
+            messages_data = [
+                {
+                    'id': message.id,
+                    'sender': message.sender.id,
+                    'receiver': message.receiver.id,
+                    'content': message.content,
+                    'is_read': message.is_read,
+                    'sent_at': message.sent_at,
+                    'sender_avatar': message.sender_avatar,
+                }
+                for message in all_messages
+            ]
 
-        return Response({
-            'message': "success",
-            'messages': messages_data
-        }, status=HTTP_200_OK)
+            return Response({
+                'message': "success",
+                'messages': messages_data
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
 
 
 class MarkMessageAsRead(APIView):
     def post(self, request):
-        user_id = request.data['user_id']
-        message_id = request.data['message_id']
+        try:
+            user_id = request.data['user_id']
+            message_id = request.data['message_id']
 
-        # 获取用户和消息
-        user = User.objects.get(id=user_id)
-        message = Message.objects.get(id=message_id)
+            # 获取用户和消息
+            user = User.objects.get(id=user_id)
+            message = Message.objects.get(id=message_id)
 
-        # 标记为已读
-        message.is_read = True
-        message.save()
+            # 标记为已读
+            message.is_read = True
+            message.save()
 
-        return Response({'success': f'Message {message_id} marked as read.'}, status=HTTP_200_OK)
+            return Response({'success': f'Message {message_id} marked as read.'}, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=404)
+
+        except Message.DoesNotExist:
+            return Response({'error': 'Message not found'}, status=404)
 
 
 class SendMessage(APIView):

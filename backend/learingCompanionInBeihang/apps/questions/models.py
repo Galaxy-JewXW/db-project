@@ -80,6 +80,7 @@ class Question(models.Model):
 class UserQuestionRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="question_records")
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="user_records")
+    question_subject = models.CharField(max_length=100, choices=Question.SUBJECT_CHOICES, default="工科数学分析（上）")  # 题目科目
     is_correct = models.BooleanField(null=True, blank=True)  # 是否做对
     attempted_at = models.DateTimeField(auto_now_add=True)  # 做题时间
 

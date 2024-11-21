@@ -1,6 +1,7 @@
 from django.db import models
 from learingCompanionInBeihang.apps.users.models import User
 
+
 # Create your models here.
 class Message(models.Model):
     id = models.AutoField(primary_key=True)  # 主键
