@@ -4,7 +4,7 @@ import axios from "axios";
 
 export default createStore({
   state: {
-    userId: -1,
+    userId: null,
     user: null,
     appTitle: '准备就绪',
     pageTitle: '准备就绪',

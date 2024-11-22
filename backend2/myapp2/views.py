@@ -40,6 +40,7 @@ def login_view(request):
                 "role": role,
                 "entry_year": entry_year,
                 "college": college,
+                "email": user.email
             })
         else:
             return JsonResponse({"success": False, "message": "用户名或密码错误"}, status=401)

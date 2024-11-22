@@ -13,7 +13,7 @@
           <!-- 左侧：头像和上传按钮 -->
           <v-col cols="12" md="4" class="text-center">
             <v-avatar size="120">
-              <img :src="avatar" alt="用户头像" />
+              <img :src="userAvatar" alt="用户头像" />
             </v-avatar>
             <v-divider class="my-6"></v-divider>
             <v-btn color="primary" prepend-icon="mdi-lead-pencil" @click="uploadAvatar">上传新头像</v-btn>
@@ -31,7 +31,7 @@
               </v-col>
               <v-col cols="8" class="text-subtitle-1">
                 <!-- 调大字体 -->
-                {{ username }}
+                {{ userName }}
               </v-col>
             </v-row>
 
@@ -45,7 +45,7 @@
               </v-col>
               <v-col cols="8" class="text-subtitle-1">
                 <!-- 调大字体 -->
-                {{ studentNumber }}
+                {{ userNumber }}
               </v-col>
             </v-row>
 
@@ -59,7 +59,7 @@
               </v-col>
               <v-col cols="8" class="text-subtitle-1">
                 <!-- 调大字体 -->
-                {{ college }}
+                {{ userCollege }}
               </v-col>
             </v-row>
 
@@ -73,7 +73,7 @@
               </v-col>
               <v-col cols="8" class="text-subtitle-1">
                 <!-- 调大字体 -->
-                {{ enrollmentYear }}
+                {{ userEntryYear }}
               </v-col>
             </v-row>
 
@@ -87,7 +87,7 @@
               </v-col>
               <v-col cols="8" class="text-subtitle-1">
                 <!-- 调大字体 -->
-                {{ email }}
+                {{ userEmail }}
               </v-col>
             </v-row>
           </v-col>
@@ -193,7 +193,7 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex"; // 引入 mapMutations
+import { mapMutations, mapState } from "vuex"; // 引入 mapMutations
 
 export default {
   name: "ProfileContent",
@@ -202,9 +202,9 @@ export default {
       // 用户信息
       avatar: "https://randomuser.me/api/portraits/women/85.jpg",
       username: "时间的彷徨",
-      studentNumber: "22373300",
-      college: "计算机学院",
-      enrollmentYear: "2022",
+      studentNumber: 22373300,
+      college: "1",
+      enrollmentYear: "2021",
       email: "pigkiller@gmail.com",
 
       // 对话框控制
@@ -214,8 +214,8 @@ export default {
       // 表单数据
       formData: {
         username: "时间的彷徨",
-        college: "计算机学院",
-        enrollmentYear: "2022",
+        college: "1",
+        enrollmentYear: "2021",
         email: "pigkiller@gmail.com",
       },
 
@@ -288,6 +288,39 @@ export default {
     const title = "个人中心";
     this.setAppTitle(title);
     this.setPageTitle(title);
+  },
+  computed: {
+    ...mapState(["user", "userId"]),
+    userAvatar() {
+      return this.user && this.user.urls
+        ? this.user.urls
+        : "https://randomuser.me/api/portraits/lego/1.jpg";
+    },
+    userName() {
+      const name = this.user && this.user.name ? this.user.name : "error";
+      this.formData.username = name;
+      return name;
+    },
+    userNumber() {
+      const number = this.user && this.userId ? this.userId : -1;
+      this.studentNumber = number;
+      return number;
+    },
+    userCollege() {
+      const college = this.user && this.user.college ? this.user.college : "error";
+      this.formData.college = college;
+      return college;
+    },
+    userEntryYear() {
+      const entryYear = this.user && this.user.entry_year ? this.user.entry_year : "error";
+      this.formData.enrollmentYear = entryYear;
+      return entryYear;
+    },
+    userEmail() {
+      const email = this.user && this.user.email ? this.user.email : "error";
+      this.formData.email = email;
+      return email;
+    }
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
