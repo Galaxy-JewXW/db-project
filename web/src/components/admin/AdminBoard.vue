@@ -1,18 +1,14 @@
 <template>
-    <v-banner
-      sticky
-      icon="mdi-plus"
-      lines="one"
-    >
-      <template v-slot:text>
-        <div class="text-subtitle-1">作为辅导师，你可发布新的通知。</div>
-      </template>
+    <v-banner sticky icon="mdi-plus" lines="one">
+        <template v-slot:text>
+            <div class="text-subtitle-1">作为辅导师，你可发布新的公告。</div>
+        </template>
 
-      <template v-slot:actions>
-        <v-btn color="primary" class="mr-5" @click="postNewNoti()">
-            <div class="text-subtitle-1">发布新通知</div>
-        </v-btn>
-      </template>
+        <template v-slot:actions>
+            <v-btn color="primary" class="mr-5" @click="postNewNoti()">
+                <div class="text-subtitle-1">发布新公告</div>
+            </v-btn>
+        </template>
     </v-banner>
     <v-container class="scroll-container">
         <v-row>
@@ -33,7 +29,7 @@
                     <v-divider></v-divider>
                     <v-row no-gutters>
                         <v-col cols="auto">
-                            <v-btn rounded="0" variant="text" :color="'#1867c0'">
+                            <v-btn rounded="0" variant="text" :color="'#1867c0'" @click="editNotice(notice)">
                                 <v-icon left>mdi-pencil</v-icon>
                                 编辑
                             </v-btn>
@@ -43,6 +39,65 @@
             </v-col>
         </v-row>
     </v-container>
+    <v-dialog v-model="editDialogOpen" transition="dialog-bottom-transition" fullscreen>
+        <v-card>
+            <v-toolbar dark color="primary">
+                <v-btn icon dark @click="editDialogOpen = false">
+                    <v-icon>mdi-close</v-icon>
+                </v-btn>
+                <v-toolbar-title>编辑该公告</v-toolbar-title>
+            </v-toolbar>
+            <div class="scroll-container">
+                <v-form ref="form" v-model="valid" lazy-validation>
+                    <v-row>
+                        <v-col>
+                            <v-text-field v-model="currentNotice.title" label="标题" :rules="[rules.required]"
+                                variant="outlined" />
+                        </v-col>
+                    </v-row>
+                </v-form>
+
+                <!-- 表单和编辑器之间的分割线 -->
+                <v-divider></v-divider>
+
+                <!-- Markdown 编辑器 -->
+                <v-md-editor v-model="currentNotice.content" height="325px"
+                    left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
+                    right-toolbar="preview toc sync-scroll"></v-md-editor>
+
+                <!-- 按钮行 -->
+                <v-row class="btns">
+                    <v-btn color="primary" @click="confirmNotice">发布</v-btn>
+                    <v-btn variant="plain" @click="clearNotice">清除</v-btn>
+                </v-row>
+            </div>
+        </v-card>
+    </v-dialog>
+    <v-dialog v-model="submitDialogOpen" max-width="400px">
+        <v-card>
+            <v-card-title>
+                <v-icon color="primary">mdi-alert-circle-outline</v-icon>
+                <span class="headline ml-2">确定提交你的更改吗？</span>
+            </v-card-title>
+            <v-card-actions>
+                <v-btn color="primary" variant="text" @click="submitNotice">
+                    确定
+                </v-btn>
+                <v-btn variant="plain" @click="submitDialogOpen = false">
+                    取消
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+    <v-snackbar v-model="snackbarOpen" :timeout="snackbarTimeout" :color="snackbarColor" min-width="25%"
+        style="z-index: 10000;">
+        <div style="font-size: 16px">{{ snackbarMessage }}</div>
+        <template #actions>
+            <v-btn icon @click="snackbarOpen = false">
+                <v-icon>mdi-close</v-icon>
+            </v-btn>
+        </template>
+    </v-snackbar>
 </template>
 
 <script>
@@ -90,6 +145,24 @@ export default {
                     content: "因设备升级，10月9日0:00-6:00校园网络将暂停服务。",
                 },
             ],
+            rules: {
+                required: (value) => !!value || "该字段为必填项",
+            },
+            valid: false,
+            editDialogOpen: false,
+            currentNotice: {
+                id: null,
+                title: '',
+                publisher: '',
+                releaseTime: '',
+                content: '',
+            },
+            originalNotice: {},
+            submitDialogOpen: false,
+            snackbarOpen: false,
+            snackbarMessage: '',
+            snackbarTimeout: 1000,
+            snackbarColor: 'error', // 错误颜色
         };
     },
     mounted() {
@@ -118,8 +191,51 @@ export default {
             };
             return new Intl.DateTimeFormat('zh-CN', options).format(date);
         },
+        editNotice(notice) {
+            this.currentNotice = { ...notice };
+            this.originalNotice = { ...notice };
+            this.editDialogOpen = true;
+        },
         postNewNoti() {
             this.$router.push("/admin/new-notification");
+        },
+        hasChanges() {
+            return (
+                this.currentNotice.title !== this.originalNotice.title ||
+                this.currentNotice.content !== this.originalNotice.content
+            );
+        },
+        confirmNotice() {
+            if (!this.currentNotice.title || !this.currentNotice.content) {
+                this.snackbarMessage = '标题或内容不能为空';
+                this.snackbarColor = 'error';
+                this.snackbarOpen = true;
+                return;
+            }
+            if (this.hasChanges()) {
+                this.submitDialogOpen = true;
+            } else {
+                this.snackbarMessage = '修改成功';
+                this.snackbarColor = 'success';
+                this.snackbarOpen = true;
+                this.editDialogOpen = false;
+                this.submitDialogOpen = false;
+            }
+        },
+        submitNotice() {
+            // 执行提交逻辑
+            console.log(this.currentNotice);
+            this.snackbarMessage = '修改成功';
+            this.snackbarColor = 'success';
+            this.snackbarOpen = true;
+            this.editDialogOpen = false;
+            this.submitDialogOpen = false;
+        },
+
+        // 清除公告内容
+        clearNotice() {
+            this.currentNotice.title = '';
+            this.currentNotice.content = '';
         }
     },
 };
@@ -175,4 +291,8 @@ export default {
     cursor: pointer;
 }
 
+.btns {
+    margin-top: 16px;
+    padding-left: 16px;
+}
 </style>

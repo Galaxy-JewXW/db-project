@@ -16,7 +16,7 @@ const adminRoutes = [
   },
   {
     path: "/admin/new-notification",
-    component: () => import("@/components/admin/NewNotification.vue"),
+    component: () => import("@/components/admin/NewAnnouncement.vue"),
     meta: {
       requiresAuth: true,
       requiresAdmin: true,

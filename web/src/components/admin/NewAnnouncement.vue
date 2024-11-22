@@ -2,7 +2,7 @@
   <!-- 顶部的 Banner -->
   <v-banner sticky icon="mdi-plus" lines="one">
     <template v-slot:text>
-      <div class="text-subtitle-1">作为辅导师，你可发布新的通知。</div>
+      <div class="text-subtitle-1">作为辅导师，你可发布新的公告。</div>
     </template>
 
     <template v-slot:actions>
@@ -126,7 +126,7 @@ export default {
     };
   },
   mounted() {
-    const title = "发布新通知";
+    const title = "发布新公告";
     this.setAppTitle(title);
     this.setPageTitle(title);
   },
