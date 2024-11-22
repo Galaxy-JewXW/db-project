@@ -9,6 +9,7 @@ from learingCompanionInBeihang.apps.broadcast.models import Broadcast
 from learingCompanionInBeihang.apps.message.models import Message
 from learingCompanionInBeihang.apps.questions.models import Question, UserQuestionRecord
 from learingCompanionInBeihang.apps.users.models import User
+from learingCompanionInBeihang.apps.utils.views import decode_request
 
 
 class GetHomeView(APIView):
@@ -18,7 +19,8 @@ class GetHomeView(APIView):
 
     def post(self, request):
         try:
-            user_id = request.data['user_id']  # 获取当前用户
+            data = decode_request(request)
+            user_id = data['user_id']  # 获取当前用户
             user = User.objects.get(id=user_id)
 
             # 获取最新公告（最多3条）
@@ -28,6 +30,8 @@ class GetHomeView(APIView):
                     "id": b.id,
                     "sender": b.sender,
                     "sent_at": b.sent_at,
+                    "last_updated": b.last_updated,
+                    "title": b.title,
                     "content": b.content
                 } for b in broadcasts
             ]
