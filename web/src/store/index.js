@@ -26,7 +26,7 @@ export default createStore({
       localStorage.setItem("user", JSON.stringify(user));
     },
     cleanUserId(state) {
-      state.userId = -1;
+      state.userId = null;
       state.user = null;
       localStorage.removeItem("userId");
       localStorage.removeItem("user");
@@ -35,5 +35,12 @@ export default createStore({
   },
   getters: {
     isAuthenticated: (state) => !!state.user,
+    userRole: (state) => {
+      if (state.user) {
+        return state.user.role;
+      } else {
+        return -100;
+      }
+    },
   },
 });

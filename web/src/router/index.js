@@ -3,6 +3,26 @@ import { createRouter, createWebHistory } from "vue-router";
 import { routes as autoRoutes } from "vue-router/auto-routes";
 import NotFound from "@/components/NotFound.vue"; // 导入 404 页面组件
 import store from "@/store";
+import Unauthorized from "@/components/Unauthorized.vue";
+
+const adminRoutes = [
+  {
+    path: "/admin/home",
+    component: () => import("@/components/admin/AdminBoard.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/new-notification",
+    component: () => import("@/components/admin/NewNotification.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  }
+]
 
 // 手动添加的自定义路由
 const customRoutes = [
@@ -18,7 +38,7 @@ const customRoutes = [
   {
     path: "/problemset/:id",
     name: "ProblemSetDetail",
-    component: () => import("@/components/ProblemSetDetail.vue"),
+    component: () => import("@/components/user/ProblemSetDetail.vue"),
     props: true,
     meta: {
       appTitle: "题库详情",
@@ -29,7 +49,7 @@ const customRoutes = [
   {
     path: "/exercise/:id",
     name: "ProblemDetail",
-    component: () => import("@/components/ProblemDetail.vue"),
+    component: () => import("@/components/user/ProblemDetail.vue"),
     props: true,
     meta: {
       appTitle: "题目详情",
@@ -40,7 +60,7 @@ const customRoutes = [
   {
     path: "/exam/:id",
     name: "ExamDetail",
-    component: () => import("@/components/ExamDetail.vue"),
+    component: () => import("@/components/user/ExamDetail.vue"),
     props: true,
     meta: {
       appTitle: "测试详情",
@@ -51,7 +71,7 @@ const customRoutes = [
   {
     path: "/discussion/new",
     name: "NewPost",
-    component: () => import("@/components/NewPost.vue"),
+    component: () => import("@/components/user/NewPost.vue"),
     props: true,
     meta: {
       appTitle: "发布新讨论",
@@ -60,14 +80,34 @@ const customRoutes = [
     },
   },
   {
+    path: "/admin/profile",
+    name: "Profile",
+    component: () => import("@/components/ProfileContent.vue"),
+    props: true,
+    meta: {
+      appTitle: "个人中心",
+      pageTitle: "个人中心",
+      requiresAuth: true,
+    },
+  },
+  {
     path: "/discussion/:id",
     name: "DiscussionContent",
-    component: () => import("@/components/DiscussionContent.vue"),
+    component: () => import("@/components/user/DiscussionContent.vue"),
     props: true,
     meta: {
       appTitle: "讨论详情",
       pageTitle: "讨论详情",
       requiresAuth: true,
+    },
+  },
+  {
+    path: "/unauthorized",
+    name: "Unauthorized",
+    component: Unauthorized,
+    meta: {
+      appTitle: "未授权",
+      pageTitle: "未授权",
     },
   },
 ];
@@ -81,6 +121,7 @@ const routesWithMeta = autoRoutes.map((route) => {
   // 根据路由路径或名称设置具体标题
   switch (route.path) {
     case "/home":
+    case "/admin/home":
       appTitle = "公告栏";
       pageTitle = "首页";
       break;
@@ -101,6 +142,7 @@ const routesWithMeta = autoRoutes.map((route) => {
       pageTitle = "登录";
       break;
     case "/profile":
+    case "/admin/profile":
       appTitle = "个人中心";
       pageTitle = "个人中心";
       break;
@@ -138,6 +180,7 @@ const routes = [
   { path: "/", redirect: "/home" },
   // 先添加自定义路由，以确保匹配优先级
   ...customRoutes,
+  ...adminRoutes,
   // 然后添加自动生成的路由
   ...routesWithMeta,
   // 添加通配符路由，匹配所有未定义的路径
@@ -175,12 +218,17 @@ router.onError((err, to) => {
 
 router.beforeEach((to, from, next) => {
   const isAuthenticated = store.getters.isAuthenticated;
+  const userRole = store.getters.userRole ? store.getters.userRole : -1; // 获取用户角色
+
   if (to.meta.requiresAuth && !isAuthenticated) {
     // 如果目标路由需要认证但用户未认证，重定向到登录页
     next({ path: '/login', query: { redirect: to.fullPath } });
   } else if (to.meta.requiresGuest && isAuthenticated) {
     // 如果目标路由仅限未认证用户且用户已认证，重定向到首页
     next({ path: '/home' });
+  } else if (to.meta.requiresAdmin && userRole <= 0) {
+    // 如果目标路由需要管理员权限但用户角色不足，重定向到未授权页面
+    next({ path: '/unauthorized' });
   } else {
     // 否则，允许导航
     next();

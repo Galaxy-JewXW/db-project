@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ForumContent from '../components/ForumContent.vue';
+import ForumContent from '@/components/user/ForumContent.vue';
 
 export default {
     name: 'ForumPage',

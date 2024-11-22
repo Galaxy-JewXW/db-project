@@ -6,7 +6,7 @@
 </template>
 
 <script>
-import Board from '../components/Board.vue';
+import Board from '@/components/user/Board.vue';
 
 export default {
     name: 'Home',
