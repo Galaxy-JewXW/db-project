@@ -25,4 +25,5 @@ urlpatterns = [
     path('questions/', include('learingCompanionInBeihang.apps.questions.urls')),
     path('broadcast/', include('learingCompanionInBeihang.apps.broadcast.urls')),
     path('board/', include('learingCompanionInBeihang.apps.board.urls')),
+    path('discussions/', include('learingCompanionInBeihang.apps.discussions.urls')),
 ]
