@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ProfileContent from '@/components/ProfileContent.vue'
+import ProfileContent from '@/components/user/ProfileContent.vue'
 
 export default {
     name: 'ProfilePage',

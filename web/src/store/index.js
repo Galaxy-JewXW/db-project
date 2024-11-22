@@ -35,5 +35,12 @@ export default createStore({
   },
   getters: {
     isAuthenticated: (state) => !!state.user,
+    userRole: (state) => {
+      if (state.user) {
+        return state.user.role;
+      } else {
+        return -100;
+      }
+    },
   },
 });

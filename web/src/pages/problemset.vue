@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ProblemSetContent from '@/components/ProblemSetContent.vue';
+import ProblemSetContent from '@/components/user/ProblemSetContent.vue';
 
 export default {
     name: 'ProblemSet',
