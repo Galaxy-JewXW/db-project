@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 
 from learingCompanionInBeihang.apps.users.models import User, BlackList
@@ -23,6 +25,10 @@ def response_json(success, code=None, message=None, data=None):
         'message': message,
         'data': data
     }
+
+
+def decode_request(request):
+    return json.loads(request.body)
 
 
 def decode_jwt(token: str) -> (int, dict):
