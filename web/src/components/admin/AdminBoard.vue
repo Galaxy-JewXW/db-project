@@ -23,9 +23,9 @@
                         </div>
                     </v-card-title>
                     <v-divider></v-divider>
-                    <v-card-text>
+                    <div style="margin-left: -15px;">
                         <v-md-preview :text="notice.content"></v-md-preview>
-                    </v-card-text>
+                    </div>
                     <v-divider></v-divider>
                     <v-row no-gutters>
                         <v-col cols="auto">
@@ -185,7 +185,6 @@ export default {
 
         // 格式化日期
         formatDate(dateString) {
-            const date = new Date(dateString);
             const options = {
                 year: 'numeric',
                 month: 'numeric',
@@ -195,7 +194,8 @@ export default {
                 second: 'numeric',
                 hour12: false, // 使用24小时制
             };
-            return new Intl.DateTimeFormat('zh-CN', options).format(date);
+            const date = new Date(dateString);
+            return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
         },
         editNotice(notice) {
             this.currentNotice = { ...notice };

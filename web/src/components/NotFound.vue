@@ -28,7 +28,11 @@ export default {
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
     goHome() {
-      this.$router.push("/");
+      if (this.$route.path.includes("/admin")) {
+        this.$router.push("/admin/home");
+      } else {
+        this.$router.push("/");
+      }
     },
   },
 };

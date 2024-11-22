@@ -90,8 +90,10 @@ export default {
         // 如果是辅导师，返回特殊的菜单项
         return [
           { title: "首页", icon: "mdi-home", value: "/admin/home" },
-          { title: "题目管理", icon: "mdi-file-edit", value: "/admin/questions" },
+          { title: "题目管理", icon: "mdi-file-edit", value: "/admin/exercise" },
           { title: "题库管理", icon: "mdi-database-edit", value: "/admin/problemset" },
+          { title: "模拟测试管理", icon: "mdi-arrange-send-backward", value: "/admin/exam" },
+          { title: "讨论区", icon: "mdi-forum", value: "/admin/forum" },
           { title: "个人中心", icon: "mdi-account-details", value: "/admin/profile" },
           isLoginRoute
             ? { title: "登录", icon: "mdi-login", value: "/login" }

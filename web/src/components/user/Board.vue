@@ -33,7 +33,7 @@
                   <v-list-item-subtitle class="notice-subtitle">
                     <span class="notice-publisher">{{ notice.publisher }}</span>
                     |
-                    <span class="notice-time">{{ notice.releaseTime }}</span>
+                    <span class="notice-time">{{ formatDate(notice.releaseTime) }}</span>
                   </v-list-item-subtitle>
                 </v-list-item>
                 <v-divider v-if="group.notices.length > 1"></v-divider>
@@ -65,7 +65,7 @@
                         {{ message.sender }}
                       </span>
                       <span class="message-time">
-                        &nbsp;{{ message.sendTime }}
+                        &nbsp;{{ formatDate(message.sendTime) }}
                       </span>
                     </div>
                   </template>
@@ -160,7 +160,7 @@
         }}</v-card-title>
         <v-card-subtitle class="dialog-subtitle">
           发布者：{{ selectedNotice.publisher }} &nbsp; 发布时间：{{
-            selectedNotice.releaseTime
+            formatDate(selectedNotice.releaseTime)
           }}
         </v-card-subtitle>
         <v-card-text>
@@ -179,7 +179,7 @@
         <v-card-title class="dialog-title">消息</v-card-title>
         <v-card-subtitle class="dialog-subtitle">
           发件人：{{ selectedMessage.sender }} &nbsp; 发送时间：{{
-            selectedMessage.sendTime
+            formatDate(selectedMessage.sendTime)
           }}
         </v-card-subtitle>
         <v-card-text>
@@ -207,7 +207,7 @@ export default {
           id: 1,
           title: "关于2024年春季学期开学的通知",
           publisher: "教务处",
-          releaseTime: "2023-10-15",
+          releaseTime: "2024-02-20T08:00:00",
           content:
             "各位同学，2024年春季学期将于2月20日正式开学，请提前做好返校准备。",
         },
@@ -215,7 +215,7 @@ export default {
           id: 2,
           title: "国庆节放假安排",
           publisher: "校办",
-          releaseTime: "2023-09-28",
+          releaseTime: "2023-10-01T09:00:00",
           content: "根据国家规定，国庆节放假时间为10月1日至10月7日，共7天。",
         },
         // 更多公告数据
@@ -223,7 +223,7 @@ export default {
           id: 3,
           title: "校园网络维护通知",
           publisher: "网络中心",
-          releaseTime: "2023-10-10",
+          releaseTime: "2023-10-12T00:00:00",
           content: "因设备升级，10月12日0:00-6:00校园网络将暂停服务。",
         },
       ],
@@ -231,14 +231,14 @@ export default {
         {
           id: 1,
           sender: "系统通知",
-          sendTime: "2023-10-16 08:00",
+          sendTime: "2023-10-16T08:00:00",
           content: "您的密码即将过期，请及时更新。",
           avatar: "https://picsum.photos/250/300?image=660",
         },
         {
           id: 2,
           sender: "张老师",
-          sendTime: "2023-10-15 17:45",
+          sendTime: "2023-10-15T17:45:00",
           content: "请注意，明天的课程时间有调整。",
           avatar: "https://picsum.photos/250/300?image=821",
         },
@@ -246,7 +246,7 @@ export default {
         {
           id: 3,
           sender: "李同学",
-          sendTime: "2023-10-14 12:30",
+          sendTime: "2023-10-14T12:30:00",
           content: "请问你有上次课的笔记吗？",
           avatar: "https://picsum.photos/250/300?image=883",
         },
@@ -462,6 +462,17 @@ export default {
     goToExercise(exerciseId) {
       console.log(`Navigate to exercise ID: ${exerciseId}`);
       this.$router.push(`/exercise/${exerciseId}`);
+    },
+    formatDate(dateString) {
+      const options = {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      const date = new Date(dateString);
+      return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
   },
   mounted() {

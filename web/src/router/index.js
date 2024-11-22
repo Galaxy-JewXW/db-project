@@ -21,6 +21,22 @@ const adminRoutes = [
       requiresAuth: true,
       requiresAdmin: true,
     }
+  },
+  {
+    path: "/admin/exercise/new",
+    component: () => import("@/components/admin/NewExercise.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/exercise",
+    component: () => import("@/components/admin/AdminExercise.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
   }
 ]
 
@@ -178,6 +194,7 @@ const routesWithMeta = autoRoutes.map((route) => {
 // 添加重定向路由，从 '/' 重定向到 '/home'
 const routes = [
   { path: "/", redirect: "/home" },
+  { path: "/admin/", redirect: "/admin/home"},
   // 先添加自定义路由，以确保匹配优先级
   ...customRoutes,
   ...adminRoutes,
