@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ProfileContent from '@/components/user/ProfileContent.vue'
+import ProfileContent from '@/components/ProfileContent.vue'
 
 export default {
     name: 'ProfilePage',
@@ -14,7 +14,3 @@ export default {
     }
 }
 </script>
-
-<style scoped>
-/* 你的样式 */
-</style>

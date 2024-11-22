@@ -13,6 +13,14 @@ const adminRoutes = [
       requiresAuth: true,
       requiresAdmin: true,
     }
+  },
+  {
+    path: "/admin/new-notification",
+    component: () => import("@/components/admin/NewNotification.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
   }
 ]
 
@@ -72,6 +80,17 @@ const customRoutes = [
     },
   },
   {
+    path: "/admin/profile",
+    name: "Profile",
+    component: () => import("@/components/ProfileContent.vue"),
+    props: true,
+    meta: {
+      appTitle: "个人中心",
+      pageTitle: "个人中心",
+      requiresAuth: true,
+    },
+  },
+  {
     path: "/discussion/:id",
     name: "DiscussionContent",
     component: () => import("@/components/user/DiscussionContent.vue"),
@@ -123,6 +142,7 @@ const routesWithMeta = autoRoutes.map((route) => {
       pageTitle = "登录";
       break;
     case "/profile":
+    case "/admin/profile":
       appTitle = "个人中心";
       pageTitle = "个人中心";
       break;

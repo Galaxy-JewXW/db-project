@@ -26,7 +26,7 @@ export default createStore({
       localStorage.setItem("user", JSON.stringify(user));
     },
     cleanUserId(state) {
-      state.userId = -1;
+      state.userId = null;
       state.user = null;
       localStorage.removeItem("userId");
       localStorage.removeItem("user");

@@ -3,29 +3,19 @@
     <v-container>
       <v-row>
         <!-- 左侧公告列表和消息 -->
-        <v-col
-          cols="12"
-          md="4"
-          style="
+        <v-col cols="12" md="4" style="
             display: flex;
             flex-direction: column;
             height: calc(100vh - 85px);
-          "
-        >
+          ">
           <!-- 公告列表 -->
-          <v-card
-            class="mb-4"
-            outlined
-            style="
+          <v-card class="mb-4" outlined style="
               flex: 1;
               overflow-y: auto;
               display: flex;
               flex-direction: column;
-            "
-          >
-            <v-card-title
-              class="headline text-h5 sticky-title font-weight-bold"
-            >
+            ">
+            <v-card-title class="headline text-h5 sticky-title font-weight-bold">
               公告列表
             </v-card-title>
             <v-divider></v-divider>
@@ -35,13 +25,8 @@
                   {{ group.label }}
                 </v-list-subheader>
                 <v-divider></v-divider>
-                <v-list-item
-                  v-for="notice in group.notices"
-                  :key="notice.id"
-                  @click="openDialog(notice)"
-                  ripple
-                  class="notice-item"
-                >
+                <v-list-item v-for="notice in group.notices" :key="notice.id" @click="openDialog(notice)" ripple
+                  class="notice-item">
                   <v-list-item-title class="font-weight-medium notice-title">
                     {{ notice.title }}
                   </v-list-item-title>
@@ -56,19 +41,13 @@
             </v-list>
           </v-card>
           <!-- 消息列表 -->
-          <v-card
-            class="mb-4"
-            outlined
-            style="
+          <v-card class="mb-4" outlined style="
               flex: 1;
               overflow-y: auto;
               display: flex;
               flex-direction: column;
-            "
-          >
-            <v-card-title
-              class="headline text-h5 sticky-title font-weight-bold"
-            >
+            ">
+            <v-card-title class="headline text-h5 sticky-title font-weight-bold">
               消息列表
             </v-card-title>
             <v-divider></v-divider>
@@ -78,13 +57,8 @@
                   {{ group.label }}
                 </v-list-subheader>
                 <v-divider></v-divider>
-                <v-list-item
-                  v-for="message in group.messages"
-                  :key="message.id"
-                  :prepend-avatar="message.avatar"
-                  @click="openMessageDialog(message)"
-                  ripple
-                >
+                <v-list-item v-for="message in group.messages" :key="message.id" :prepend-avatar="message.avatar"
+                  @click="openMessageDialog(message)" ripple>
                   <template v-slot:title>
                     <div>
                       <span class="font-weight-bold message-sender">
@@ -106,26 +80,18 @@
           </v-card>
         </v-col>
         <!-- 右侧雷达图和推荐练习 -->
-        <v-col
-          cols="12"
-          md="8"
-          style="
+        <v-col cols="12" md="8" style="
             display: flex;
             flex-direction: column;
             height: calc(100vh - 85px);
-          "
-        >
+          ">
           <!-- 当前进度 -->
-          <v-card
-            class="mb-4 no-scrollbar"
-            outlined
-            style="
+          <v-card class="mb-4 no-scrollbar" outlined style="
               flex: 0 0 auto;
               display: flex;
               flex-direction: column;
               overflow-y: auto;
-            "
-          >
+            ">
             <div class="sticky-title">
               <v-card-title class="headline text-h5 font-weight-bold">
                 当前进度
@@ -133,30 +99,24 @@
               <v-divider></v-divider>
             </div>
             <!-- 进度雷达图 -->
-            <div
-              style="
+            <div style="
                 display: flex;
                 flex-direction: row;
                 align-items: flex-start;
                 padding: 16px;
-              "
-            >
+              ">
               <!-- 雷达图 -->
               <div ref="radarChart" style="width: 400px; height: 300px"></div>
               <!-- 右侧内容区域 -->
               <div style="padding-left: 16px">
-                <div
-                  v-for="(item, index) in radarData"
-                  :key="index"
-                  style="margin-bottom: 12px"
-                >
+                <div v-for="(item, index) in radarData" :key="index" style="margin-bottom: 12px">
                   <div class="right-content-title">
                     {{ item.subject }}
                   </div>
                   <div>
                     <span class="large-number">{{ item.doneQuestions }}</span> /
                     <span class="medium-number">{{ item.totalQuestions }}</span>
-                     - <span class="font-weight-bold text-h6">{{ calculatePercentage(item) }}%</span>
+                    - <span class="font-weight-bold text-h6">{{ calculatePercentage(item) }}%</span>
                   </div>
                 </div>
               </div>
@@ -164,16 +124,12 @@
           </v-card>
 
           <!-- 推荐练习 -->
-          <v-card
-            class="mb-4 no-scrollbar"
-            outlined
-            style="
+          <v-card class="mb-4 no-scrollbar" outlined style="
               flex: 1;
               overflow-y: auto;
               display: flex;
               flex-direction: column;
-            "
-          >
+            ">
             <div class="sticky-title">
               <v-card-title class="headline text-h5 font-weight-bold">
                 推荐练习
@@ -183,14 +139,8 @@
             <!-- 推荐练习内容 -->
             <div style="flex: 1; padding: 16px">
               <div class="recommended-exercises">
-                <v-btn
-                  v-for="exercise in recommendedExercises"
-                  :key="exercise"
-                  class="exercise-button text-none"
-                  :style="{ backgroundColor: '#0D47A1', color: 'white' }"
-                  rounded="0"
-                  @click="goToExercise(exercise)"
-                >
+                <v-btn v-for="exercise in recommendedExercises" :key="exercise" class="exercise-button text-none"
+                  :style="{ backgroundColor: '#0D47A1', color: 'white' }" rounded="0" @click="goToExercise(exercise)">
                   <v-responsive class="text-truncate">{{
                     exercise
                   }}</v-responsive>
@@ -541,8 +491,10 @@ export default {
 }
 
 .no-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -552,21 +504,25 @@ export default {
 
 /* 公告列表样式 */
 .notice-title {
-  font-size: 1.35rem; /* 增大字体 */
+  font-size: 1.35rem;
+  /* 增大字体 */
   margin-bottom: 4px;
 }
 
 .notice-subtitle {
-  font-size: 1.1rem; /* 增大字体 */
+  font-size: 1.1rem;
+  /* 增大字体 */
   color: rgba(0, 0, 0, 0.6);
 }
 
 .notice-publisher {
-  font-size: 1.1rem; /* 增大字体 */
+  font-size: 1.1rem;
+  /* 增大字体 */
 }
 
 .notice-time {
-  font-size: 1rem; /* 保持时间字体大小不变 */
+  font-size: 1rem;
+  /* 保持时间字体大小不变 */
   color: rgba(0, 0, 0, 0.6);
 }
 
@@ -589,17 +545,20 @@ export default {
 }
 
 .message-sender {
-  font-size: 1rem; /* 增大字体 */
+  font-size: 1rem;
+  /* 增大字体 */
   font-weight: bold;
 }
 
 .message-time {
-  font-size: 0.75rem; /* 保持时间字体大小不变 */
+  font-size: 0.75rem;
+  /* 保持时间字体大小不变 */
   color: rgba(0, 0, 0, 0.6);
 }
 
 .message-content {
-  font-size: 0.9rem; /* 增大字体 */
+  font-size: 0.9rem;
+  /* 增大字体 */
   color: rgba(0, 0, 0, 0.87);
 }
 
@@ -619,17 +578,20 @@ export default {
 /* 右侧内容区域样式 */
 .right-content-title {
   font-weight: bolder;
-  font-size: 12px; /* 调小字号 */
+  font-size: 12px;
+  /* 调小字号 */
   color: gray;
 }
 
 .large-number {
-  font-size: 26px; /* 放大前面的数字 */
+  font-size: 26px;
+  /* 放大前面的数字 */
   font-weight: bold;
 }
 
 .medium-number {
-  font-size: 12px; /* 稍微放大后面的数字 */
+  font-size: 12px;
+  /* 稍微放大后面的数字 */
   font-weight: medium;
 }
 
