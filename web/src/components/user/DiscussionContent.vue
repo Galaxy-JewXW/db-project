@@ -36,7 +36,7 @@
       <v-row no-gutters>
         <v-col cols="auto">
           <v-btn rounded="0" @click="toggleLike('main')" class="like-btn"
-            :variant="mainDiscussion.isLiked ? 'tonal' : 'text'" :color="'#ee3f4d'">
+            :variant="mainDiscussion.isLiked ? 'tonal' : 'text'" color="#ee3f4d">
             <v-icon>{{ mainDiscussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline" }}</v-icon>
             {{ mainDiscussion.isLiked ? "取消点赞" : "点赞" }}
           </v-btn>

@@ -31,7 +31,13 @@
                         <v-col cols="auto">
                             <v-btn rounded="0" variant="text" :color="'#1867c0'" @click="editNotice(notice)">
                                 <v-icon left>mdi-pencil</v-icon>
-                                编辑
+                                编辑此公告
+                            </v-btn>
+                        </v-col>
+                        <v-col cols="auto">
+                            <v-btn rounded="0" variant="text" color="#ee3f4d">
+                                <v-icon left>mdi-close</v-icon>
+                                删除此公告
                             </v-btn>
                         </v-col>
                     </v-row>
@@ -45,7 +51,7 @@
                 <v-btn icon dark @click="editDialogOpen = false">
                     <v-icon>mdi-close</v-icon>
                 </v-btn>
-                <v-toolbar-title>编辑该公告</v-toolbar-title>
+                <v-toolbar-title>编辑公告</v-toolbar-title>
             </v-toolbar>
             <div class="scroll-container">
                 <v-form ref="form" v-model="valid" lazy-validation>
