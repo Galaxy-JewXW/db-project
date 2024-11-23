@@ -42,7 +42,7 @@
 
                         <!-- 时长输入 -->
                         <v-col cols="12">
-                            <v-text-field v-model.number="form.duration" label="时长（分钟）" type="number" :rules="[
+                            <v-text-field v-model.number="form.duration" label="时长（分钟）" :rules="[
                                 value => !!value || '时长为必填项',
                                 value => Number.isInteger(value) || '时长必须是整数',
                                 value => value > 0 || '时长必须大于0'
@@ -54,18 +54,109 @@
                             <v-textarea v-model="form.description" label="描述（不超过60字）" :rules="[
                                 value => !!value || '描述为必填项',
                                 value => value.length <= 60 || '描述不能超过60字'
-                            ]" required rows="4" />
+                            ]" required rows="4" no-resize counter />
                         </v-col>
                     </v-row>
                 </v-form>
             </v-tabs-window-item>
             <v-tabs-window-item :value="2">
-                <!-- 添加题目内容 -->
-                222
+                <v-row>
+                    <v-col cols="6">
+                        <div class="pa-3">
+                            <v-card :title="form.subject + '的所有题目'" prepend-icon="mdi-plus"
+                                subtitle="左键点击以查看题目，右键点击以添加题目到题库">
+                                <v-divider></v-divider>
+                                <v-expansion-panels>
+                                    <v-expansion-panel v-for="(group, index) in questions" :key="index">
+                                        <v-expansion-panel-title>
+                                            <template v-slot:default="{ expanded }">
+                                                <v-row no-gutters>
+                                                    <v-col class="d-flex justify-start text-bold" cols="2">
+                                                        {{ group.type }}
+                                                    </v-col>
+                                                    <v-col class="text-grey" cols="10">
+                                                        <v-fade-transition leave-absolute>
+                                                            <span> 共 {{ group.ids.length }} 题 </span>
+                                                        </v-fade-transition>
+                                                    </v-col>
+                                                </v-row>
+                                            </template>
+                                        </v-expansion-panel-title>
+                                        <v-expansion-panel-text>
+                                            <v-row no-gutters>
+                                                <div class="question-squares">
+                                                    <v-btn v-for="questionId in group.ids" :key="questionId"
+                                                        class="question-square text-none" color="blue-darken-4"
+                                                        rounded="0" @click="viewQuestion(group.type, questionId)"
+                                                        @contextmenu.prevent="addQuestion(group.type, questionId)">
+                                                        <v-responsive class="text-truncate">{{ questionId
+                                                            }}</v-responsive>
+                                                    </v-btn>
+                                                </div>
+                                            </v-row>
+                                        </v-expansion-panel-text>
+                                    </v-expansion-panel>
+                                </v-expansion-panels>
+                            </v-card>
+                        </div>
+                    </v-col>
+                    <v-col cols="6">
+                        <div class="pa-3">
+                            <v-card :title="'题库 ' + form.name + ' 已添加的题目'" prepend-icon="mdi-minus"
+                                subtitle="左键点击以从题库中移除题目">
+                                <v-divider></v-divider>
+                                <v-expansion-panels>
+                                    <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
+                                        <v-expansion-panel-title>
+                                            <template v-slot:default="{ expanded }">
+                                                <v-row no-gutters>
+                                                    <v-col class="d-flex justify-start text-bold" cols="2">
+                                                        {{ group.type }}
+                                                    </v-col>
+                                                    <v-col class="text-grey" cols="10">
+                                                        <v-fade-transition leave-absolute>
+                                                            <span> 共 {{ group.ids.length }} 题 </span>
+                                                        </v-fade-transition>
+                                                    </v-col>
+                                                </v-row>
+                                            </template>
+                                        </v-expansion-panel-title>
+                                        <v-expansion-panel-text>
+                                            <v-row no-gutters>
+                                                <div class="question-squares">
+                                                    <v-btn v-for="questionId in group.ids" :key="questionId"
+                                                        class="question-square text-none" color="blue-darken-4"
+                                                        rounded="0" @click="removeQuestion(group.type, questionId)">
+                                                        <v-responsive class="text-truncate">{{ questionId
+                                                            }}</v-responsive>
+                                                    </v-btn>
+                                                </div>
+                                            </v-row>
+                                        </v-expansion-panel-text>
+                                    </v-expansion-panel>
+                                </v-expansion-panels>
+                            </v-card>
+                        </div>
+                    </v-col>
+                </v-row>
             </v-tabs-window-item>
             <v-tabs-window-item :value="3">
                 <!-- 预览内容 -->
-                333
+                <div>
+                    <h3>题库预览</h3>
+                    <v-list>
+                        <v-list-item-group>
+                            <v-list-item v-for="(group, index) in form.questions" :key="index">
+                                <v-list-item-content>
+                                    <v-list-item-title>{{ group.type }}</v-list-item-title>
+                                    <v-list-item-subtitle>
+                                        {{ group.ids.join(', ') }}
+                                    </v-list-item-subtitle>
+                                </v-list-item-content>
+                            </v-list-item>
+                        </v-list-item-group>
+                    </v-list>
+                </div>
             </v-tabs-window-item>
         </v-tabs-window>
     </div>
@@ -103,11 +194,12 @@ export default {
                 description: '',
                 questions: []
             },
+            questions: [],
             snackbar: {
                 show: false,
                 message: '',
                 color: 'error'
-            }
+            },
         };
     },
     mounted() {
@@ -115,6 +207,8 @@ export default {
         const title = '创建新题库';
         this.setAppTitle(title);
         this.setPageTitle(title);
+        // 初始化题目列表
+        this.getExercises(this.form.subject);
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
@@ -128,10 +222,31 @@ export default {
                 color
             };
         },
+        getExercises(subject) {
+            const questions = [
+                {
+                    type: "单项选择题",
+                    ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
+                },
+                {
+                    type: "填空题",
+                    ids: [101, 102, 103], // 填空题
+                },
+                {
+                    type: "判断题",
+                    ids: [1101, 1102, 1103], // 填空题
+                },
+                {
+                    type: "解答题",
+                    ids: [201, 202], // 解答题
+                },
+            ];
+            this.questions = [...questions];
+        },
         async validateForm() {
             try {
                 const isValid = await this.$refs.formRef.validate();
-                if (!isValid) {
+                if (!isValid.valid) {
                     this.showSnackbar('请填写所有必填字段，并确保字段合法！');
                 }
                 return isValid;
@@ -153,8 +268,69 @@ export default {
                 }
                 this.maxAllowedTab = Math.max(this.maxAllowedTab, newTab); // 解锁新页面
             }
-            this.tab = newTab; // 更新实际页面索引
-        }
+            if (newTab === 2) {
+                console.log(this.form);
+                this.getExercises(this.form.subject);
+            }
+            this.tab = newTab;
+        },
+        viewQuestion(type, id) {
+            console.log(`访问了 ${type} 的题目 - ${id}`);
+        },
+        addQuestion(type, id) {
+            // 查找是否已经存在该类型
+            const typeIndex = this.form.questions.findIndex(group => group.type === type);
+            if (typeIndex !== -1) {
+                // 类型存在，检查id是否已经存在
+                if (!this.form.questions[typeIndex].ids.includes(id)) {
+                    this.form.questions[typeIndex].ids.push(id);
+                    this.showSnackbar(`已添加题目 - ${id} 到 ${type}`, 'success');
+                } else {
+                    this.showSnackbar(`题目 - ${id} 已添加`, 'info');
+                }
+            } else {
+                // 类型不存在，添加新的类型和id
+                this.form.questions.push({
+                    type: type,
+                    ids: [id]
+                });
+                this.showSnackbar(`已添加题目 - ${id} 到 ${type}`, 'success');
+            }
+            this.sortQuestions();
+        },
+        removeQuestion(type, id) {
+            // 查找该类型
+            const typeIndex = this.form.questions.findIndex(group => group.type === type);
+            if (typeIndex !== -1) {
+                const idIndex = this.form.questions[typeIndex].ids.indexOf(id);
+                if (idIndex !== -1) {
+                    this.form.questions[typeIndex].ids.splice(idIndex, 1);
+                    this.showSnackbar(`已从 ${type} 移除题目 - ${id} `);
+                    // 如果该类型下没有题目了，移除整个类型
+                    if (this.form.questions[typeIndex].ids.length === 0) {
+                        this.form.questions.splice(typeIndex, 1);
+                    }
+                }
+            }
+            this.sortQuestions();
+        },
+        sortQuestions() {
+            const typeOrder = [
+                "单项选择题",
+                "多项选择题",
+                "判断题",
+                "填空题",
+                "解答题"
+            ];
+
+            this.form.questions.sort(
+                (a, b) => typeOrder.indexOf(a.type) - typeOrder.indexOf(b.type)
+            );
+
+            this.form.questions.forEach((group) => {
+                group.ids.sort((a, b) => a - b);
+            });
+        },
     },
     watch: {
         tempTab(newTab, oldTab) {
@@ -177,5 +353,30 @@ export default {
 
 .scroll-container::-webkit-scrollbar {
     display: none;
+}
+
+.question-squares {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 16px;
+}
+
+.question-square {
+    width: 70px;
+    height: 70px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    cursor: pointer;
+}
+
+.question-square:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 </style>
