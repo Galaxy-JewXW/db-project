@@ -1,5 +1,5 @@
 <template>
-    <v-banner sticky icon="mdi-plus" lines="one">
+    <v-banner sticky icon="mdi-vector-polyline-edit" lines="one">
         <template v-slot:text>
             <div class="text-subtitle-1">作为辅导师，你可编辑/删除题目 - {{ this.id }}。</div>
         </template>

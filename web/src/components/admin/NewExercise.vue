@@ -95,10 +95,16 @@
 
         <v-tabs-window-item :value="3">
             <v-alert
-                v-if="form.questionType === '单项选择题' || form.questionType === '多项选择题' || form.questionType === '判断题'"
+                v-if="form.questionType === '单项选择题' || form.questionType === '多项选择题'"
                 color="primary" icon="mdi-ab-testing">
                 <v-alert-title>提示</v-alert-title>
                 你选择的题型是客观题型"{{ form.questionType }}"，选项个数为{{ form.optionsCount }}，请设置答案。
+            </v-alert>
+            <v-alert
+                v-if="form.questionType === '判断题'"
+                color="primary" icon="mdi-ab-testing">
+                <v-alert-title>提示</v-alert-title>
+                你选择的题型是客观题型"{{ form.questionType }}"，选项个数为2，请设置答案。
             </v-alert>
             <div v-if="form.questionType === '单项选择题'">
                 <v-radio-group v-model="form.answer" :rules="[v => !!v || '请选择答案']" required>
@@ -107,7 +113,6 @@
                     </template>
                 </v-radio-group>
             </div>
-
             <!-- 多项选择题 -->
             <div v-else-if="form.questionType === '多项选择题'">
                 <v-row no-gutters>
@@ -118,7 +123,6 @@
                     </v-container>
                 </v-row>
             </div>
-
             <!-- 判断题 -->
             <div v-else-if="form.questionType === '判断题'">
                 <v-radio-group v-model="form.answer" :rules="[v => !!v || '请选择答案']" required>
@@ -294,6 +298,9 @@ export default {
         },
 
         async validateForm() {
+            if (this.form.questionType === '判断题') {
+                this.form.optionsCount = 2;
+            }
             try {
                 const { valid } = await this.$refs.formRef.validate();
                 if (!valid) {

@@ -160,7 +160,7 @@ export default {
             this.$router.push("/admin/exercise/new");
         },
         editExercise(id) {
-            this.$router.push(`/admin/exercise/edit/${id}`);
+            this.$router.push(`/admin/exercise/${id}`);
         }
     },
 };
