@@ -23,10 +23,10 @@ class UploadQuestion(APIView):
                 content=data['content'],
                 subject=data['subject'],
                 added_at=data['added_at'],
-                source=data.post('source'),
-                tags=data.post('tags'),
+                source=data.get('source'),
+                tags=data.get('tags'),
                 difficulty=data['difficulty'],
-                answer=data.post('answer'),
+                answer=data.get('answer'),
                 added_by=user
             )
 
@@ -115,11 +115,11 @@ class CreateQuestionBank(APIView):
                 subject=data['subject'],
                 estimated_time=data['estimated_time'],
                 creator=user,
-                description=data.post('description'),
+                description=data.get('description'),
             )
 
             # 关联题目到题库
-            question_ids = data.post('question_ids')
+            question_ids = data.get('question_ids')
             questions = Question.objects.filter(id__in=question_ids)
             question_bank.questions.add(*questions)
 

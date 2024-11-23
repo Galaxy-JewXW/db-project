@@ -15,11 +15,11 @@ class PublishBroadcast(APIView):
     def post(self, request):
         try:
             data = decode_request(request)
-            user_id = data.post('user_id')
+            user_id = data.get('user_id')
             user = User.objects.get(id=user_id)
-            sender = data.post("sender")  # 默认发件人名字为"系统通知"
-            title = data.post("title")
-            content = data.post("content")
+            sender = data.get("sender")  # 默认发件人名字为"系统通知"
+            title = data.get("title")
+            content = data.get("content")
 
             if user.user_role != 1:
                 return Response({
@@ -63,11 +63,11 @@ class EditBroadcast(APIView):
     def post(self, request):
         try:
             data = decode_request(request)
-            user_id = data.post('user_id')
+            user_id = data.get('user_id')
             user = User.objects.get(id=user_id)
-            broadcast_id = data.post("broadcast_id")
-            new_title = data.post("title")
-            new_content = data.post("content")
+            broadcast_id = data.get("broadcast_id")
+            new_title = data.get("title")
+            new_content = data.get("content")
 
             if user.user_role != 1:
                 return Response({
@@ -123,9 +123,9 @@ class DeleteBroadcast(APIView):
     def post(self, request):
         try:
             data = decode_request(request)
-            user_id = data.post('user_id')
+            user_id = data.get('user_id')
             user = User.objects.get(id=user_id)
-            broadcast_id = data.post("broadcast_id")
+            broadcast_id = data.get("broadcast_id")
 
             if user.user_role != 1:
                 return Response({
@@ -169,7 +169,7 @@ class GetAllBroadcasts(APIView):
 
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post('user_id')
+        user_id = data.get('user_id')
 
         try:
             # 获取用户信息
@@ -216,8 +216,8 @@ class GetBroadcastById(APIView):
 
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post('user_id')
-        broadcast_id = data.post('broadcast_id')
+        user_id = data.get('user_id')
+        broadcast_id = data.get('broadcast_id')
 
         try:
             # 获取用户信息
