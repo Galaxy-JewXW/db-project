@@ -23,10 +23,10 @@ class UploadQuestion(APIView):
                 content=data['content'],
                 subject=data['subject'],
                 added_at=data['added_at'],
-                source=data.get('source', "用户上传"),
-                tags=data.get('tags', []),
+                source=data.post('source'),
+                tags=data.post('tags'),
                 difficulty=data['difficulty'],
-                answer=data.get('answer', None),
+                answer=data.post('answer'),
                 added_by=user
             )
 
@@ -115,11 +115,11 @@ class CreateQuestionBank(APIView):
                 subject=data['subject'],
                 estimated_time=data['estimated_time'],
                 creator=user,
-                description=data.get('description', ""),
+                description=data.post('description'),
             )
 
             # 关联题目到题库
-            question_ids = data.get('question_ids', [])
+            question_ids = data.post('question_ids')
             questions = Question.objects.filter(id__in=question_ids)
             question_bank.questions.add(*questions)
 
@@ -433,20 +433,25 @@ class GetQuestionsByQuestionBank(APIView):
             questions = question_bank.questions.all()
 
             # 构造返回的数据
+            # 初始化返回数据
             questions_data = []
-            for question in questions:
-                questions_data.append({
-                    "id": question.id,
-                    "type": question.type,
-                    "content": question.content,
-                    "subject": question.subject,
-                    "added_at": question.added_at,
-                    "difficulty": question.difficulty,
-                    "answer": question.answer,
-                    "tags": question.tags,
-                    "added_by": question.added_by.username,
-                    "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
-                })
+
+            # 遍历题目类型并按类型获取题目 ID
+            for question_type, type_label in Question.TYPE_CHOICES:
+                questions = question_bank.questions.filter(type=question_type).order_by("id")
+
+                # 如果该类型的题目存在，添加到结果
+                if questions.exists():
+                    questions_data.append({
+                        "type": type_label,
+                        "questions": [
+                            {
+                                "id": question.id,
+                                "user_status": question.get_user_status(user)  # 用户是否已作答
+                            }
+                            for question in questions
+                        ]
+                    })
 
             return Response({
                 "success": True,

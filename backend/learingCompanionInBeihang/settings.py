@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'learingCompanionInBeihang.apps.board',
     'learingCompanionInBeihang.apps.broadcast',
     'learingCompanionInBeihang.apps.discussions',
+    'learingCompanionInBeihang.apps.exams',
 ]
 
 MIDDLEWARE = [
