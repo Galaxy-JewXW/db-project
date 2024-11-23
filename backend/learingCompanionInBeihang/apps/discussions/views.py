@@ -13,11 +13,11 @@ class CreateDiscussion(APIView):
     def post(self, request):
         try:
             data = decode_request(request)
-            user_id = data.post('user_id')
+            user_id = data.get('user_id')
             user = User.objects.get(id=user_id)
-            title = data.post('title')
-            content = data.post('content')
-            tag = data.post('tag')
+            title = data.get('title')
+            content = data.get('content')
+            tag = data.get('tag')
             avatar = user.avatar
 
             if not title or not content:
@@ -43,9 +43,9 @@ class CreateDiscussion(APIView):
 class LikePost(APIView):
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post('user_id')
+        user_id = data.get('user_id')
         user = User.objects.get(id=user_id)
-        discussion_id = data.post('discussion_id')
+        discussion_id = data.get('discussion_id')
 
         try:
             discussion = Discussion.objects.get(id=discussion_id)
@@ -71,9 +71,9 @@ class LikePost(APIView):
 class SubscribeDiscussion(APIView):
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post('user_id')
+        user_id = data.get('user_id')
         user = User.objects.get(id=user_id)
-        discussion_id = data.post('discussion_id')
+        discussion_id = data.get('discussion_id')
 
         try:
             discussion = Discussion.objects.get(id=discussion_id)
@@ -99,10 +99,10 @@ class SubscribeDiscussion(APIView):
 class CreateReply(APIView):
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post("user_id")
+        user_id = data.get("user_id")
         user = User.objects.get(id=user_id)
-        discussion_id = data.post("discussion_id")
-        content = data.post("content")
+        discussion_id = data.get("discussion_id")
+        content = data.get("content")
 
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
@@ -145,10 +145,10 @@ class CreateReply(APIView):
 class EditDiscussion(APIView):
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post("user_id")
+        user_id = data.get("user_id")
         user = User.objects.get(id=user_id)
-        discussion_id = data.post("discussion_id")
-        content = data.post("content")
+        discussion_id = data.get("discussion_id")
+        content = data.get("content")
 
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
@@ -186,10 +186,10 @@ class EditDiscussion(APIView):
 class EditReply(APIView):
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post("user_id")
+        user_id = data.get("user_id")
         user = User.objects.get(id=user_id)
-        reply_id = data.post("reply_id")
-        content = data.post("content")
+        reply_id = data.get("reply_id")
+        content = data.get("content")
 
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
@@ -237,8 +237,8 @@ class GetAllDiscussions(APIView):
         data = decode_request(request)
 
         # 获取筛选条件
-        tag = data.post('tag')
-        time_range = data.post('time_range')  # 可能的值: "7d", "1m", "6m", "1y"
+        tag = data.get('tag')
+        time_range = data.get('time_range')  # 可能的值: "7d", "1m", "6m", "1y"
 
         # 基本查询
         discussions = Discussion.objects.all()
@@ -285,9 +285,9 @@ class GetAllDiscussions(APIView):
 class GetDiscussionReplies(APIView):
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post("user_id")
+        user_id = data.get("user_id")
         user = User.objects.get(id=user_id)
-        discussion_id = data.post('discussion_id')
+        discussion_id = data.get('discussion_id')
 
         try:
             # 获取讨论帖
@@ -327,8 +327,8 @@ class GetDiscussionReplies(APIView):
 class GetDiscussionById(APIView):
     def post(self, request):
         data = decode_request(request)
-        user_id = data.post("user_id")
-        discussion_id = data.post("discussion_id")
+        user_id = data.get("user_id")
+        discussion_id = data.get("discussion_id")
 
         try:
             # 获取主帖
