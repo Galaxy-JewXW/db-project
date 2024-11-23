@@ -35,7 +35,7 @@
                             </v-btn>
                         </v-col>
                         <v-col cols="auto">
-                            <v-btn rounded="0" variant="text" color="#ee3f4d">
+                            <v-btn rounded="0" variant="text" color="#ee3f4d" @click="confirmDelete(notice)">
                                 <v-icon left>mdi-close</v-icon>
                                 删除此公告
                             </v-btn>
@@ -95,6 +95,22 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+    <v-dialog v-model="deleteDialogOpen" max-width="400px">
+        <v-card>
+            <v-card-title>
+                <v-icon color="primary">mdi-alert-circle-outline</v-icon>
+                <span class="headline ml-2">确定删除该公告吗？</span>
+            </v-card-title>
+            <v-card-actions>
+                <v-btn color="primary" variant="text" @click="deleteNotice">
+                    确定
+                </v-btn>
+                <v-btn variant="plain" @click="deleteDialogOpen = false">
+                    取消
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
     <v-snackbar v-model="snackbarOpen" :timeout="snackbarTimeout" :color="snackbarColor" min-width="25%"
         style="z-index: 10000;">
         <div style="font-size: 16px">{{ snackbarMessage }}</div>
@@ -136,20 +152,6 @@ export default {
                     releaseTime: "2023-10-10T19:00:09",
                     content: "因设备升级，10月12日0:00-6:00校园网络将暂停服务。",
                 },
-                {
-                    id: 4,
-                    title: "校园网络维护通知",
-                    publisher: "网络中心",
-                    releaseTime: "2023-10-12T19:00:09",
-                    content: "因设备升级，10月13日0:00-6:00校园网络将暂停服务。",
-                },
-                {
-                    id: 5,
-                    title: "校园网络维护通知",
-                    publisher: "网络中心",
-                    releaseTime: "2023-10-08T19:00:09",
-                    content: "因设备升级，10月9日0:00-6:00校园网络将暂停服务。",
-                },
             ],
             rules: {
                 required: (value) => !!value || "该字段为必填项",
@@ -164,7 +166,9 @@ export default {
                 content: '',
             },
             originalNotice: {},
+            toDeleteNotice: null,
             submitDialogOpen: false,
+            deleteDialogOpen: false,
             snackbarOpen: false,
             snackbarMessage: '',
             snackbarTimeout: 1000,
@@ -210,6 +214,17 @@ export default {
                 this.currentNotice.title !== this.originalNotice.title ||
                 this.currentNotice.content !== this.originalNotice.content
             );
+        },
+        confirmDelete(notice) {
+            this.toDeleteNotice = notice;
+            this.deleteDialogOpen = true;
+        },
+        deleteNotice() {
+            this.deleteDialogOpen = false;
+            this.snackbarMessage = `已删除公告${this.toDeleteNotice.id} "${this.toDeleteNotice.title}" `;
+            this.snackbarColor = 'success';
+            this.snackbarOpen = true;
+            this.toDeleteNotice = null;
         },
         confirmNotice() {
             if (!this.currentNotice.title || !this.currentNotice.content) {
