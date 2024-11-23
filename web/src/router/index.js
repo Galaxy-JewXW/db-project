@@ -23,6 +23,15 @@ const adminRoutes = [
     }
   },
   {
+    path: "/admin/exercise/edit/:id",
+    component: () => import("@/components/admin/EditExercise.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
     path: "/admin/exercise/new",
     component: () => import("@/components/admin/NewExercise.vue"),
     meta: {
@@ -33,6 +42,14 @@ const adminRoutes = [
   {
     path: "/admin/exercise",
     component: () => import("@/components/admin/AdminExercise.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/problemset",
+    component: () => import("@/components/admin/AdminSet.vue"),
     meta: {
       requiresAuth: true,
       requiresAdmin: true,
