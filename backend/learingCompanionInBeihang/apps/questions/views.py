@@ -468,7 +468,7 @@ class GetQuestionsByQuestionBank(APIView):
             }, status=HTTP_404_NOT_FOUND)
 
         except QuestionBank.DoesNotExist:
-            return Response({"error": "QuestionBank not found."}, status=HTTP_404_NOT_FOUND)
+            return Response({'success': False, "error": "QuestionBank not found."}, status=HTTP_404_NOT_FOUND)
 
 
 # 获取某一特定 id 的 Question 详细信息
@@ -491,7 +491,7 @@ class GetQuestionById(APIView):
                 "difficulty": question.difficulty,
                 "answer": question.answer,
                 "tags": question.tags,
-                "added_by": question.added_by.username,
+                "added_by": question.added_by.name,
                 "option_count": question.option_count,  # 新增选项数量
                 "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
             }
@@ -508,7 +508,7 @@ class GetQuestionById(APIView):
             }, status=HTTP_404_NOT_FOUND)
 
         except Question.DoesNotExist:
-            return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
+            return Response({'success': False, "error": "Question not found."}, status=HTTP_404_NOT_FOUND)
 
 
 class DeleteQuestion(APIView):
@@ -684,3 +684,223 @@ class DeleteQuestionBank(APIView):
                 "success": False,
                 "error": f"缺少必要字段: {str(e)}"
             }, status=HTTP_400_BAD_REQUEST)
+
+
+class EditQuestion(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data['user_id']
+            question_id = request.data['question_id']
+            question_data = request.data['data']
+
+            user = User.objects.get(id=user_id)
+            question = Question.objects.get(id=question_id)
+
+            if user.user_role != 1:  # 权限检查
+                return Response({"error": "Only admins or teachers can edit questions."}, status=HTTP_400_BAD_REQUEST)
+
+            # 更新字段
+            question.type = question_data['type']
+            question.content = question_data['content']
+            question.subject = question_data['subject']
+            question.added_at = question_data['added_at']
+            question.source = question_data.get('source', None)
+            question.tags = question_data.get('tags', [])
+            question.difficulty = question_data['difficulty']
+            question.answer = question_data.get('answer', None)
+            question.option_count = question_data.get('option_count', 0)  # 默认选项数量为 0
+
+            question.save()
+
+            return Response({
+                "success": True,
+                "message": f"Question {question_id} updated successfully."
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+
+
+class EditQuestionInBank(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data['user_id']
+            question_bank_id = request.data['question_bank_id']
+            question_id = request.data['question_id']
+            question_data = request.data['data']
+
+            user = User.objects.get(id=user_id)
+            question_bank = QuestionBank.objects.get(id=question_bank_id)
+            question = Question.objects.get(id=question_id)
+
+            if user.user_role != 1:  # 权限检查
+                return Response({"error": "Only admins or teachers can edit questions."}, status=HTTP_400_BAD_REQUEST)
+
+            if question not in question_bank.questions.all():
+                return Response({"error": "Question does not belong to this QuestionBank."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            # 更新字段
+            question.type = question_data['type']
+            question.content = question_data['content']
+            question.subject = question_data['subject']
+            question.added_at = question_data['added_at']
+            question.source = question_data.get('source', None)
+            question.tags = question_data.get('tags', [])
+            question.difficulty = question_data['difficulty']
+            question.answer = question_data.get('answer', None)
+            question.option_count = question_data.get('option_count', 0)  # 默认选项数量为 0
+
+            question.save()
+
+            return Response({
+                "success": True,
+                "message": f"Question {question_id} in QuestionBank {question_bank_id} updated successfully."
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except QuestionBank.DoesNotExist:
+            return Response({"error": "QuestionBank not found."}, status=HTTP_404_NOT_FOUND)
+
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+
+
+class AddQuestionToBank(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data['user_id']
+            question_bank_id = request.data['question_bank_id']
+            question_id = request.data['question_id']
+
+            user = User.objects.get(id=user_id)
+            question_bank = QuestionBank.objects.get(id=question_bank_id)
+            question = Question.objects.get(id=question_id)
+
+            if user.user_role != 1:  # 权限检查
+                return Response({"error": "Only admins or teachers can add questions to a QuestionBank."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            # 添加题目到题库
+            question_bank.questions.add(question)
+            question_bank.question_count = question_bank.questions.count()
+            question_bank.save()
+
+            return Response({
+                "success": True,
+                "message": f"Question {question_id} added to QuestionBank {question_bank_id} successfully."
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except QuestionBank.DoesNotExist:
+            return Response({"error": "QuestionBank not found."}, status=HTTP_404_NOT_FOUND)
+
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+
+
+class CreateQuestionInBank(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data['user_id']
+            question_bank_id = request.data['question_bank_id']
+            question_data = request.data['data']
+
+            user = User.objects.get(id=user_id)
+            question_bank = QuestionBank.objects.get(id=question_bank_id)
+
+            if user.user_role != 1:  # 权限检查
+                return Response({"error": "Only admins or teachers can create questions in a QuestionBank."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            # 创建题目
+            question = Question.objects.create(
+                type=question_data['type'],
+                content=question_data['content'],
+                subject=question_data['subject'],
+                added_at=question_data['added_at'],
+                source=question_data.get('source'),
+                tags=question_data.get('tags'),
+                difficulty=question_data['difficulty'],
+                answer=question_data.get('answer'),
+                added_by=user,
+                option_count=question_data.get('option_count', 0)
+            )
+
+            # 添加题目到题库
+            question_bank.questions.add(question)
+            question_bank.question_count = question_bank.questions.count()
+            question_bank.save()
+
+            return Response({
+                "success": True,
+                "message": f"Question created and added to QuestionBank {question_bank_id} successfully.",
+                "question_id": question.id
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except QuestionBank.DoesNotExist:
+            return Response({"error": "QuestionBank not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+
+
+class RemoveQuestionFromBank(APIView):
+    def post(self, request):
+        try:
+            user_id = request.data['user_id']
+            question_bank_id = request.data['question_bank_id']
+            question_id = request.data['question_id']
+
+            user = User.objects.get(id=user_id)
+            question_bank = QuestionBank.objects.get(id=question_bank_id)
+            question = Question.objects.get(id=question_id)
+
+            if user.user_role != 1:  # 权限检查
+                return Response({"error": "Only admins or teachers can remove questions from a QuestionBank."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            if question not in question_bank.questions.all():
+                return Response({"error": "Question does not belong to this QuestionBank."},
+                                status=HTTP_400_BAD_REQUEST)
+
+            # 从题库移除题目
+            question_bank.questions.remove(question)
+            question_bank.question_count = question_bank.questions.count()
+            question_bank.save()
+
+            return Response({
+                "success": True,
+                "message": f"Question {question_id} removed from QuestionBank {question_bank_id} successfully."
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except QuestionBank.DoesNotExist:
+            return Response({"error": "QuestionBank not found."}, status=HTTP_404_NOT_FOUND)
+
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)

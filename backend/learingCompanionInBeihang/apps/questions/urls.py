@@ -33,15 +33,25 @@ urlpatterns = [
     path('get_question_banks_by_subject', views.GetQuestionBanksBySubject.as_view(), name='get_question_banks_by_subject'),
 
     # 获取某一 QuestionBank 内的所有 Question
-    path('get_questions_by_questionbank/<int:question_bank_id>/', views.GetQuestionsByQuestionBank.as_view(), name='get_questions_by_questionbank'),
+    path('get_questions_by_questionbank', views.GetQuestionsByQuestionBank.as_view(), name='get_questions_by_questionbank'),
 
     # 获取某一特定 id 的 Question 详细信息
-    path('get_question_by_id/<int:question_id>/', views.GetQuestionById.as_view(), name='get_question_by_id'),
+    path('get_question_by_id', views.GetQuestionById.as_view(), name='get_question_by_id'),
 
     # 删除某一特定 id 的题目
-    path('delete_question/', views.DeleteQuestion.as_view(), name='delete_question'),
+    path('delete_question', views.DeleteQuestion.as_view(), name='delete_question'),
 
-    path('get_questionbank/', views.GetQuestionBankById.as_view(), name='get_questionbank'),
+    path('get_questionbank', views.GetQuestionBankById.as_view(), name='get_questionbank'),
 
-    path('delete_questionbank/', views.DeleteQuestionBank.as_view(), name='delete_questionbank')
+    path('delete_questionbank', views.DeleteQuestionBank.as_view(), name='delete_questionbank'),
+
+    path('edit_question', views.EditQuestion.as_view(), name='edit_question'),
+
+    path('edit_question_in_bank', views.EditQuestionInBank.as_view(), name='edit_question_in_bank'),
+
+    path('add_question_to_bank', views.AddQuestionToBank.as_view(), name='add_question_to_bank'),
+
+    path('create_question_in_bank', views.CreateQuestionInBank.as_view(), name='create_question_in_bank'),
+
+    path('remove_question_from_bank', views.RemoveQuestionFromBank.as_view(), name='remove_question_from_bank'),
 ]
