@@ -27,7 +27,8 @@ class UploadQuestion(APIView):
                 tags=data.get('tags'),
                 difficulty=data['difficulty'],
                 answer=data.get('answer'),
-                added_by=user
+                added_by=user,
+                option_count=data.get('option_count', 0)  # 允许前端指定选项数量
             )
 
             QuestionDiscussion.objects.create(
@@ -74,7 +75,7 @@ class CompleteQuestion(APIView):
                 defaults={
                     'is_correct': is_correct,
                     'question_subject': question.subject,  # 自动填充科目
-                          }
+                }
             )
 
             return Response({
@@ -319,6 +320,7 @@ class GetAllQuestions(APIView):
                     "answer": question.answer,
                     "tags": question.tags,
                     "added_by": question.added_by.name,
+                    "option_count": question.option_count,  # 新增选项数量
                     "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
                 })
 
@@ -363,6 +365,7 @@ class GetQuestionsBySubject(APIView):
                     "answer": question.answer,
                     "tags": question.tags,
                     "added_by": question.added_by.name,
+                    "option_count": question.option_count,  # 新增选项数量
                     "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
                 })
 
@@ -489,6 +492,7 @@ class GetQuestionById(APIView):
                 "answer": question.answer,
                 "tags": question.tags,
                 "added_by": question.added_by.username,
+                "option_count": question.option_count,  # 新增选项数量
                 "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
             }
 
@@ -505,3 +509,178 @@ class GetQuestionById(APIView):
 
         except Question.DoesNotExist:
             return Response({"error": "Question not found."}, status=HTTP_404_NOT_FOUND)
+
+
+class DeleteQuestion(APIView):
+    """
+    删除题目。
+    """
+
+    def post(self, request):
+        try:
+            user_id = request.data['user_id']
+            user = User.objects.get(id=user_id)
+
+            if user.user_role != 1:  # 检查是否为管理员/老师
+                return Response({
+                    "success": False,
+                    "error": "权限不足",
+                    "message": "只有管理员或老师可以删除题目。"
+                }, status=HTTP_400_BAD_REQUEST)
+
+            question_id = request.data['question_id']
+
+            # 获取题目
+            question = Question.objects.get(id=question_id)
+            question.delete()
+
+            return Response({
+                "success": True,
+                "message": "题目删除成功。",
+                "question_id": question_id
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': '用户未找到。'
+            }, status=HTTP_404_NOT_FOUND)
+
+        except Question.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "题目未找到。"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"缺少必要字段: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
+
+
+class GetQuestionBankById(APIView):
+    """
+    获取指定 QuestionBank 的详细信息及其包含的所有题目。
+    """
+
+    def post(self, request):
+        try:
+            # 获取请求数据
+            user_id = request.data['user_id']
+            question_bank_id = request.data['question_bank_id']
+            user = User.objects.get(id=user_id)
+            question_bank = QuestionBank.objects.get(id=question_bank_id)
+
+            # 获取该题库中的所有题目
+            questions_data = []
+
+            for question_type, type_label in Question.TYPE_CHOICES:
+                questions = question_bank.questions.filter(type=question_type).order_by("id")
+                if questions.exists():
+                    questions_data.append({
+                        "type": type_label,
+                        "questions": [
+                            {
+                                "id": question.id,
+                                "content": question.content,
+                                "subject": question.subject,
+                                "difficulty": question.difficulty,
+                                "option_count": question.option_count,  # 包含选项数量
+                                "user_status": question.get_user_status(user)  # 获取用户是否已作答
+                            }
+                            for question in questions
+                        ]
+                    })
+
+            # 构造返回的题库数据
+            question_bank_data = {
+                "id": question_bank.id,
+                "subject": question_bank.subject,
+                "estimated_time": question_bank.estimated_time,
+                "created_at": question_bank.created_at,
+                "creator": question_bank.creator.name,
+                "description": question_bank.description,
+                "question_count": question_bank.question_count,
+                "questions": questions_data  # 按题目类型分类的题目列表
+            }
+
+            return Response({
+                "success": True,
+                "question_bank": question_bank_data
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "User not found."
+            }, status=HTTP_404_NOT_FOUND)
+
+        except QuestionBank.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "QuestionBank not found."
+            }, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"Missing required field: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
+
+
+class DeleteQuestionBank(APIView):
+    """
+    删除题库的视图函数，仅允许管理员或题库创建者删除。
+    """
+
+    def post(self, request):
+        try:
+            # 获取请求数据
+            user_id = request.data['user_id']
+            question_bank_id = request.data['question_bank_id']
+            user = User.objects.get(id=user_id)
+
+            # 检查权限：是否为管理员
+            if user.user_role != 1:
+                return Response({
+                    "success": False,
+                    "error": "权限不足",
+                    "message": "只有管理员可以删除题库。"
+                }, status=HTTP_400_BAD_REQUEST)
+
+            # 获取题库
+            try:
+                question_bank = QuestionBank.objects.get(id=question_bank_id)
+            except QuestionBank.DoesNotExist:
+                return Response({
+                    "success": False,
+                    "error": "题库未找到。"
+                }, status=HTTP_404_NOT_FOUND)
+
+            # 确保只有题库创建者或其他管理员可以删除题库
+            if question_bank.creator != user and user.user_role != 1:
+                return Response({
+                    "success": False,
+                    "error": "权限不足",
+                    "message": "只有题库创建者或管理员可以删除题库。"
+                }, status=HTTP_400_BAD_REQUEST)
+
+            # 删除题库
+            question_bank.delete()
+            return Response({
+                "success": True,
+                "message": f"题库 {question_bank_id} 删除成功。"
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "用户未找到。"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"缺少必要字段: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
