@@ -57,6 +57,7 @@ class Question(models.Model):
     answer = models.TextField(blank=True, null=True)  # 答案内容
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="added_questions")  # 创建者
     question_banks = models.ManyToManyField(QuestionBank, related_name="questions")  # 题库关系
+    option_count = models.IntegerField(default=0)  # 选项数量，默认 0
 
     def get_user_status(self, user):
         """
@@ -76,12 +77,23 @@ class Question(models.Model):
     def __str__(self):
         return f"{self.type} - {self.subject} - {self.id}"
 
+    def save(self, *args, **kwargs):
+        """
+        根据题目类型设置默认的选项数量。
+        """
+        if self.type in ["单项选择题", "多项选择题"] and self.option_count == 0:
+            self.option_count = 4  # 默认设置为 4 个选项
+        elif self.type not in ["单项选择题", "多项选择题"]:
+            self.option_count = 0  # 其他类型默认设置为 0
+        super().save(*args, **kwargs)
+
 
 # 用户与题目之间的做题记录
 class UserQuestionRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="question_records")
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name="user_records")
-    question_subject = models.CharField(max_length=100, choices=Question.SUBJECT_CHOICES, default="工科数学分析（上）")  # 题目科目
+    question_subject = models.CharField(max_length=100, choices=Question.SUBJECT_CHOICES,
+                                        default="工科数学分析（上）")  # 题目科目
     is_correct = models.BooleanField(null=True, blank=True)  # 是否做对
     attempted_at = models.DateTimeField(auto_now_add=True)  # 做题时间
 
