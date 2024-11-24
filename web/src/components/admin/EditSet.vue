@@ -1,7 +1,7 @@
 <template>
     <v-banner sticky icon="mdi-plus" lines="one">
         <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可创建新的题库。</div>
+            <div class="text-subtitle-1">作为辅导师，你可编辑此题库。</div>
         </template>
 
         <template v-slot:actions>
@@ -284,8 +284,16 @@ import { mapMutations } from 'vuex';
 
 export default {
     name: 'AdminSet',
+    props: {
+        id: {
+            type: String,
+            required: true,
+        }
+    },
     data() {
         return {
+            currentId: null,
+            originalSet: {},
             tab: 1,
             tempTab: 1,
             maxAllowedTab: 1,
@@ -399,14 +407,49 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
     },
     mounted() {
         // 更新标题
-        const title = '创建新题库';
+        
+        this.currentId = parseInt(this.id);
+        console.log('接收到的 ID:', this.currentId);
+        // 初始化题目列表
+        this.fetchProblemSet(this.currentId);
+        const title = '编辑题库 - ' + this.originalSet.name;
         this.setAppTitle(title);
         this.setPageTitle(title);
-        // 初始化题目列表
-        this.getExercises(this.form.subject);
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
+        fetchProblemSet(id) {
+            const mockData = {
+                name: '上学期期中',
+                subject: '工科高等代数',
+                duration: 120,
+                description: '哥们自己乱编的题目',
+                questions: [
+                    {
+                        type: "单项选择题",
+                        ids: [99, 101, 102, 104],
+                        currentPage: 1,
+                    },
+                    {
+                        type: "填空题",
+                        ids: [8101, 8102, 8103], // 填空题
+                        currentPage: 1,
+                    },
+                    {
+                        type: "判断题",
+                        ids: [1101, 1102, 1103], // 判断题
+                        currentPage: 1,
+                    },
+                    {
+                        type: "解答题",
+                        ids: [201, 202], // 解答题
+                        currentPage: 1,
+                    },
+                ]
+            };
+            this.form = { ...mockData };
+            this.originalSet = { ...mockData };
+        },
         goBack() {
             this.$router.push('/admin/problemset');
         },

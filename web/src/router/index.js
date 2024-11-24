@@ -48,6 +48,15 @@ const adminRoutes = [
     }
   },
   {
+    path: "/admin/problemset/:id",
+    component: () => import("@/components/admin/EditSet.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
     path: "/admin/problemset/new",
     component: () => import("@/components/admin/NewSet.vue"),
     meta: {

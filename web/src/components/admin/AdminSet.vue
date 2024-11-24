@@ -88,8 +88,11 @@
                             </v-card-text>
 
                             <v-card-actions>
-                                <v-btn class="enter-button" text>
+                                <v-btn color="primary" @click="enterEditSet(problemSet.id)">
                                     编辑题库
+                                </v-btn>
+                                <v-btn color="red" @click="confirmDelete(problemSet.id, problemSet.name)">
+                                    删除题库
                                 </v-btn>
                             </v-card-actions>
                         </v-card>
@@ -101,6 +104,23 @@
             <div v-else class="no-results">没有满足条件的题库</div>
         </div>
     </v-container>
+    <v-dialog v-model="confirmDialogOpen" max-width="400px">
+        <v-card>
+            <v-card-title>
+                <v-icon color="primary">mdi-alert-circle-outline</v-icon>
+                <span class="headline ml-2">操作不可逆</span>
+            </v-card-title>
+            <v-card-text>确定删除题库 {{this.toDeleteName}} 吗？</v-card-text>
+            <v-card-actions>
+                <v-btn color="red" variant="text" @click="deleteSet">
+                    确定
+                </v-btn>
+                <v-btn variant="plain" @click="confirmDialogOpen = false">
+                    取消
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
@@ -137,6 +157,9 @@ export default {
             selectedSubject: null,
             selectedTimeRange: null,
             selectedProblemSet: {},
+            confirmDialogOpen: false,
+            toDeleteId: null,
+            toDeleteName: '',
         };
     },
     mounted() {
@@ -214,6 +237,17 @@ export default {
         enterNewSet() {
             this.$router.push(`/admin/problemset/new`);
         },
+        enterEditSet(id) {
+            this.$router.push(`/admin/problemset/${id}`);
+        },
+        confirmDelete(id, name) {
+            this.toDeleteId = id;
+            this.toDeleteName = name;
+            this.confirmDialogOpen = true;
+        },
+        deleteSet(id) {
+            this.confirmDialogOpen = false;
+        }
     },
 };
 </script>
@@ -314,10 +348,6 @@ export default {
     justify-content: center;
     align-items: center;
     height: 100%;
-}
-
-.enter-button {
-    color: #1867c0 !important;
 }
 
 .total-count {

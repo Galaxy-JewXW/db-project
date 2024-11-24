@@ -258,7 +258,7 @@
                 <span class="headline ml-2">操作不可逆，确定删除题目吗？</span>
             </v-card-title>
             <v-card-actions>
-                <v-btn color="primary" variant="text" @click="deleteExercise">
+                <v-btn color="red" variant="text" @click="deleteExercise">
                     确定
                 </v-btn>
                 <v-btn variant="plain" @click="confirmDialogOpen = false">
@@ -293,7 +293,7 @@ export default {
     data() {
         return {
             currentId: null,
-            tab: 1, // Default to "原始题目"
+            tab: 1,
             tabs: [
                 { value: 1, label: '原始题目' },
                 { value: 2, label: '编辑基本信息' },
