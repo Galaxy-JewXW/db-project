@@ -45,16 +45,24 @@
             <v-row no-gutters>
               <div class="question-squares">
                 <v-btn
-                  v-for="questionId in group.ids"
+                  v-for="questionId in getPaginatedIds(group)"
                   :key="questionId"
                   class="question-square text-none"
-                  color="blue-darken-4"
+                  :color="finishedQuestions.includes(questionId) ? 'green' : 'blue-darken-4'"
                   rounded="0"
                   @click="goToQuestionDetail(questionId)"
                 >
                   <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
                 </v-btn>
               </div>
+            </v-row>
+            <!-- 添加分页控件 -->
+            <v-row justify="center" class="mt-2">
+              <v-pagination
+                v-model="group.currentPage"
+                :length="Math.ceil(group.ids.length / pageSize)"
+                @input="handlePageChange(group, $event)"
+              ></v-pagination>
             </v-row>
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -79,6 +87,8 @@ export default {
       questions: [],
       loading: false,
       error: null,
+      pageSize: 10, // 每页显示的题目数量
+      finishedQuestions: [], // 完成的题目
     };
   },
   computed: {
@@ -150,7 +160,7 @@ export default {
             createdAt: "2024-09-02",
             subject: "工科数学分析（上）",
             createdBy: "fysszlr",
-            estimatedTime: 120,
+            estimatedTime: 120, // 120 分钟
             description: "2023-2024第一学期数分期中的真题，配套答案。",
           };
           const title = '题库详情 - ' + this.problemSetData.name;
@@ -178,14 +188,17 @@ export default {
             {
               type: "单项选择题",
               ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
+              currentPage: 1, // 当前页
             },
             {
               type: "填空题",
               ids: [101, 102, 103], // 填空题
+              currentPage: 1,
             },
             {
               type: "解答题",
               ids: [201, 202], // 解答题
+              currentPage: 1,
             },
           ];
           this.questions = questions; // 更新组件本地的题目列表数据
@@ -202,6 +215,16 @@ export default {
       if (!dateStr) return "N/A";
       const options = { year: "numeric", month: "long", day: "numeric" };
       return new Date(dateStr).toLocaleDateString(undefined, options);
+    },
+
+    getPaginatedIds(group) {
+      const start = (group.currentPage - 1) * this.pageSize;
+      const end = start + this.pageSize;
+      return group.ids.slice(start, end);
+    },
+
+    handlePageChange(group, newPage) {
+      group.currentPage = newPage;
     },
 
     goToQuestionDetail(questionId) {
@@ -251,11 +274,6 @@ export default {
   display: none;
 }
 
-.questions-container {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
 .question-squares {
   display: flex;
   flex-wrap: wrap;
@@ -274,6 +292,15 @@ export default {
   border-radius: 0;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  cursor: pointer;
+}
+
+.question-square.finished {
+  opacity: 0.6;
+}
+
+.question-square:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .v-responsive {

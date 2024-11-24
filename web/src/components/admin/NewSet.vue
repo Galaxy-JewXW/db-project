@@ -85,7 +85,7 @@
                                         <v-expansion-panel-text>
                                             <v-row no-gutters>
                                                 <div class="question-squares">
-                                                    <v-btn v-for="questionId in group.ids" :key="questionId"
+                                                    <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
                                                         class="question-square text-none" color="blue-darken-4"
                                                         rounded="0" @click="viewQuestion(group.type, questionId)"
                                                         @contextmenu.prevent="addQuestion(group.type, questionId)">
@@ -93,6 +93,9 @@
                                                             }}</v-responsive>
                                                     </v-btn>
                                                 </div>
+                                            </v-row>
+                                            <v-row justify="center" class="mt-2">
+                                                <v-pagination v-model="group.currentPage" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
                                             </v-row>
                                         </v-expansion-panel-text>
                                     </v-expansion-panel>
@@ -103,7 +106,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="'题库 ' + form.name + ' 已添加的题目'" prepend-icon="mdi-minus"
-                                subtitle="左键点击以从题库中移除题目">
+                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
@@ -124,13 +127,17 @@
                                         <v-expansion-panel-text>
                                             <v-row no-gutters>
                                                 <div class="question-squares">
-                                                    <v-btn v-for="questionId in group.ids" :key="questionId"
+                                                    <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
                                                         class="question-square text-none" color="blue-darken-4"
-                                                        rounded="0" @click="removeQuestion(group.type, questionId)">
+                                                        rounded="0" @click="viewQuestion(group.type, questionId)"
+                                                        @contextmenu.prevent="removeQuestion(group.type, questionId)">
                                                         <v-responsive class="text-truncate">{{ questionId
                                                             }}</v-responsive>
                                                     </v-btn>
                                                 </div>
+                                            </v-row>
+                                            <v-row justify="center" class="mt-2">
+                                                <v-pagination v-model="group.currentPage" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
                                             </v-row>
                                         </v-expansion-panel-text>
                                     </v-expansion-panel>
@@ -142,20 +149,41 @@
             </v-tabs-window-item>
             <v-tabs-window-item :value="3">
                 <!-- 预览内容 -->
-                <div>
-                    <h3>题库预览</h3>
-                    <v-list>
-                        <v-list-item-group>
-                            <v-list-item v-for="(group, index) in form.questions" :key="index">
-                                <v-list-item-content>
-                                    <v-list-item-title>{{ group.type }}</v-list-item-title>
-                                    <v-list-item-subtitle>
-                                        {{ group.ids.join(', ') }}
-                                    </v-list-item-subtitle>
-                                </v-list-item-content>
-                            </v-list-item>
-                        </v-list-item-group>
-                    </v-list>
+                <div class="pa-3">
+                    <v-expansion-panels>
+                        <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
+                            <v-expansion-panel-title>
+                                <template v-slot:default="{ expanded }">
+                                    <v-row no-gutters>
+                                        <v-col class="d-flex justify-start text-bold" cols="2">
+                                            {{ group.type }}
+                                        </v-col>
+                                        <v-col class="text-grey" cols="10">
+                                            <v-fade-transition leave-absolute>
+                                                <span> 共 {{ group.ids.length }} 题 </span>
+                                            </v-fade-transition>
+                                        </v-col>
+                                    </v-row>
+                                </template>
+                            </v-expansion-panel-title>
+                            <v-expansion-panel-text>
+                                <v-row no-gutters>
+                                    <div class="question-squares">
+                                        <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
+                                            class="question-square text-none" color="blue-darken-4" rounded="0"
+                                            @click="viewQuestion(group.type, questionId)"
+                                            @contextmenu.prevent="removeQuestion(group.type, questionId)">
+                                            <v-responsive class="text-truncate">{{ questionId
+                                                }}</v-responsive>
+                                        </v-btn>
+                                    </div>
+                                </v-row>
+                                <v-row justify="center" class="mt-2">
+                                    <v-pagination v-model="group.currentPage" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
+                                </v-row>
+                            </v-expansion-panel-text>
+                        </v-expansion-panel>
+                    </v-expansion-panels>
                 </div>
             </v-tabs-window-item>
         </v-tabs-window>
@@ -200,6 +228,7 @@ export default {
                 message: '',
                 color: 'error'
             },
+            pageSize: 40,
         };
     },
     mounted() {
@@ -227,18 +256,22 @@ export default {
                 {
                     type: "单项选择题",
                     ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
+                    currentPage: 1,
                 },
                 {
                     type: "填空题",
                     ids: [101, 102, 103], // 填空题
+                    currentPage: 1,
                 },
                 {
                     type: "判断题",
-                    ids: [1101, 1102, 1103], // 填空题
+                    ids: [1101, 1102, 1103], // 判断题
+                    currentPage: 1,
                 },
                 {
                     type: "解答题",
                     ids: [201, 202], // 解答题
+                    currentPage: 1,
                 },
             ];
             this.questions = [...questions];
@@ -292,7 +325,8 @@ export default {
                 // 类型不存在，添加新的类型和id
                 this.form.questions.push({
                     type: type,
-                    ids: [id]
+                    ids: [id],
+                    currentPage: 1,
                 });
                 this.showSnackbar(`已添加题目 - ${id} 到 ${type}`, 'success');
             }
@@ -305,10 +339,17 @@ export default {
                 const idIndex = this.form.questions[typeIndex].ids.indexOf(id);
                 if (idIndex !== -1) {
                     this.form.questions[typeIndex].ids.splice(idIndex, 1);
-                    this.showSnackbar(`已从 ${type} 移除题目 - ${id} `);
+                    this.showSnackbar(`已从 ${type} 移除题目 - ${id} `, 'success');
                     // 如果该类型下没有题目了，移除整个类型
                     if (this.form.questions[typeIndex].ids.length === 0) {
                         this.form.questions.splice(typeIndex, 1);
+                    } else {
+                        // 调整 currentPage 以确保不超过总页数
+                        const group = this.form.questions[typeIndex];
+                        const totalPages = Math.ceil(group.ids.length / this.pageSize);
+                        if (group.currentPage > totalPages) {
+                            group.currentPage = totalPages;
+                        }
                     }
                 }
             }
@@ -330,6 +371,14 @@ export default {
             this.form.questions.forEach((group) => {
                 group.ids.sort((a, b) => a - b);
             });
+        },
+        getPaginatedIds(group) {
+            const start = (group.currentPage - 1) * this.pageSize;
+            const end = start + this.pageSize;
+            return group.ids.slice(start, end);
+        },
+        handlePageChange(group, newPage) {
+            group.currentPage = newPage;
         },
     },
     watch: {

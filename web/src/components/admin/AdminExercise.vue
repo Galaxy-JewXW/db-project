@@ -20,26 +20,25 @@
                     <v-text-field v-model="filterId" label="题目 ID" placeholder="输入题目 ID" clearable></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
-                    <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科"
-                        clearable></v-select>
+                    <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科" clearable></v-select>
                 </v-col>
             </v-row>
         </v-card>
 
         <!-- 题目列表区域 -->
         <div class="exercises-container">
-            <template v-if="filteredExercises && Object.keys(filteredExercises).length > 0">
+            <template v-if="filteredExercises && filteredExercises.length > 0">
                 <v-expansion-panels>
-                    <v-expansion-panel v-for="(ids, subject) in filteredExercises" :key="subject">
+                    <v-expansion-panel v-for="(group, index) in filteredExercises" :key="group.subject">
                         <v-expansion-panel-title>
                             <template v-slot:default="{ expanded }">
                                 <v-row no-gutters class="align-center w-100">
                                     <v-col class="d-flex justify-start text-bold" cols="2">
-                                        {{ subject }}
+                                        {{ group.subject }}
                                     </v-col>
                                     <v-col class="text-grey" cols="9">
                                         <v-fade-transition leave-absolute>
-                                            <span> 共 {{ ids.length }} 题 </span>
+                                            <span> 共 {{ group.ids.length }} 题 </span>
                                         </v-fade-transition>
                                     </v-col>
                                 </v-row>
@@ -49,11 +48,18 @@
                         <v-expansion-panel-text>
                             <v-row no-gutters>
                                 <div class="question-squares">
-                                    <v-btn v-for="id in ids" :key="id" class="question-square text-none"
+                                    <v-btn v-for="id in getPaginatedIds(group)" :key="id" class="question-square text-none"
                                         color="blue-darken-4" rounded="0" @click="editExercise(id)">
                                         <v-responsive class="text-truncate">{{ id }}</v-responsive>
                                     </v-btn>
                                 </div>
+                            </v-row>
+                            <v-row justify="center" class="mt-2">
+                                <v-pagination
+                                    v-model="group.currentPage"
+                                    :length="Math.ceil(group.ids.length / pageSize)"
+                                    @input="handlePageChange(group, $event)"
+                                ></v-pagination>
                             </v-row>
                         </v-expansion-panel-text>
                     </v-expansion-panel>
@@ -75,74 +81,45 @@ export default {
     name: 'AdminExercise',
     data() {
         return {
-            exercises: {
-                "工科数学分析（上）": [1, 2, 3, 4, 5],
-                "工科数学分析（下）": [11, 21, 31, 41, 51],
-                "基础物理学A": [101, 201, 301, 401, 501],
-                "基础物理学A1": [102, 202, 302, 402, 502],
-                "基础物理学A2": [103, 203, 303, 403, 503],
-                "基础物理学A3": [104, 204, 304, 404, 504],
-                "基础物理学A4": [105, 205, 305, 405, 505],
-                "基础物理学A5": [106, 206, 306, 406, 506],
-                "基础物理学A6": [107, 207, 307, 407, 507],
-                "基础物理学A7": [108, 208, 308, 408, 508],
-                "基础物理学A8": [109, 209, 309, 409, 509],
-                "基础物理学A9": [110, 210, 310, 410, 510],
-                "基础物理学A10": [111, 211, 311, 411, 511],
-                "基础物理学A11": [112, 212, 312, 412, 512],
-            },
-            currentExercise: {
-                id: null,
-                subject: '',
-                time: '',
-                questionType: '',
-                source: '',
-                tags: '',
-                difficulty: '',
-                content: '',
-                answer: '',
-            },
-            form: null,
+            exercises: [
+                { subject: "工科数学分析（上）", ids: [1, 2, 3, 4, 5], currentPage: 1 },
+                { subject: "工科数学分析（下）", ids: [11, 21, 31, 41, 51], currentPage: 1 },
+                { subject: "基础物理学A", ids: [101, 201, 301, 401, 501], currentPage: 1 },
+                { subject: "基础物理学A1", ids: [102, 202, 302, 402, 502], currentPage: 1 },
+                { subject: "基础物理学A2", ids: [103, 203, 303, 403, 503], currentPage: 1 },
+                { subject: "基础物理学A3", ids: [104, 204, 304, 404, 504], currentPage: 1 },
+                { subject: "基础物理学A4", ids: [105, 205, 305, 405, 505], currentPage: 1 },
+                { subject: "基础物理学A5", ids: [106, 206, 306, 406, 506], currentPage: 1 },
+                { subject: "基础物理学A6", ids: [107, 207, 307, 407, 507], currentPage: 1 },
+                { subject: "基础物理学A7", ids: [108, 208, 308, 408, 508], currentPage: 1 },
+                { subject: "基础物理学A8", ids: [109, 209, 309, 409, 509], currentPage: 1 },
+                { subject: "基础物理学A9", ids: [110, 210, 310, 410, 510], currentPage: 1 },
+                { subject: "基础物理学A10", ids: [111, 211, 311, 411, 511], currentPage: 1 },
+                { subject: "基础物理学A11", ids: [112, 212, 312, 412, 512], currentPage: 1 },
+            ],
             filterId: '',
             filterSubject: '',
+            pageSize: 40, // 每页显示的题目数量
         };
     },
     computed: {
         // 获取所有唯一的学科选项
         subjectOptions() {
-            return Object.keys(this.exercises).sort();
+            return this.exercises.map(ex => ex.subject).sort();
         },
         // 根据筛选条件过滤后的题目
         filteredExercises() {
-            // 如果没有任何筛选条件，则返回全部题目
-            if (!this.filterId && !this.filterSubject) {
-                return this.exercises;
+            let filtered = this.exercises;
+
+            if (this.filterSubject) {
+                filtered = filtered.filter(ex => ex.subject === this.filterSubject);
             }
 
-            // 创建一个新的对象来存储过滤后的题目
-            const filtered = {};
-
-            // 遍历所有科目
-            for (const subject in this.exercises) {
-                // 如果选择了学科但当前科目不匹配，跳过
-                if (this.filterSubject && subject !== this.filterSubject) {
-                    continue;
-                }
-
-                // 过滤 ID
-                const ids = this.exercises[subject].filter(id => {
-                    // 如果输入了 ID，则需要匹配
-                    if (this.filterId) {
-                        return id.toString() === this.filterId.trim();
-                    }
-                    // 如果没有输入 ID，则保留所有
-                    return true;
-                });
-
-                // 如果有符合条件的 ID，添加到过滤后的对象中
-                if (ids.length > 0) {
-                    filtered[subject] = ids;
-                }
+            if (this.filterId) {
+                filtered = filtered.map(ex => ({
+                    ...ex,
+                    ids: ex.ids.filter(id => id.toString() === this.filterId.trim())
+                })).filter(ex => ex.ids.length > 0);
             }
 
             return filtered;
@@ -161,7 +138,15 @@ export default {
         },
         editExercise(id) {
             this.$router.push(`/admin/exercise/${id}`);
-        }
+        },
+        getPaginatedIds(group) {
+            const start = (group.currentPage - 1) * this.pageSize;
+            const end = start + this.pageSize;
+            return group.ids.slice(start, end);
+        },
+        handlePageChange(group, newPage) {
+            group.currentPage = newPage;
+        },
     },
 };
 </script>
@@ -194,6 +179,11 @@ export default {
     border-radius: 0;
     overflow-wrap: break-word;
     word-wrap: break-word;
+    cursor: pointer;
+}
+
+.question-square:hover {
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .v-responsive {
