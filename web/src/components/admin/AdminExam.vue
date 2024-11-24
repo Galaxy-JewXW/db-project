@@ -1,7 +1,7 @@
 <template>
     <v-banner sticky icon="mdi-plus" lines="one">
         <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可创建新的模拟测试。</div>
+            <div class="text-subtitle-1">作为辅导师，你可创建新的模拟测试，或编辑已有的模拟测试。</div>
         </template>
 
         <template v-slot:actions>
@@ -10,14 +10,29 @@
             </v-btn>
         </template>
     </v-banner>
-
+    <div class="pa-4">
+        <v-alert title="注意：进行中的测试无法被删除。" type="warning" closable
+            ></v-alert>
+    </div>
     <div class="scroll-container">
         <v-expansion-panels>
             <!-- Ongoing Exams -->
             <v-expansion-panel>
-                <v-expansion-panel-title>进行中的测试</v-expansion-panel-title>
+                <v-expansion-panel-title>
+                    <template v-slot:default="{ expanded }">
+                        <v-row no-gutters class="align-center w-100">
+                            <v-col class="d-flex justify-start text-bold" cols="2">
+                                进行中的测试
+                            </v-col>
+                            <v-col class="text-grey" cols="9">
+                                <v-fade-transition leave-absolute>
+                                    <span> 共 {{ ongoingExams.length }} 个考试 </span>
+                                </v-fade-transition>
+                            </v-col>
+                        </v-row>
+                    </template>
+                </v-expansion-panel-title>
                 <v-expansion-panel-text>
-
                     <v-row dense class="justify-start">
                         <v-col v-for="exam in paginatedExams(ongoingExams, ongoingPage)" :key="exam.id" cols="12" sm="6"
                             md="3" class="pa-1">
@@ -44,8 +59,7 @@
                                     </div>
                                 </v-card-text>
                                 <v-card-actions>
-                                    <v-btn color="primary" text>编辑测试</v-btn>
-                                    <v-btn color="red" text>删除测试</v-btn>
+                                    <v-btn color="primary" text>查看/编辑测试</v-btn>
                                 </v-card-actions>
                             </v-card>
                         </v-col>
@@ -57,7 +71,20 @@
 
             <!-- Coming Exams -->
             <v-expansion-panel>
-                <v-expansion-panel-title>即将进行的测试</v-expansion-panel-title>
+                <v-expansion-panel-title>
+                    <template v-slot:default="{ expanded }">
+                        <v-row no-gutters class="align-center w-100">
+                            <v-col class="d-flex justify-start text-bold" cols="2">
+                                即将进行的测试
+                            </v-col>
+                            <v-col class="text-grey" cols="9">
+                                <v-fade-transition leave-absolute>
+                                    <span> 共 {{ comingExams.length }} 个考试 </span>
+                                </v-fade-transition>
+                            </v-col>
+                        </v-row>
+                    </template>
+                </v-expansion-panel-title>
                 <v-expansion-panel-text>
                     <v-row dense class="justify-start">
                         <v-col v-for="exam in paginatedExams(comingExams, comingPage)" :key="exam.id" cols="12" sm="6"
@@ -85,7 +112,7 @@
                                     </div>
                                 </v-card-text>
                                 <v-card-actions>
-                                    <v-btn color="primary" text>编辑测试</v-btn>
+                                    <v-btn color="primary" text>查看/编辑测试</v-btn>
                                     <v-btn color="red" text>删除测试</v-btn>
                                 </v-card-actions>
                             </v-card>
@@ -98,7 +125,20 @@
 
             <!-- Past Exams -->
             <v-expansion-panel>
-                <v-expansion-panel-title>已结束的测试</v-expansion-panel-title>
+                <v-expansion-panel-title>
+                    <template v-slot:default="{ expanded }">
+                        <v-row no-gutters class="align-center w-100">
+                            <v-col class="d-flex justify-start text-bold" cols="2">
+                                已结束的测试
+                            </v-col>
+                            <v-col class="text-grey" cols="9">
+                                <v-fade-transition leave-absolute>
+                                    <span> 共 {{ pastExams.length }} 个考试 </span>
+                                </v-fade-transition>
+                            </v-col>
+                        </v-row>
+                    </template>
+                </v-expansion-panel-title>
                 <v-expansion-panel-text>
 
                     <v-row dense class="justify-start">
@@ -127,7 +167,7 @@
                                     </div>
                                 </v-card-text>
                                 <v-card-actions>
-                                    <v-btn color="primary" text>编辑测试</v-btn>
+                                    <v-btn color="primary" text>查看/编辑测试</v-btn>
                                     <v-btn color="red" text>删除测试</v-btn>
                                 </v-card-actions>
                             </v-card>
@@ -225,7 +265,7 @@ export default {
         formatDate(dateString) {
             const options = {
                 year: "numeric",
-                month: "numeric",
+                month: "2-digit",
                 day: "2-digit",
                 hour: "2-digit",
                 minute: "2-digit",

@@ -64,7 +64,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="form.subject + '的所有题目'" prepend-icon="mdi-plus"
-                                subtitle="左键点击以查看题目，右键点击以添加题目到题库">
+                                subtitle="左键点击以查看题目，右键点击以添加题目到题库。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in questions" :key="index">
@@ -109,7 +109,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="'题库 ' + form.name + ' 已添加的题目'" prepend-icon="mdi-minus"
-                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目">
+                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in form.questions" :key="index">

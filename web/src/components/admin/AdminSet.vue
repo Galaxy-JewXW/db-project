@@ -1,7 +1,7 @@
 <template>
     <v-banner sticky icon="mdi-plus" lines="one">
         <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可创建新的题库。</div>
+            <div class="text-subtitle-1">作为辅导师，你可创建新的题库，或查看/编辑/删除已有的题库。</div>
         </template>
 
         <template v-slot:actions>
@@ -89,7 +89,7 @@
 
                             <v-card-actions>
                                 <v-btn color="primary" @click="enterEditSet(problemSet.id)">
-                                    编辑题库
+                                    查看/编辑题库
                                 </v-btn>
                                 <v-btn color="red" @click="confirmDelete(problemSet.id, problemSet.name)">
                                     删除题库

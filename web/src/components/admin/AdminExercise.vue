@@ -3,7 +3,7 @@
         <!-- 顶部横幅 -->
         <v-banner sticky icon="mdi-plus" lines="one">
             <template v-slot:text>
-                <div class="text-subtitle-1">作为辅导师，你可创建新的题目。</div>
+                <div class="text-subtitle-1">作为辅导师，你可创建新的题目，或查看/编辑/删除已有的题目。</div>
             </template>
 
             <template v-slot:actions>
@@ -14,7 +14,7 @@
         </v-banner>
 
         <!-- 筛选条件区域 -->
-        <v-card variant="text" title="输入题目ID或学科以查找题目" subtitle="点击题目可进行编辑/删除" prepend-icon="mdi-filter">
+        <v-card variant="text" title="输入题目ID或学科以查找题目" subtitle="点击题目可查看/编辑/删除" prepend-icon="mdi-filter">
             <v-row align="center" justify="start" no-gutters>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
                     <v-text-field v-model="filterId" label="题目 ID" placeholder="输入题目 ID" clearable></v-text-field>

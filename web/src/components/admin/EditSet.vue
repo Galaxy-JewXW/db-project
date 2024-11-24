@@ -1,7 +1,7 @@
 <template>
     <v-banner sticky icon="mdi-plus" lines="one">
         <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可编辑此题库。</div>
+            <div class="text-subtitle-1">作为辅导师，你可查看/编辑此题库。</div>
         </template>
 
         <template v-slot:actions>
@@ -64,7 +64,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="form.subject + '的所有题目'" prepend-icon="mdi-plus"
-                                subtitle="左键点击以查看题目，右键点击以添加题目到题库">
+                                subtitle="左键点击以查看题目，右键点击以添加题目到题库。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in questions" :key="index">
@@ -109,7 +109,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="'题库 ' + form.name + ' 已添加的题目'" prepend-icon="mdi-minus"
-                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目">
+                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
@@ -296,7 +296,7 @@ export default {
             originalSet: {},
             tab: 1,
             tempTab: 1,
-            maxAllowedTab: 1,
+            maxAllowedTab: 3,
             tabs: [
                 { value: 1, label: '设置基本信息' },
                 { value: 2, label: '设置题目' },
@@ -412,7 +412,7 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
         console.log('接收到的 ID:', this.currentId);
         // 初始化题目列表
         this.fetchProblemSet(this.currentId);
-        const title = '编辑题库 - ' + this.originalSet.name;
+        const title = '查看/编辑题库 - ' + this.originalSet.name;
         this.setAppTitle(title);
         this.setPageTitle(title);
     },
