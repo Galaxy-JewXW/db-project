@@ -1,7 +1,7 @@
 <template>
     <v-banner sticky icon="mdi-plus" lines="one">
         <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可查看/编辑此题库。</div>
+            <div class="text-subtitle-1">作为辅导师，你可创建新的模拟测试。</div>
         </template>
 
         <template v-slot:actions>
@@ -40,6 +40,12 @@
                             </v-radio-group>
                         </v-col>
 
+                        <v-col cols="12">
+                            <v-text-field v-model="form.startTime" label="开始时间" type="datetime-local"
+                                :rules="[value => !!value || '开始时间为必填项']" required />
+                        </v-col>
+
+
                         <!-- 时长输入 -->
                         <v-col cols="12">
                             <v-text-field v-model.number="form.duration" label="时长（分钟）" :rules="[
@@ -64,7 +70,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="form.subject + '的所有题目'" prepend-icon="mdi-plus"
-                                subtitle="左键点击以查看题目，右键点击以添加题目到题库。">
+                                subtitle="左键点击以查看题目，右键点击以添加题目到模拟测试。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in questions" :key="index">
@@ -108,8 +114,8 @@
                     </v-col>
                     <v-col cols="6">
                         <div class="pa-3">
-                            <v-card :title="'题库 ' + form.name + ' 已添加的题目'" prepend-icon="mdi-minus"
-                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目。">
+                            <v-card :title="'模拟测试 ' + form.name + ' 已添加的题目'" prepend-icon="mdi-minus"
+                                subtitle="左键点击以查看题目，右键点击以从模拟测试中移除题目。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
@@ -154,12 +160,14 @@
                 </v-row>
             </v-tabs-window-item>
             <v-tabs-window-item :value="3">
+                333
+            </v-tabs-window-item>
+            <v-tabs-window-item :value="4">
                 <v-alert color="warning" class="mb-3" icon="mdi-circle-multiple-outline">
                     <v-alert-title>确认</v-alert-title>
-                    请确认题库信息设置是否正确。若均填写正确，请点击下方提交按钮。
+                    请确认模拟测试信息设置是否正确。若均填写正确，请点击下方提交按钮。
                 </v-alert>
                 <v-btn color="primary" variant="outlined" @click="handleSubmit">提交</v-btn>
-                <!-- 预览内容 -->
                 <div class="pa-3">
                     <v-row>
                         <v-col cols="12" md="8">
@@ -218,6 +226,11 @@
                                     </div>
                                     <div class="info-item">
                                         <v-icon>mdi-clock-time-eight-outline</v-icon>
+                                        <span class="info-title">开始时间：</span>
+                                        <span>{{ formatDate(form.startTime) }} </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <v-icon>mdi-timer-outline</v-icon>
                                         <span class="info-title">时长：</span>
                                         <span>{{ form.duration }} 分钟</span>
                                     </div>
@@ -317,27 +330,21 @@ import { mapMutations } from 'vuex';
 
 export default {
     name: 'AdminSet',
-    props: {
-        id: {
-            type: String,
-            required: true,
-        }
-    },
     data() {
         return {
-            currentId: null,
-            originalSet: {},
             tab: 1,
             tempTab: 1,
-            maxAllowedTab: 3,
+            maxAllowedTab: 1,
             tabs: [
                 { value: 1, label: '设置基本信息' },
                 { value: 2, label: '设置题目' },
-                { value: 3, label: '预览题库' }
+                { value: 3, label: '设置题目分值' },
+                { value: 4, label: '预览模拟测试' }
             ],
             form: {
                 name: '',
                 subject: '',
+                startTime: '',
                 duration: null,
                 description: '',
                 questions: []
@@ -359,76 +366,6 @@ export default {
 ## 1. 简介
 这是一个用于测试的 Markdown 文档，用于验证各种 Markdown 特性以及 \`marked\` 库的渲染能力。以下内容包含各种元素，如标题、列表、表格、图片、链接、代码块以及 LaTeX 公式。
 
-## 2. 列表
-
-### 2.1 无序列表
-- 第一项
-- 第二项
-  - 嵌套项 1
-  - 嵌套项 2
-- 第三项
-
-### 2.2 有序列表
-1. 第一点
-2. 第二点
-   1. 嵌套第一点
-   2. 嵌套第二点
-3. 第三点
-
-## 3. 链接与图片
-- [OpenAI 官网](https://www.openai.com)
-- 图片示例：
-  ![image-20240910103809548](https://drinkwater-1325041233.cos.ap-guangzhou.myqcloud.com/imgs/image-20240910103809548.png)
-
-## 4. 代码块
-
-### 4.1 行内代码
-这是一个行内代码示例：\`console.log("Hello, World!");\`
-
-### 4.2 多行代码块
-\`\`\`javascript
-function greet(name) {
-  console.log(\`Hello, \${name}!\`);
-}
-
-greet('OpenAI');
-\`\`\`
-
-## 5. 表格
-| Header 1 | Header 2 | Header 3 |
-|----------|----------|----------|
-| Row 1    | Data 1   | Data A   |
-| Row 2    | Data 2   | Data B   |
-| Row 3    | Data 3   | Data C   |
-
-## 6. 引用与分隔线
-> 这是一个引用块，可以用于引用他人的话语或注释。
-
----
-这是一个分隔线，用于分割内容。
-
-## 7. LaTeX 公式
-
-### 7.1 行内公式
-这是一个行内公式示例：$E = mc^2$
-
-### 7.2 多行公式
-$$
-\\int_{a}^{b} f(x) \\,dx = F(b) - F(a)
-$$
-
-这是一个多行公式，用于展示积分计算。
-
-## 8. 粗体与斜体
-
-- **这是一个粗体文本示例**
-- *这是一个斜体文本示例*
-- ***这是一个粗体加斜体文本示例***
-    
-## 9. 长文本段落测试
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum vehicula ex eu nulla scelerisque, ac consectetur lacus dapibus. Phasellus efficitur risus in ligula tempor, et lacinia risus convallis. Nunc sit amet erat nec elit suscipit auctor. Mauris convallis purus eu lectus tincidunt, in volutpat odio mollis. Integer a nisl mi. Duis ac magna sed orci facilisis aliquet. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Suspendisse potenti. Praesent sit amet turpis non nisl interdum tempor a nec orci.
-    
-Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium vulputate. Ut gravida lectus sit amet sapien tincidunt, non efficitur magna viverra. Fusce sed arcu eu odio euismod ullamcorper. Nulla facilisi. Aenean vitae orci dui. Phasellus sit amet maximus magna, vel ornare nisi. Donec euismod nulla eget libero dignissim, sit amet finibus lacus ultricies. Ut consequat mauris vitae sem volutpat, eget tempor orci auctor. Cras vestibulum diam vitae tellus vehicula, at consectetur sapien aliquet。
 `,
                 subject: "工科数学分析（上）",
                 source: "自出题",
@@ -440,51 +377,28 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
     },
     mounted() {
         // 更新标题
-
-        this.currentId = parseInt(this.id);
-        console.log('接收到的 ID:', this.currentId);
-        // 初始化题目列表
-        this.fetchProblemSet(this.currentId);
-        const title = '查看/编辑题库 - ' + this.originalSet.name;
+        const title = '创建模拟测试';
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.getExercises(this.form.subject);
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
-        fetchProblemSet(id) {
-            const mockData = {
-                name: '上学期期中',
-                subject: '工科高等代数',
-                duration: 120,
-                description: '哥们自己乱编的题目',
-                questions: [
-                    {
-                        type: "单项选择题",
-                        ids: [99, 101, 102, 104],
-                        currentPage: 1,
-                    },
-                    {
-                        type: "填空题",
-                        ids: [8101, 8102, 8103], // 填空题
-                        currentPage: 1,
-                    },
-                    {
-                        type: "判断题",
-                        ids: [1101, 1102, 1103], // 判断题
-                        currentPage: 1,
-                    },
-                    {
-                        type: "解答题",
-                        ids: [201, 202], // 解答题
-                        currentPage: 1,
-                    },
-                ]
-            };
-            this.form = { ...mockData };
-            this.originalSet = { ...mockData };
-        },
         goBack() {
-            this.$router.push('/admin/problemset');
+            this.$router.push('/admin/exam');
+        },
+        formatDate(dateString) {
+            const options = {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+            };
+            const date = new Date(dateString);
+            return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
         },
         showSnackbar(message, color = 'error') {
             this.snackbar = {
@@ -559,7 +473,7 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
                 return;
             }
             if (this.form.questions.length === 0) {
-                this.showSnackbar('题库内容不能为空');
+                this.showSnackbar('模拟测试内容不能为空');
                 this.tempTab = 2;
                 this.tab = 2;
                 return;

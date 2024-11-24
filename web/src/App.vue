@@ -93,6 +93,7 @@ export default {
           { title: "题目管理", icon: "mdi-file-edit", value: "/admin/exercise" },
           { title: "题库管理", icon: "mdi-database-edit", value: "/admin/problemset" },
           { title: "模拟测试管理", icon: "mdi-arrange-send-backward", value: "/admin/exam" },
+          { title: "模拟测试评分", icon: "mdi-chart-arc", value: "/admin/judge" },
           { title: "讨论区", icon: "mdi-forum", value: "/admin/forum" },
           { title: "个人中心", icon: "mdi-account-details", value: "/admin/profile" },
           isLoginRoute

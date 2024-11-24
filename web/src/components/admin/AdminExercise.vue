@@ -3,7 +3,7 @@
         <!-- 顶部横幅 -->
         <v-banner sticky icon="mdi-plus" lines="one">
             <template v-slot:text>
-                <div class="text-subtitle-1">作为辅导师，你可创建新的题目。</div>
+                <div class="text-subtitle-1">作为辅导师，你可创建新的题目，或查看/编辑/删除已有的题目。</div>
             </template>
 
             <template v-slot:actions>
@@ -14,13 +14,14 @@
         </v-banner>
 
         <!-- 筛选条件区域 -->
-        <v-card variant="text" title="输入题目ID或学科以查找题目" subtitle="点击题目可进行编辑/删除" prepend-icon="mdi-filter">
+        <v-card class="pl-2 pr-2 pb- 2" variant="text" title="筛选题目" subtitle="输入题目ID或学科以查找题目，点击题目可进行查看/编辑/删除操作。" prepend-icon="mdi-filter">
             <v-row align="center" justify="start" no-gutters>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
                     <v-text-field v-model="filterId" label="题目 ID" placeholder="输入题目 ID" clearable></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
-                    <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科" clearable></v-select>
+                    <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科"
+                        clearable></v-select>
                 </v-col>
             </v-row>
         </v-card>
@@ -48,19 +49,17 @@
                         <v-expansion-panel-text>
                             <v-row no-gutters>
                                 <div class="question-squares">
-                                    <v-btn v-for="id in getPaginatedIds(group)" :key="id" class="question-square text-none"
-                                        color="blue-darken-4" rounded="0" @click="editExercise(id)">
+                                    <v-btn v-for="id in getPaginatedIds(group)" :key="id"
+                                        class="question-square text-none" color="blue-darken-4" rounded="0"
+                                        @click="editExercise(id)">
                                         <v-responsive class="text-truncate">{{ id }}</v-responsive>
                                     </v-btn>
                                 </div>
                             </v-row>
                             <v-row justify="center" class="mt-2">
-                                <v-pagination
-                                    v-model="group.currentPage"
-                                    :total-visible="7"
+                                <v-pagination v-model="group.currentPage" :total-visible="7"
                                     :length="Math.ceil(group.ids.length / pageSize)"
-                                    @input="handlePageChange(group, $event)"
-                                ></v-pagination>
+                                    @input="handlePageChange(group, $event)"></v-pagination>
                             </v-row>
                         </v-expansion-panel-text>
                     </v-expansion-panel>

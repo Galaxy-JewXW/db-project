@@ -64,7 +64,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="form.subject + '的所有题目'" prepend-icon="mdi-plus"
-                                subtitle="左键点击以查看题目，右键点击以添加题目到题库">
+                                subtitle="左键点击以查看题目，右键点击以添加题目到题库。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in questions" :key="index">
@@ -109,7 +109,7 @@
                     <v-col cols="6">
                         <div class="pa-3">
                             <v-card :title="'题库 ' + form.name + ' 已添加的题目'" prepend-icon="mdi-minus"
-                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目">
+                                subtitle="左键点击以查看题目，右键点击以从题库中移除题目。">
                                 <v-divider></v-divider>
                                 <v-expansion-panels>
                                     <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
@@ -161,42 +161,75 @@
                 <v-btn color="primary" variant="outlined" @click="handleSubmit">提交</v-btn>
                 <!-- 预览内容 -->
                 <div class="pa-3">
-                    <v-expansion-panels>
-                        <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
-                            <v-expansion-panel-title>
-                                <template v-slot:default="{ expanded }">
-                                    <v-row no-gutters>
-                                        <v-col class="d-flex justify-start text-bold" cols="2">
-                                            {{ group.type }}
-                                        </v-col>
-                                        <v-col class="text-grey" cols="10">
-                                            <v-fade-transition leave-absolute>
-                                                <span> 共 {{ group.ids.length }} 题 </span>
-                                            </v-fade-transition>
-                                        </v-col>
-                                    </v-row>
-                                </template>
-                            </v-expansion-panel-title>
-                            <v-expansion-panel-text>
-                                <v-row no-gutters>
-                                    <div class="question-squares">
-                                        <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
-                                            class="question-square text-none" color="blue-darken-4" rounded="0"
-                                            @click="viewQuestion(group.type, questionId)"
-                                            @contextmenu.prevent="removeQuestion(group.type, questionId)">
-                                            <v-responsive class="text-truncate">{{ questionId
-                                                }}</v-responsive>
-                                        </v-btn>
+                    <v-row>
+                        <v-col cols="12" md="8">
+                            <v-expansion-panels>
+                                <v-expansion-panel v-for="(group, index) in form.questions" :key="index">
+                                    <v-expansion-panel-title>
+                                        <template v-slot:default="{ expanded }">
+                                            <v-row no-gutters>
+                                                <v-col class="d-flex justify-start text-bold" cols="2">
+                                                    {{ group.type }}
+                                                </v-col>
+                                                <v-col class="text-grey" cols="10">
+                                                    <v-fade-transition leave-absolute>
+                                                        <span> 共 {{ group.ids.length }} 题 </span>
+                                                    </v-fade-transition>
+                                                </v-col>
+                                            </v-row>
+                                        </template>
+                                    </v-expansion-panel-title>
+                                    <v-expansion-panel-text>
+                                        <v-row no-gutters>
+                                            <div class="question-squares">
+                                                <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
+                                                    class="question-square text-none" color="blue-darken-4" rounded="0"
+                                                    @click="viewQuestion(group.type, questionId)"
+                                                    @contextmenu.prevent="removeQuestion(group.type, questionId)">
+                                                    <v-responsive class="text-truncate">{{ questionId
+                                                        }}</v-responsive>
+                                                </v-btn>
+                                            </div>
+                                        </v-row>
+                                        <v-row justify="center" class="mt-2">
+                                            <v-pagination v-model="group.currentPage"
+                                                :length="Math.ceil(group.ids.length / pageSize)" :total-visible="7"
+                                                @input="handlePageChange(group, $event)"></v-pagination>
+                                        </v-row>
+                                    </v-expansion-panel-text>
+                                </v-expansion-panel>
+                            </v-expansion-panels>
+                        </v-col>
+                        <v-col cols="12" md="4">
+                            <v-card class="info-card" outlined>
+                                <v-card-title class="text-h6">基本信息</v-card-title>
+                                <v-divider></v-divider>
+                                <v-card-text class="card-text">
+                                    <!-- 添加题目相关信息 -->
+                                    <div class="info-item">
+                                        <v-icon>mdi-database</v-icon>
+                                        <span class="info-title">名称：</span>
+                                        <span>{{ form.name }}</span>
                                     </div>
-                                </v-row>
-                                <v-row justify="center" class="mt-2">
-                                    <v-pagination v-model="group.currentPage"
-                                        :length="Math.ceil(group.ids.length / pageSize)" :total-visible="7"
-                                        @input="handlePageChange(group, $event)"></v-pagination>
-                                </v-row>
-                            </v-expansion-panel-text>
-                        </v-expansion-panel>
-                    </v-expansion-panels>
+                                    <div class="info-item">
+                                        <v-icon>mdi-school</v-icon>
+                                        <span class="info-title">学科：</span>
+                                        <span>{{ form.subject }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <v-icon>mdi-clock-time-eight-outline</v-icon>
+                                        <span class="info-title">时长：</span>
+                                        <span>{{ form.duration }} 分钟</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <v-icon>mdi-forum</v-icon>
+                                        <span class="info-title">描述：</span>
+                                        <span>{{ form.description }}</span>
+                                    </div>
+                                </v-card-text>
+                            </v-card>
+                        </v-col>
+                    </v-row>
                 </div>
             </v-tabs-window-item>
         </v-tabs-window>
@@ -621,7 +654,7 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
 }
 
 .info-card {
-    max-height: 60%;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
