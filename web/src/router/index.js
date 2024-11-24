@@ -73,6 +73,14 @@ const adminRoutes = [
     }
   },
   {
+    path: "/admin/exam/new",
+    component: () => import("@/components/admin/NewExam.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
     path: "/admin/exam",
     component: () => import("@/components/admin/AdminExam.vue"),
     meta: {
