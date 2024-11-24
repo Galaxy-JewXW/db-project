@@ -85,9 +85,10 @@
                                         <v-expansion-panel-text>
                                             <v-row no-gutters>
                                                 <div class="question-squares">
-                                                    <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
-                                                        class="question-square text-none" color="blue-darken-4"
-                                                        rounded="0" @click="viewQuestion(group.type, questionId)"
+                                                    <v-btn v-for="questionId in getPaginatedIds(group)"
+                                                        :key="questionId" class="question-square text-none"
+                                                        color="blue-darken-4" rounded="0"
+                                                        @click="viewQuestion(group.type, questionId)"
                                                         @contextmenu.prevent="addQuestion(group.type, questionId)">
                                                         <v-responsive class="text-truncate">{{ questionId
                                                             }}</v-responsive>
@@ -95,7 +96,9 @@
                                                 </div>
                                             </v-row>
                                             <v-row justify="center" class="mt-2">
-                                                <v-pagination v-model="group.currentPage" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
+                                                <v-pagination v-model="group.currentPage"
+                                                    :length="Math.ceil(group.ids.length / pageSize)" :total-visible="7"
+                                                    @input="handlePageChange(group, $event)"></v-pagination>
                                             </v-row>
                                         </v-expansion-panel-text>
                                     </v-expansion-panel>
@@ -127,9 +130,10 @@
                                         <v-expansion-panel-text>
                                             <v-row no-gutters>
                                                 <div class="question-squares">
-                                                    <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
-                                                        class="question-square text-none" color="blue-darken-4"
-                                                        rounded="0" @click="viewQuestion(group.type, questionId)"
+                                                    <v-btn v-for="questionId in getPaginatedIds(group)"
+                                                        :key="questionId" class="question-square text-none"
+                                                        color="blue-darken-4" rounded="0"
+                                                        @click="viewQuestion(group.type, questionId)"
                                                         @contextmenu.prevent="removeQuestion(group.type, questionId)">
                                                         <v-responsive class="text-truncate">{{ questionId
                                                             }}</v-responsive>
@@ -137,7 +141,9 @@
                                                 </div>
                                             </v-row>
                                             <v-row justify="center" class="mt-2">
-                                                <v-pagination v-model="group.currentPage" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
+                                                <v-pagination v-model="group.currentPage"
+                                                    :length="Math.ceil(group.ids.length / pageSize)" :total-visible="7"
+                                                    @input="handlePageChange(group, $event)"></v-pagination>
                                             </v-row>
                                         </v-expansion-panel-text>
                                     </v-expansion-panel>
@@ -179,7 +185,9 @@
                                     </div>
                                 </v-row>
                                 <v-row justify="center" class="mt-2">
-                                    <v-pagination v-model="group.currentPage" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
+                                    <v-pagination v-model="group.currentPage"
+                                        :length="Math.ceil(group.ids.length / pageSize)" :total-visible="7"
+                                        @input="handlePageChange(group, $event)"></v-pagination>
                                 </v-row>
                             </v-expansion-panel-text>
                         </v-expansion-panel>

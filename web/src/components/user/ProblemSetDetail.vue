@@ -60,6 +60,7 @@
             <v-row justify="center" class="mt-2">
               <v-pagination
                 v-model="group.currentPage"
+                :total-visible="7"
                 :length="Math.ceil(group.ids.length / pageSize)"
                 @input="handlePageChange(group, $event)"
               ></v-pagination>
@@ -187,7 +188,7 @@ export default {
           const questions = [
             {
               type: "单项选择题",
-              ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
+              ids: [...Array(10000).keys()].map((i) => i + 1), // 生成 50 道单项选择题
               currentPage: 1, // 当前页
             },
             {
