@@ -23,6 +23,15 @@ const adminRoutes = [
     }
   },
   {
+    path: "/admin/exercise/:id",
+    component: () => import("@/components/admin/EditExercise.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
     path: "/admin/exercise/new",
     component: () => import("@/components/admin/NewExercise.vue"),
     meta: {
@@ -37,7 +46,40 @@ const adminRoutes = [
       requiresAuth: true,
       requiresAdmin: true,
     }
-  }
+  },
+  {
+    path: "/admin/problemset/:id",
+    component: () => import("@/components/admin/EditSet.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/problemset/new",
+    component: () => import("@/components/admin/NewSet.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/problemset",
+    component: () => import("@/components/admin/AdminSet.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/exam",
+    component: () => import("@/components/admin/AdminExam.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
 ]
 
 // 手动添加的自定义路由

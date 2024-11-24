@@ -54,7 +54,7 @@
         <span class="headline ml-2">确定不保存修改直接返回吗？</span>
       </v-card-title>
       <v-card-actions>
-        <v-btn color="primary" variant="text" @click="returnForum">
+        <v-btn color="primary" variant="text" @click="returnBack">
           确定
         </v-btn>
         <v-btn variant="plain" @click="returnDialogOpen = false">
@@ -165,7 +165,7 @@ export default {
       this.snackbarColor = "success";
       this.snackbarOpen = true;
 
-      this.returnForum();
+      this.returnBack();
       this.confirmDialogOpen = false; // 关闭确认发布的对话框
     },
 
@@ -187,7 +187,7 @@ export default {
     },
 
     // 返回首页
-    returnForum() {
+    returnBack() {
       this.$router.push(`/admin/home`);
     },
   },

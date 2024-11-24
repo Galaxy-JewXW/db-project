@@ -227,19 +227,21 @@ export default {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
 
     formatDate(dateStr) {
-      const options = { year: "numeric", month: "long", day: "numeric" };
+      const options = { year: "numeric", month: '2-digit', day: '2-digit' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
-    formatLastUpdated(dateStr) {
+    formatLastUpdated(dateString) {
       const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false, // 使用24小时制
       };
-      return new Date(dateStr).toLocaleString(undefined, options);
+      const date = new Date(dateString);
+      return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
     openDiscussion(discussion) {
       this.$router.push(`/discussion/${discussion.id}`);

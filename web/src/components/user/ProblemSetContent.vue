@@ -245,7 +245,7 @@ export default {
     ...mapMutations(['setAppTitle', 'setPageTitle']),
 
     formatDate(dateStr) {
-      const options = { year: "numeric", month: "long", day: "numeric" };
+      const options = { year: "numeric", month: '2-digit', day: '2-digit' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
     openDialog(problemSet) {

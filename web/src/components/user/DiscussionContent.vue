@@ -174,16 +174,18 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
-    formatDate(dateStr) {
+    formatDate(dateString) {
       const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false, // 使用24小时制
       };
-      return new Date(dateStr).toLocaleString(undefined, options);
+      const date = new Date(dateString);
+      return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
     returnForum() {
       this.$router.push(`/forum`);

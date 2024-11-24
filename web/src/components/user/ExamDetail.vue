@@ -1,61 +1,55 @@
 <template>
   <div class="problem-set-detail" v-if="problemSetData">
     <v-scroll-y-transition mode="out-in">
+      <!-- 测试进行中且未完成所有题目 -->
       <div
-        v-if="
-          remainingTime > 0 &&
-          this.finishedQuestions.length < this.totalQuestions
-        "
+        v-if="remainingTime > 0 && finishedQuestions.length < totalQuestions"
         style="padding-bottom: 15px"
       >
-        <v-alert :type="'info'" icon="mdi-clock-outline">
-          <v-alert-title
-            >测试进行中，剩余时间：{{
-              formatDuration(remainingTime)
-            }}</v-alert-title
-          >
-          你已完成{{ this.totalQuestions }}题中的{{
-            this.finishedQuestions.length
-          }}题。
+        <v-alert type="info" icon="mdi-clock-outline">
+          <v-alert-title>
+            测试进行中，剩余时间：{{ formatDuration(remainingTime) }}
+          </v-alert-title>
+          你已完成{{ totalQuestions }}题中的{{ finishedQuestions.length }}题。
         </v-alert>
       </div>
+
+      <!-- 测试进行中且已完成所有题目 -->
       <div
-        v-else-if="
-          remainingTime > 0 &&
-          this.finishedQuestions.length === this.totalQuestions
-        "
+        v-else-if="remainingTime > 0 && finishedQuestions.length === totalQuestions"
         style="padding-bottom: 15px"
       >
-        <v-alert :type="'success'">
-          <v-alert-title
-            >测试进行中，剩余时间：{{
-              formatDuration(remainingTime)
-            }}</v-alert-title
-          >
+        <v-alert type="success">
+          <v-alert-title>
+            测试进行中，剩余时间：{{ formatDuration(remainingTime) }}
+          </v-alert-title>
           你已完成本次测试的所有题目。
         </v-alert>
       </div>
+
+      <!-- 测试已结束 -->
       <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
-        <!-- 显示对应的提示信息 -->
-        <v-alert :type="'error'">
+        <v-alert type="error">
           <v-alert-title>测试已结束</v-alert-title>
           公布成绩前，你无法再次查看测试题。
         </v-alert>
       </div>
     </v-scroll-y-transition>
 
+    <!-- 进度条 -->
     <v-progress-linear
       v-if="remainingTime > 0"
-      :model-value="progressPercentage"
+      :value="progressPercentage"
       color="primary"
       height="9"
       rounded
       style="margin-bottom: 10px"
     ></v-progress-linear>
 
+    <!-- 题库名称 -->
     <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
 
-    <!-- Chip row: contains all fields as Chips in the same row -->
+    <!-- 信息芯片 -->
     <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
       <v-chip
         v-for="(chip, index) in chips"
@@ -68,7 +62,7 @@
       </v-chip>
     </div>
 
-    <!-- Scrollable container for questions -->
+    <!-- 可滚动的题目列表区域 -->
     <div v-if="remainingTime > 0" class="questions-container">
       <v-expansion-panels>
         <v-expansion-panel v-for="(group, index) in questions" :key="index">
@@ -95,12 +89,12 @@
             </template>
           </v-expansion-panel-title>
 
-          <!-- List of buttons for each question ID inside the content -->
+          <!-- 题目按钮及分页控件 -->
           <v-expansion-panel-text>
             <v-row no-gutters>
               <div class="question-squares">
                 <v-btn
-                  v-for="questionId in group.ids"
+                  v-for="questionId in getPaginatedIds(group)"
                   :key="questionId"
                   :class="[
                     'question-square',
@@ -114,29 +108,37 @@
                   rounded="0"
                   @click="goToQuestionDetail(questionId)"
                 >
-                  <v-responsive class="text-truncate">{{
-                    questionId
-                  }}</v-responsive>
+                  <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
                 </v-btn>
               </div>
+            </v-row>
+            <!-- 分页控件 -->
+            <v-row justify="center" class="mt-2">
+              <v-pagination
+                v-model="group.currentPage"
+                :total-visible="7"
+                :length="Math.ceil(group.ids.length / pageSize)"
+                @input="handlePageChange(group, $event)"
+              ></v-pagination>
             </v-row>
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
     </div>
+
+    <!-- 测试已结束时的提示 -->
     <div v-else>本次测试已结束，你无法再查看题目。</div>
 
-    <!-- Fullscreen Dialog for Question Answer -->
+    <!-- 全屏对话框用于显示和回答题目 -->
     <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
       <v-card class="fullscreen-card">
         <v-toolbar dark color="primary">
           <v-btn icon @click="closeDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title
-            >{{ this.questionType }}：题目 -
-            {{ this.currentQuestionId }}</v-toolbar-title
-          >
+          <v-toolbar-title>
+            {{ questionType }}：题目 - {{ currentQuestionId }}
+          </v-toolbar-title>
         </v-toolbar>
 
         <v-card-text>
@@ -145,7 +147,7 @@
               <div v-if="question" class="markdown-content">
                 <v-md-preview :text="question" />
               </div>
-              <!-- Loading or Error States -->
+              <!-- 加载或错误状态 -->
               <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
             </v-col>
 
@@ -154,14 +156,15 @@
                 <v-card-title
                   style="padding-left: 0"
                   class="text-h5 font-weight-regular"
-                  >提交题目 - {{ this.currentQuestionId }}</v-card-title
                 >
+                  提交题目 - {{ currentQuestionId }}
+                </v-card-title>
                 <v-chip color="primary" variant="outlined">
-                  {{ this.questionType }}
+                  {{ questionType }}
                 </v-chip>
                 <v-spacer></v-spacer>
-                <div v-if="this.choices === -1">
-                  <!--文件上传-->
+                <div v-if="choices === -1">
+                  <!-- 文件上传 -->
                   <v-file-input
                     v-model="files"
                     label="提交答案"
@@ -171,7 +174,6 @@
                     show-size
                     accept=".pdf,.docx,.jpg,.png,.md"
                   >
-                    >
                     <template v-slot:selection="{ fileNames }">
                       <template v-for="fileName in fileNames" :key="fileName">
                         <v-chip class="me-2" color="primary" size="small" label>
@@ -191,14 +193,14 @@
                 </div>
                 <div
                   v-else-if="
-                    this.choices >= 3 && this.questionType === '单项选择题'
+                    choices >= 3 && questionType === '单项选择题'
                   "
                 >
                   <!-- 单项选择题 -->
                   <v-row no-gutters>
                     <v-radio-group v-model="selectedOption" inline>
                       <v-radio
-                        v-for="index in this.choices"
+                        v-for="index in choices"
                         :key="index"
                         :label="getOptionLetter(index)"
                         :value="getOptionLetter(index)"
@@ -226,14 +228,14 @@
                 </div>
                 <div
                   v-else-if="
-                    this.choices >= 3 && this.questionType === '多项选择题'
+                    choices >= 3 && questionType === '多项选择题'
                   "
                 >
-                  <!-- 单项选择题 -->
+                  <!-- 多项选择题 -->
                   <v-row no-gutters>
                     <v-container>
                       <v-checkbox
-                        v-for="index in this.choices"
+                        v-for="index in choices"
                         v-model="selectedOptions"
                         :key="index"
                         :label="getOptionLetter(index)"
@@ -272,29 +274,29 @@
                     <v-card-actions>
                       <v-btn
                         color="primary"
-                        text
+                        text="提交"
                         variant="text"
                         :disabled="!selectedOption"
                         @click="submitAnswer"
                       >
                         提交
                       </v-btn>
-                      <v-btn text variant="plain" @click="clearSelection">
+                      <v-btn text="清除" variant="plain" @click="clearSelection">
                         清除
                       </v-btn>
                     </v-card-actions>
                   </v-row>
                 </div>
                 <div v-else-if="questionType === '填空题'">
+                  <!-- 填空题 -->
                   <v-card-text
                     style="padding-left: 0"
                     class="text-subtitle-3 font-weight-regular"
-                    >使用markdown在左侧输入框输入答案，右侧为预览。
-                    <br />
-                    <a href="https://freeopen.github.io/mathjax/"
-                      >在markdown中写数学公式</a
-                    ></v-card-text
                   >
+                    使用markdown在左侧输入框输入答案，右侧为预览。
+                    <br />
+                    <a href="https://freeopen.github.io/mathjax/">在markdown中写数学公式</a>
+                  </v-card-text>
 
                   <v-md-editor
                     v-model="text"
@@ -306,14 +308,14 @@
                     <v-card-actions>
                       <v-btn
                         color="primary"
-                        text
+                        text="提交"
                         variant="text"
                         :disabled="!text"
                         @click="submitAnswer"
                       >
                         提交
                       </v-btn>
-                      <v-btn text variant="plain" @click="clearSelection">
+                      <v-btn text="清除" variant="plain" @click="clearSelection">
                         清除
                       </v-btn>
                     </v-card-actions>
@@ -326,6 +328,8 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+
+    <!-- Snackbar for notifications -->
     <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="snackbarColor">
       <div style="font-size: 16px">{{ snackbarMessage }}</div>
       <template #actions>
@@ -362,6 +366,9 @@ export default {
       selectedOption: null, // 单项选择题
       selectedOptions: [], // 多项选择题
       text: "",
+      pageSize: 10, // 每页显示的题目数量
+      questionType: "", // 当前题目的类型
+      currentQuestionId: null, // 当前题目ID
     };
   },
   computed: {
@@ -390,7 +397,7 @@ export default {
           color: "success",
           icon: "mdi-calendar",
           label: "测试开始时间",
-          value: this.formatDate2M(this.problemSetData?.starttime),
+          value: this.formatDate2S(this.problemSetData?.starttime),
         },
         {
           color: "warning",
@@ -401,23 +408,29 @@ export default {
       ];
     },
     remainingTime() {
-      const startTime = new Date(this.problemSetData?.starttime);
-      const duration = this.problemSetData?.duration || 0; // duration in minutes
-      const endTime = new Date(startTime.getTime() + duration * 60000);
+      if (!this.problemSetData) return 0;
+      const startTime = new Date(this.problemSetData.starttime);
+      const durationMinutes = this.problemSetData.duration || 0; // duration in minutes
+      const endTime = new Date(startTime.getTime() + durationMinutes * 60000); // convert to milliseconds
       const timeRemaining = endTime - this.currentTime; // in milliseconds
 
       return Math.max(timeRemaining, 0); // return 0 if timeRemaining is negative
     },
     progressPercentage() {
-      const startTime = new Date(this.problemSetData?.starttime);
-      const duration = this.problemSetData?.duration || 0; // duration in minutes
-      const endTime = new Date(startTime.getTime() + duration * 60000);
+      if (!this.problemSetData) return 0;
+      const startTime = new Date(this.problemSetData.starttime);
+      const durationMinutes = this.problemSetData.duration || 0; // duration in minutes
+      const endTime = new Date(startTime.getTime() + durationMinutes * 60000); // convert to milliseconds
       const totalDuration = endTime - startTime;
 
       const elapsedTime = this.currentTime - startTime;
 
       // Calculate the progress as a percentage
       return Math.min((elapsedTime / totalDuration) * 100, 100); // Prevent it from going over 100%
+    },
+    // 根据筛选条件过滤后的题目（移除筛选逻辑）
+    filteredExercises() {
+      return this.questions;
     },
   },
   mounted() {
@@ -430,13 +443,13 @@ export default {
       this.$router.push(`/404`);
     }
 
-    // Start a timer to update remainingTime and progress every second
+    // 开始一个定时器，每秒更新一次当前时间
     this.intervalId = setInterval(() => {
       this.currentTime = new Date();
-    }, 1000); // Update every second
+    }, 1000); // 每秒更新一次
   },
   beforeDestroy() {
-    // Clear interval when component is destroyed
+    // 组件销毁前清除定时器
     clearInterval(this.intervalId);
   },
   methods: {
@@ -454,8 +467,8 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-22 16:00:00",
-            duration: 2400000,
+            starttime: "2024-11-24 15:00:00",
+            duration: 140,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.finishedQuestions = [301, 302, 303, 441, 442, 1001, 9801, 1912, 1917, 1920];
@@ -483,22 +496,27 @@ export default {
             {
               type: "单项选择题",
               ids: [301, 302, 303, 304, 305],
+              currentPage: 1, // 当前页
             },
             {
               type: "多项选择题",
               ids: [441, 442, 443, 444, 445, 446],
+              currentPage: 1,
             },
             {
               type: "判断题",
               ids: [595, 1001],
+              currentPage: 1,
             },
             {
               type: "填空题",
               ids: [9801, 9802, 7002],
+              currentPage: 1,
             },
             {
               type: "解答题",
               ids: [1911, 1912, 1913, 1914, 1915, 1916, 1917, 1918, 1919, 1920], // 解答题
+              currentPage: 1,
             },
           ];
           this.questions = questions; // 更新组件本地的题目列表数据
@@ -513,19 +531,22 @@ export default {
 
     formatDate(dateStr) {
       if (!dateStr) return "N/A";
-      const options = { year: "numeric", month: "long", day: "numeric" };
+      const options = { year: "numeric", month: '2-digit', day: '2-digit' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
 
-    formatDate2M(dateStr) {
+    formatDate2S(dateString) {
       const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false, // 使用24小时制
       };
-      return new Date(dateStr).toLocaleString(undefined, options);
+      const date = new Date(dateString);
+      return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
 
     formatDuration(ms) {
@@ -578,7 +599,7 @@ export default {
     },
 
     getOptionLetter(index) {
-      return String.fromCharCode(65 + index - 1); // 65 对应字母 'A'
+      return String.fromCharCode(64 + index); // 65对应'A'
     },
 
     clearSelection() {
@@ -639,6 +660,18 @@ export default {
       console.log("文件上传成功");
       this.files = [];
       this.submitAnswer();
+    },
+
+    // 获取当前页的题目ID
+    getPaginatedIds(group) {
+      const start = (group.currentPage - 1) * this.pageSize;
+      const end = start + this.pageSize;
+      return group.ids.slice(start, end);
+    },
+
+    // 处理分页变化
+    handlePageChange(group, newPage) {
+      group.currentPage = newPage;
     },
   },
 };
@@ -701,6 +734,11 @@ export default {
   border-radius: 0;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  cursor: pointer;
+}
+
+.question-square:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
 
 .v-responsive {
@@ -739,5 +777,10 @@ export default {
   max-width: 100vw;
   max-height: 100vh;
   margin: 0;
+}
+
+/* Snackbar styles */
+.v-snackbar {
+  font-size: 16px;
 }
 </style>
