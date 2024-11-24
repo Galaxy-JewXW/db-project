@@ -2,20 +2,12 @@
 <template>
   <v-container fluid class="problemset-container">
     <!-- Button to open Past Exams Dialog -->
-    <v-btn
-      class="align-self-start"
-      color="primary"
-      @click="showPastExamsDialog = true"
-    >
+    <v-btn class="align-self-start" color="primary" @click="showPastExamsDialog = true">
       查看过往测试
     </v-btn>
 
     <!-- Past Exams Dialog -->
-    <v-dialog
-      v-model="showPastExamsDialog"
-      transition="dialog-bottom-transition"
-      fullscreen
-    >
+    <v-dialog v-model="showPastExamsDialog" transition="dialog-bottom-transition" fullscreen>
       <v-card>
         <v-toolbar dark color="primary">
           <v-btn icon dark @click="showPastExamsDialog = false">
@@ -30,30 +22,15 @@
               <v-card-text class="py-2">
                 <v-row>
                   <!-- Subject Filter -->
-                  <v-col
-                    cols="12"
-                    class="filter-section"
-                    style="padding-bottom: 0px"
-                  >
+                  <v-col cols="12" class="filter-section" style="padding-bottom: 0px">
                     <div class="filter-group">
                       <span class="filter-label">按科目筛选:</span>
-                      <v-chip
-                        v-for="subject in subjects"
-                        :key="subject"
-                        class="ma-2"
-                        color="primary"
-                        variant="outlined"
+                      <v-chip v-for="subject in subjects" :key="subject" class="ma-2" color="primary" variant="outlined"
                         :class="{
                           'selected-chip': selectedSubject === subject,
-                        }"
-                        @click="toggleSubject(subject)"
-                      >
+                        }" @click="toggleSubject(subject)">
                         {{ subject }}
-                        <v-icon
-                          v-if="selectedSubject === subject"
-                          class="ml-2"
-                          small
-                        >
+                        <v-icon v-if="selectedSubject === subject" class="ml-2" small>
                           mdi-check
                         </v-icon>
                       </v-chip>
@@ -61,30 +38,15 @@
                   </v-col>
 
                   <!-- Time Filter -->
-                  <v-col
-                    cols="12"
-                    class="filter-section"
-                    style="padding-top: 0px"
-                  >
+                  <v-col cols="12" class="filter-section" style="padding-top: 0px">
                     <div class="filter-group">
                       <span class="filter-label">按时间筛选:</span>
-                      <v-chip
-                        v-for="range in timeRanges"
-                        :key="range.value"
-                        class="ma-2"
-                        color="primary"
-                        variant="outlined"
-                        :class="{
+                      <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary"
+                        variant="outlined" :class="{
                           'selected-chip': selectedTimeRange === range.value,
-                        }"
-                        @click="toggleTimeRange(range.value)"
-                      >
+                        }" @click="toggleTimeRange(range.value)">
                         {{ range.text }}
-                        <v-icon
-                          v-if="selectedTimeRange === range.value"
-                          class="ml-2"
-                          small
-                        >
+                        <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
                           mdi-check
                         </v-icon>
                       </v-chip>
@@ -98,21 +60,14 @@
           <!-- Display pastExams here -->
           <template v-if="filteredProblemSets.length > 0">
             <v-row dense class="justify-start">
-              <v-col
-                v-for="exam in filteredProblemSets"
-                :key="exam.id"
-                cols="12"
-                sm="6"
-                md="3"
-                class="pa-1"
-              >
+              <v-col v-for="exam in filteredProblemSets" :key="exam.id" cols="12" sm="6" md="3" class="pa-1">
                 <v-card class="w-100" hover>
                   <v-card-text>
                     <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
                     <div class="mt-2">
                       <div class="info-row">
                         <span>创建日期：</span>
-                        <span>{{ formatDate2M(exam.createdAt) }}</span>
+                        <span>{{ formatDate(exam.createdAt) }}</span>
                       </div>
                       <div class="info-row">
                         <span>所属科目：</span>
@@ -120,7 +75,7 @@
                       </div>
                       <div class="info-row">
                         <span>开始时间：</span>
-                        <span>{{ formatDate2M(exam.starttime) }}</span>
+                        <span>{{ formatDate(exam.starttime) }}</span>
                       </div>
                       <div class="info-row">
                         <span>时长：</span>
@@ -129,11 +84,7 @@
                     </div>
                   </v-card-text>
                   <v-card-actions>
-                    <v-btn
-                      class="enter-button"
-                      text
-                      @click.stop="this.$router.push(`/exam/${exam.id}`)"
-                    >
+                    <v-btn class="enter-button" text @click.stop="this.$router.push(`/exam/${exam.id}`)">
                       查看
                     </v-btn>
                   </v-card-actions>
@@ -151,14 +102,7 @@
     <div class="scroll-container">
       <template v-if="combinedExams.length > 0">
         <v-row dense class="justify-start">
-          <v-col
-            v-for="exam in combinedExams"
-            :key="exam.id"
-            cols="12"
-            sm="6"
-            md="3"
-            class="pa-1"
-          >
+          <v-col v-for="exam in combinedExams" :key="exam.id" cols="12" sm="6" md="3" class="pa-1">
             <v-card class="w-100" hover>
               <v-card-text>
                 <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
@@ -166,7 +110,7 @@
                 <div class="mt-2">
                   <div class="info-row">
                     <span>创建日期：</span>
-                    <span>{{ formatDate2D(exam.createdAt) }}</span>
+                    <span>{{ formatDate(exam.createdAt) }}</span>
                   </div>
                   <div class="info-row">
                     <span>所属科目：</span>
@@ -174,7 +118,7 @@
                   </div>
                   <div class="info-row">
                     <span>开始时间：</span>
-                    <span>{{ formatDate2M(exam.starttime) }}</span>
+                    <span>{{ formatDate(exam.starttime) }}</span>
                   </div>
                   <div class="info-row">
                     <span>时长：</span>
@@ -184,11 +128,7 @@
               </v-card-text>
               <v-card-actions>
                 <div v-if="isExamComing(exam)">
-                  <v-btn
-                    class="enter-button"
-                    text
-                    @click.stop="modifyEnrollmentStatus(exam)"
-                  >
+                  <v-btn class="enter-button" text @click.stop="modifyEnrollmentStatus(exam)">
                     {{
                       this.enrolledExams.includes(exam.id)
                         ? "取消报名"
@@ -201,20 +141,13 @@
                     <v-btn class="enter-button" @click.stop="enterExam(exam)">
                       进入测试
                     </v-btn>
-                    <v-btn
-                      v-if="this.enrolledExams.includes(exam.id)"
-                      variant="plain"
-                      @click.stop="modifyEnrollmentStatus(exam)"
-                    >
+                    <v-btn v-if="this.enrolledExams.includes(exam.id)" variant="plain"
+                      @click.stop="modifyEnrollmentStatus(exam)">
                       取消报名
                     </v-btn>
                   </div>
                   <div v-else>
-                    <v-btn
-                      class="enter-button"
-                      text
-                      @click.stop="enterExam(exam)"
-                    >
+                    <v-btn class="enter-button" text @click.stop="enterExam(exam)">
                       {{
                         this.enrolledExams.includes(exam.id)
                           ? "进入测试"
@@ -231,12 +164,7 @@
       <div v-else class="no-results">没有测试</div>
     </div>
   </v-container>
-  <v-snackbar
-    v-model="snackbarOpen"
-    :timeout="1000"
-    :color="`success`"
-    min-width="45%"
-  >
+  <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="`success`" min-width="45%">
     <div style="font-size: 16px">{{ snackbarMessage }}</div>
     <template #actions>
       <v-btn icon @click="snackbarOpen = false">
@@ -260,7 +188,7 @@ export default {
         {
           id: 1,
           name: "2023-24数分上期中 a",
-          createdAt: "2024-09-02",
+          createdAt: "2024-09-02 19:00:00",
           subject: "工科数学分析（上）",
           starttime: "2024-11-13 19:00:00",
           duration: 120,
@@ -268,7 +196,7 @@ export default {
         {
           id: 11,
           name: "2023-24数分上期中",
-          createdAt: "2024-09-02",
+          createdAt: "2024-09-02 19:00:00",
           subject: "工科数学分析（上）",
           starttime: "2024-11-13 19:00:00",
           duration: 120,
@@ -278,7 +206,7 @@ export default {
         {
           id: 3,
           name: "2023-24数分上期末 a",
-          createdAt: "2024-01-15",
+          createdAt: "2024-01-15 19:00:00",
           subject: "工科数学分析（上）",
           starttime: "2024-01-15 09:00:00",
           duration: 120,
@@ -286,7 +214,7 @@ export default {
         {
           id: 31,
           name: "2023-24数分上期末",
-          createdAt: "2024-01-15",
+          createdAt: "2024-01-15 19:00:00",
           subject: "工科数学分析（上）",
           starttime: "2024-01-15 09:00:00",
           duration: 120,
@@ -297,7 +225,7 @@ export default {
         {
           id: 2,
           name: "2023-24数分期末模拟测试 a",
-          createdAt: "2024-12-01",
+          createdAt: "2024-12-01 19:00:00",
           subject: "工科数学分析（上）",
           starttime: "2024-12-15 09:00:00",
           duration: 120,
@@ -305,7 +233,7 @@ export default {
         {
           id: 21,
           name: "2023-24数分期末模拟测试",
-          createdAt: "2024-12-01",
+          createdAt: "2024-12-01 19:00:00",
           subject: "工科数学分析（上）",
           starttime: "2024-12-15 09:00:00",
           duration: 120,
@@ -387,19 +315,18 @@ export default {
     // 映射 Vuex 的 mutation
     ...mapMutations(["setAppTitle", "setPageTitle"]),
 
-    formatDate2M(dateStr) {
+    formatDate(dateString) {
       const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false, // 使用24小时制
       };
-      return new Date(dateStr).toLocaleString(undefined, options);
-    },
-    formatDate2D(dateStr) {
-      const options = { year: "numeric", month: "long", day: "numeric" };
-      return new Date(dateStr).toLocaleDateString(undefined, options);
+      const date = new Date(dateString);
+      return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
     enterExam(exam) {
       // 导航到目标路由

@@ -6,7 +6,7 @@
 
         <template v-slot:actions>
             <v-btn color="primary" class="mr-5" @click="enterNewSet">
-                <div class="text-subtitle-1">创建新题库</div>
+                <div class="text-subtitle-1">创建题库</div>
             </v-btn>
         </template>
     </v-banner>
@@ -134,7 +134,7 @@ export default {
                 {
                     id: 1,
                     name: "2023-24数分上期中",
-                    createdAt: "2024-09-02",
+                    createdAt: "2024-09-02 09:00:00",
                     subject: "工科数学分析（上）",
                     createdBy: "fysszlr",
                     estimatedTime: 120,
@@ -216,9 +216,18 @@ export default {
         // 映射 Vuex 的 mutation
         ...mapMutations(['setAppTitle', 'setPageTitle']),
 
-        formatDate(dateStr) {
-            const options = { year: "numeric", month: "long", day: "numeric" };
-            return new Date(dateStr).toLocaleDateString(undefined, options);
+        formatDate(dateString) {
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false, // 使用24小时制
+            };
+            const date = new Date(dateString);
+            return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
         },
         toggleSubject(subject) {
             if (this.selectedSubject === subject) {

@@ -71,7 +71,15 @@ const adminRoutes = [
       requiresAuth: true,
       requiresAdmin: true,
     }
-  }
+  },
+  {
+    path: "/admin/exam",
+    component: () => import("@/components/admin/AdminExam.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
 ]
 
 // 手动添加的自定义路由

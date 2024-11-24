@@ -397,7 +397,7 @@ export default {
           color: "success",
           icon: "mdi-calendar",
           label: "测试开始时间",
-          value: this.formatDate2M(this.problemSetData?.starttime),
+          value: this.formatDate2S(this.problemSetData?.starttime),
         },
         {
           color: "warning",
@@ -467,8 +467,8 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-24 13:00:00",
-            duration: 40, // 40 分钟
+            starttime: "2024-11-24 15:00:00",
+            duration: 140,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
           this.finishedQuestions = [301, 302, 303, 441, 442, 1001, 9801, 1912, 1917, 1920];
@@ -531,19 +531,22 @@ export default {
 
     formatDate(dateStr) {
       if (!dateStr) return "N/A";
-      const options = { year: "numeric", month: "long", day: "numeric" };
+      const options = { year: "numeric", month: '2-digit', day: '2-digit' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
 
-    formatDate2M(dateStr) {
+    formatDate2S(dateString) {
       const options = {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false, // 使用24小时制
       };
-      return new Date(dateStr).toLocaleString(undefined, options);
+      const date = new Date(dateString);
+      return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
 
     formatDuration(ms) {
