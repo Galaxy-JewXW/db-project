@@ -14,7 +14,7 @@
         </v-banner>
 
         <!-- 筛选条件区域 -->
-        <v-card variant="text" class="pa-2" title="筛选模拟测试" subtitle="通过名称搜索或选择科目进行筛选" prepend-icon="mdi-filter">
+        <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选模拟测试" subtitle="通过名称搜索或选择科目进行筛选" prepend-icon="mdi-filter">
             <v-row align="center" justify="start" no-gutters>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
                     <v-text-field v-model="filterName" label="考试名称" placeholder="输入考试名称" clearable
