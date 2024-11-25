@@ -20,12 +20,12 @@
 
     <div class="pa-2">
         <v-tabs-window v-model="tab" class="scroll-container mt-2">
+            <!-- 设置基本信息 -->
             <v-tabs-window-item :value="1">
-                <!-- 设置基本信息 -->
                 <v-form ref="formRef" @submit.prevent>
                     <v-row no-gutters>
                         <v-col cols="12">
-                            <v-text-field v-model.number="form.name" label="名称" :rules="[value => !!value || '名称为必填项']"
+                            <v-text-field v-model="form.name" label="名称" :rules="[value => !!value || '名称为必填项']"
                                 required />
                         </v-col>
                         <!-- 科目输入 -->
@@ -44,7 +44,6 @@
                             <v-text-field v-model="form.startTime" label="开始时间" type="datetime-local"
                                 :rules="[value => !!value || '开始时间为必填项']" required />
                         </v-col>
-
 
                         <!-- 时长输入 -->
                         <v-col cols="12">
@@ -65,6 +64,8 @@
                     </v-row>
                 </v-form>
             </v-tabs-window-item>
+
+            <!-- 设置题目 -->
             <v-tabs-window-item :value="2">
                 <v-row>
                     <v-col cols="6">
@@ -82,7 +83,9 @@
                                                     </v-col>
                                                     <v-col class="text-grey" cols="10">
                                                         <v-fade-transition leave-absolute>
-                                                            <span> 共 {{ group.ids.length }} 题 </span>
+                                                            <span>
+                                                                共 {{ group.ids.length }} 题
+                                                            </span>
                                                         </v-fade-transition>
                                                     </v-col>
                                                 </v-row>
@@ -96,8 +99,9 @@
                                                         color="blue-darken-4" rounded="0"
                                                         @click="viewQuestion(group.type, questionId)"
                                                         @contextmenu.prevent="addQuestion(group.type, questionId)">
-                                                        <v-responsive class="text-truncate">{{ questionId
-                                                            }}</v-responsive>
+                                                        <v-responsive class="text-truncate">
+                                                            {{ questionId }}
+                                                        </v-responsive>
                                                     </v-btn>
                                                 </div>
                                             </v-row>
@@ -127,7 +131,9 @@
                                                     </v-col>
                                                     <v-col class="text-grey" cols="10">
                                                         <v-fade-transition leave-absolute>
-                                                            <span> 共 {{ group.ids.length }} 题 </span>
+                                                            <span>
+                                                                共 {{ group.questions.length }} 题
+                                                            </span>
                                                         </v-fade-transition>
                                                     </v-col>
                                                 </v-row>
@@ -136,19 +142,21 @@
                                         <v-expansion-panel-text>
                                             <v-row no-gutters>
                                                 <div class="question-squares">
-                                                    <v-btn v-for="questionId in getPaginatedIds(group)"
-                                                        :key="questionId" class="question-square text-none"
+                                                    <v-btn v-for="question in getPaginatedQuestions(group)"
+                                                        :key="question.id" class="question-square text-none"
                                                         color="blue-darken-4" rounded="0"
-                                                        @click="viewQuestion(group.type, questionId)"
-                                                        @contextmenu.prevent="removeQuestion(group.type, questionId)">
-                                                        <v-responsive class="text-truncate">{{ questionId
-                                                            }}</v-responsive>
+                                                        @click="viewQuestion(group.type, question.id)"
+                                                        @contextmenu.prevent="removeQuestion(group.type, question.id)">
+                                                        <v-responsive class="text-truncate">
+                                                            {{ question.id }}
+                                                        </v-responsive>
                                                     </v-btn>
                                                 </div>
                                             </v-row>
                                             <v-row justify="center" class="mt-2">
                                                 <v-pagination v-model="group.currentPage"
-                                                    :length="Math.ceil(group.ids.length / pageSize)" :total-visible="7"
+                                                    :length="Math.ceil(group.questions.length / pageSize)"
+                                                    :total-visible="7"
                                                     @input="handlePageChange(group, $event)"></v-pagination>
                                             </v-row>
                                         </v-expansion-panel-text>
@@ -159,9 +167,44 @@
                     </v-col>
                 </v-row>
             </v-tabs-window-item>
+
+            <!-- 设置题目分值 -->
             <v-tabs-window-item :value="3">
-                333
+                <v-form ref="scoreFormRef" @submit.prevent>
+                    <v-row>
+                        <v-col cols="12">
+                            <v-alert type="info" icon="mdi-information" class="mb-4">
+                                请为每个已添加的题目设置分数。 当前总分：{{ calculateTotalScore().total }}
+                            </v-alert>
+                        </v-col>
+                        <v-col v-for="(group, groupIndex) in form.questions" :key="groupIndex" cols="12">
+                            <v-card class="mb-4 ml-2 mr-2">
+                                <v-card-title class="text-h6">
+                                    {{ group.type }}  （总分：{{ calculateTotalScore()[group.type] || 0 }}）
+                                </v-card-title>
+                                <v-divider></v-divider>
+                                <v-card-text>
+                                    <v-data-table :headers="scoreHeaders" :items="group.questions" density="compact"
+                                        disable-pagination disable-sort>
+                                        <template v-slot:item.id="{ item }">
+                                            {{ item.id }}
+                                        </template>
+                                        <template v-slot:item.score="{ item, index }">
+                                            <v-text-field v-model.number="item.score" type="number" min="1" :rules="[
+                                                v => v !== null && v !== undefined || '分数为必填项',
+                                                v => Number.isInteger(v) || '分数必须是整数',
+                                                v => v > 0 || '分数必须大于0'
+                                            ]" @change="updateScore(group.type, item.id, item.score)"></v-text-field>
+                                        </template>
+                                    </v-data-table>
+                                </v-card-text>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+                </v-form>
             </v-tabs-window-item>
+
+            <!-- 预览模拟测试 -->
             <v-tabs-window-item :value="4">
                 <v-alert color="warning" class="mb-3" icon="mdi-circle-multiple-outline">
                     <v-alert-title>确认</v-alert-title>
@@ -181,7 +224,9 @@
                                                 </v-col>
                                                 <v-col class="text-grey" cols="10">
                                                     <v-fade-transition leave-absolute>
-                                                        <span> 共 {{ group.ids.length }} 题 </span>
+                                                        <span>
+                                                            共 {{ group.questions.length }} 题
+                                                        </span>
                                                     </v-fade-transition>
                                                 </v-col>
                                             </v-row>
@@ -190,18 +235,21 @@
                                     <v-expansion-panel-text>
                                         <v-row no-gutters>
                                             <div class="question-squares">
-                                                <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId"
-                                                    class="question-square text-none" color="blue-darken-4" rounded="0"
-                                                    @click="viewQuestion(group.type, questionId)"
-                                                    @contextmenu.prevent="removeQuestion(group.type, questionId)">
-                                                    <v-responsive class="text-truncate">{{ questionId
-                                                        }}</v-responsive>
+                                                <v-btn v-for="question in getPaginatedQuestions(group)"
+                                                    :key="question.id" class="question-square text-none"
+                                                    color="blue-darken-4" rounded="0"
+                                                    @click="viewQuestion(group.type, question.id)"
+                                                    @contextmenu.prevent="removeQuestion(group.type, question.id)">
+                                                    <v-responsive class="text-truncate">
+                                                        {{ question.id }}
+                                                    </v-responsive>
                                                 </v-btn>
                                             </div>
                                         </v-row>
                                         <v-row justify="center" class="mt-2">
                                             <v-pagination v-model="group.currentPage"
-                                                :length="Math.ceil(group.ids.length / pageSize)" :total-visible="7"
+                                                :length="Math.ceil(group.questions.length / pageSize)"
+                                                :total-visible="7"
                                                 @input="handlePageChange(group, $event)"></v-pagination>
                                         </v-row>
                                     </v-expansion-panel-text>
@@ -227,7 +275,7 @@
                                     <div class="info-item">
                                         <v-icon>mdi-clock-time-eight-outline</v-icon>
                                         <span class="info-title">开始时间：</span>
-                                        <span>{{ formatDate(form.startTime) }} </span>
+                                        <span>{{ formatDate(form.startTime) }}</span>
                                     </div>
                                     <div class="info-item">
                                         <v-icon>mdi-timer-outline</v-icon>
@@ -326,34 +374,34 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations } from "vuex";
 
 export default {
-    name: 'AdminSet',
+    name: "AdminSet",
     data() {
         return {
             tab: 1,
             tempTab: 1,
             maxAllowedTab: 1,
             tabs: [
-                { value: 1, label: '设置基本信息' },
-                { value: 2, label: '设置题目' },
-                { value: 3, label: '设置题目分值' },
-                { value: 4, label: '预览模拟测试' }
+                { value: 1, label: "设置基本信息" },
+                { value: 2, label: "设置题目" },
+                { value: 3, label: "设置题目分值" },
+                { value: 4, label: "预览模拟测试" },
             ],
             form: {
-                name: '',
-                subject: '',
-                startTime: '',
+                name: "",
+                subject: "",
+                startTime: "",
                 duration: null,
-                description: '',
-                questions: []
+                description: "",
+                questions: [], // Array of groups with type, questions (id & score), currentPage
             },
             questions: [],
             snackbar: {
                 show: false,
-                message: '',
-                color: 'error'
+                message: "",
+                color: "error",
             },
             pageSize: 40,
             dialog: false,
@@ -372,20 +420,24 @@ export default {
                 tags: "算法",
                 difficulty: "中等",
                 answer: "B",
-            }
+            },
+            scoreHeaders: [
+                { title: "题目编号", value: "id" },
+                { title: "设定分数", value: "score" },
+            ],
         };
     },
     mounted() {
         // 更新标题
-        const title = '创建模拟测试';
+        const title = "创建模拟测试";
         this.setAppTitle(title);
         this.setPageTitle(title);
         this.getExercises(this.form.subject);
     },
     methods: {
-        ...mapMutations(['setAppTitle', 'setPageTitle']),
+        ...mapMutations(["setAppTitle", "setPageTitle"]),
         goBack() {
-            this.$router.push('/admin/exam');
+            this.$router.push("/admin/exam");
         },
         formatDate(dateString) {
             const options = {
@@ -398,16 +450,31 @@ export default {
                 hour12: false,
             };
             const date = new Date(dateString);
-            return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
+            return date
+                .toLocaleString("zh-CN", options)
+                .replace(/\//g, "-");
         },
-        showSnackbar(message, color = 'error') {
+        calculateTotalScore() {
+            const scores = this.form.questions.reduce((result, group) => {
+                const groupTotal = group.questions.reduce((sum, question) => {
+                    return sum + (question.score || 0); // 默认分数为 0
+                }, 0);
+                result[group.type] = groupTotal;
+                result.total += groupTotal;
+                return result;
+            }, { total: 0 });
+            return scores;
+        },
+        showSnackbar(message, color = "error") {
             this.snackbar = {
                 show: true,
                 message,
-                color
+                color,
             };
         },
         getExercises(subject) {
+            // Simulate fetching questions based on subject
+            // This should be replaced with actual API calls
             const questions = [
                 {
                     type: "单项选择题",
@@ -436,55 +503,118 @@ export default {
             try {
                 const isValid = await this.$refs.formRef.validate();
                 if (!isValid.valid) {
-                    this.showSnackbar('请填写所有必填字段，并确保字段合法！');
+                    this.showSnackbar("请填写所有必填字段，并确保字段合法！");
                 }
                 return isValid;
             } catch (error) {
-                console.error('表单验证出错：', error);
-                this.showSnackbar('表单验证出错');
+                console.error("表单验证出错：", error);
+                this.showSnackbar("表单验证出错");
+                return false;
+            }
+        },
+        async validateScoreForm() {
+            try {
+                const isValid = await this.$refs.scoreFormRef.validate();
+                if (!isValid.valid) {
+                    this.showSnackbar("请为所有题目设置有效分数！");
+                }
+                return isValid;
+            } catch (error) {
+                console.error("分数表单验证出错：", error);
+                this.showSnackbar("分数表单验证出错");
                 return false;
             }
         },
         async beforeTabChange(newTab, oldTab) {
             if (newTab > oldTab) {
                 // 只在前往后续页面时校验
-                const isValid = await this.validateForm();
-                console.log(isValid);
-                if (!isValid.valid) {
-                    this.showSnackbar('基本信息未填写或有误，请及时修改');
-                    this.tempTab = oldTab; // 还原到当前页
-                    return;
+                if (newTab === 2) {
+                    const isValid = await this.validateForm();
+                    if (!isValid.valid) {
+                        this.showSnackbar(
+                            "基本信息未填写或有误，请及时修改"
+                        );
+                        this.tempTab = oldTab; // 还原到当前页
+                        return;
+                    }
+                } else if (newTab === 3) {
+                    const isValid = await this.validateForm();
+                    if (!isValid.valid) {
+                        this.showSnackbar(
+                            "基本信息未填写或有误，请及时修改"
+                        );
+                        this.tempTab = oldTab;
+                        this.tab = oldTab;
+                        return;
+                    }
+                    if (this.form.questions.length === 0) {
+                        this.showSnackbar("模拟测试内容不能为空");
+                        this.tempTab = 2;
+                        this.tab = 2;
+                        return;
+                    }
+                } else if (newTab === 4) {
+                    const isValid = await this.validateForm();
+                    if (!isValid.valid) {
+                        this.showSnackbar(
+                            "基本信息未填写或有误，请及时修改"
+                        );
+                        this.tempTab = oldTab;
+                        this.tab = oldTab;
+                        return;
+                    }
+                    if (this.form.questions.length === 0) {
+                        this.showSnackbar("模拟测试内容不能为空");
+                        this.tempTab = 2;
+                        this.tab = 2;
+                        return;
+                    }
+                    const scoreValid = await this.validateScoreForm();
+                    if (!scoreValid.valid) {
+                        this.showSnackbar("请为所有题目设置有效分数");
+                        this.tempTab = 3;
+                        this.tab = 3;
+                        return;
+                    }
                 }
                 this.maxAllowedTab = Math.max(this.maxAllowedTab, newTab); // 解锁新页面
-            }
-            if (newTab === 2) {
-                console.log(this.form);
-                this.getExercises(this.form.subject);
             }
             this.tab = newTab;
         },
         async handleSubmit() {
-            // 验证第一页的表单
-            const isValid = await this.validateForm();
-            if (!isValid.valid) {
-                this.showSnackbar('基本信息未填写或有误，请及时修改');
+            // Validate all forms
+            const isValidForm = await this.validateForm();
+            const isValidScores = await this.validateScoreForm();
+
+            if (!isValidForm.valid) {
+                this.showSnackbar("基本信息未填写或有误，请及时修改");
                 this.tempTab = 1;
                 this.tab = 1;
                 return;
             }
+
             if (this.form.questions.length === 0) {
-                this.showSnackbar('模拟测试内容不能为空');
+                this.showSnackbar("模拟测试内容不能为空");
                 this.tempTab = 2;
                 this.tab = 2;
                 return;
             }
+
+            if (!isValidScores) {
+                this.showSnackbar("请为所有题目设置有效分数");
+                this.tempTab = 3;
+                this.tab = 3;
+                return;
+            }
+
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
                 console.log(this.form);
+                this.showSnackbar("模拟测试创建成功！", "success");
                 this.goBack();
             } catch (error) {
-                console.error('表单提交出错：', error);
-                this.showSnackbar('表单提交失败');
+                console.error("表单提交出错：", error);
+                this.showSnackbar("表单提交失败");
             }
         },
         viewQuestion(type, id) {
@@ -493,41 +623,75 @@ export default {
         },
         addQuestion(type, id) {
             // 查找是否已经存在该类型
-            const typeIndex = this.form.questions.findIndex(group => group.type === type);
+            const typeIndex = this.form.questions.findIndex(
+                (group) => group.type === type
+            );
             if (typeIndex !== -1) {
                 // 类型存在，检查id是否已经存在
-                if (!this.form.questions[typeIndex].ids.includes(id)) {
-                    this.form.questions[typeIndex].ids.push(id);
-                    this.showSnackbar(`已添加题目 - ${id} 到 ${type}`, 'success');
+                const questionExists = this.form.questions[
+                    typeIndex
+                ].questions.find((q) => q.id === id);
+                if (!questionExists) {
+                    this.form.questions[typeIndex].questions.push({
+                        id: id,
+                        score: 10, // Default score
+                    });
+                    this.showSnackbar(
+                        `已添加题目 - ${id} 到 ${type}`,
+                        "success"
+                    );
                 } else {
-                    this.showSnackbar(`题目 - ${id} 已添加`, 'info');
+                    this.showSnackbar(`题目 - ${id} 已添加`, "info");
                 }
             } else {
                 // 类型不存在，添加新的类型和id
                 this.form.questions.push({
                     type: type,
-                    ids: [id],
+                    questions: [
+                        {
+                            id: id,
+                            score: 10, // Default score
+                        },
+                    ],
                     currentPage: 1,
                 });
-                this.showSnackbar(`已添加题目 - ${id} 到 ${type}`, 'success');
+                this.showSnackbar(
+                    `已添加题目 - ${id} 到 ${type}`,
+                    "success"
+                );
             }
             this.sortQuestions();
         },
         removeQuestion(type, id) {
             // 查找该类型
-            const typeIndex = this.form.questions.findIndex(group => group.type === type);
+            const typeIndex = this.form.questions.findIndex(
+                (group) => group.type === type
+            );
             if (typeIndex !== -1) {
-                const idIndex = this.form.questions[typeIndex].ids.indexOf(id);
-                if (idIndex !== -1) {
-                    this.form.questions[typeIndex].ids.splice(idIndex, 1);
-                    this.showSnackbar(`已从 ${type} 移除题目 - ${id} `, 'success');
+                const questionIndex = this.form.questions[
+                    typeIndex
+                ].questions.findIndex((q) => q.id === id);
+                if (questionIndex !== -1) {
+                    this.form.questions[typeIndex].questions.splice(
+                        questionIndex,
+                        1
+                    );
+                    this.showSnackbar(
+                        `已从 ${type} 移除题目 - ${id} `,
+                        "success"
+                    );
                     // 如果该类型下没有题目了，移除整个类型
-                    if (this.form.questions[typeIndex].ids.length === 0) {
+                    if (
+                        this.form.questions[typeIndex].questions.length ===
+                        0
+                    ) {
                         this.form.questions.splice(typeIndex, 1);
                     } else {
                         // 调整 currentPage 以确保不超过总页数
                         const group = this.form.questions[typeIndex];
-                        const totalPages = Math.ceil(group.ids.length / this.pageSize);
+                        const totalPages = Math.ceil(
+                            group.questions.length / this.pageSize
+                        );
                         if (group.currentPage > totalPages) {
                             group.currentPage = totalPages;
                         }
@@ -542,7 +706,7 @@ export default {
                 "多项选择题",
                 "判断题",
                 "填空题",
-                "解答题"
+                "解答题",
             ];
 
             this.form.questions.sort(
@@ -550,7 +714,7 @@ export default {
             );
 
             this.form.questions.forEach((group) => {
-                group.ids.sort((a, b) => a - b);
+                group.questions.sort((a, b) => a.id - b.id);
             });
         },
         getPaginatedIds(group) {
@@ -558,15 +722,32 @@ export default {
             const end = start + this.pageSize;
             return group.ids.slice(start, end);
         },
+        getPaginatedQuestions(group) {
+            const start = (group.currentPage - 1) * this.pageSize;
+            const end = start + this.pageSize;
+            return group.questions.slice(start, end);
+        },
         handlePageChange(group, newPage) {
             group.currentPage = newPage;
+        },
+        updateScore(type, id, score) {
+            // Find the question and update its score
+            const group = this.form.questions.find(
+                (g) => g.type === type
+            );
+            if (group) {
+                const question = group.questions.find((q) => q.id === id);
+                if (question) {
+                    question.score = score;
+                }
+            }
         },
     },
     watch: {
         tempTab(newTab, oldTab) {
             this.beforeTabChange(newTab, oldTab);
-        }
-    }
+        },
+    },
 };
 </script>
 
@@ -639,5 +820,9 @@ export default {
 
 .info-title {
     font-weight: bold;
+}
+
+.v-data-table {
+    overflow-x: auto;
 }
 </style>
