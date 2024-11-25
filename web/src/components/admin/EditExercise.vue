@@ -196,7 +196,7 @@
         <v-tabs-window-item :value="5">
             <v-alert color="warning" class="mb-3" icon="mdi-circle-multiple-outline">
                 <v-alert-title>确认</v-alert-title>
-                请确认题目信息设置是否正确。若均填写正确，请点击下方提交按钮。
+                请确认题目信息编辑是否正确。若均填写正确，请点击下方提交按钮。直接离开本界面不会对原有题目进行更改。
             </v-alert>
             <v-btn color="primary" variant="outlined" @click="handleSubmit">提交</v-btn>
             <v-row justify="start">

@@ -73,6 +73,15 @@ const adminRoutes = [
     }
   },
   {
+    path: "/admin/exam/:id",
+    component: () => import("@/components/admin/EditExam.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
     path: "/admin/exam/new",
     component: () => import("@/components/admin/NewExam.vue"),
     meta: {
@@ -87,6 +96,58 @@ const adminRoutes = [
       requiresAuth: true,
       requiresAdmin: true,
     }
+  },
+  {
+    path: "/admin/judge/:examId/:exerciseId",
+    component: () => import("@/components/admin/JudgeExercise.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/judge/:examId",
+    component: () => import("@/components/admin/AdminJudgeExam.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/judge",
+    component: () => import("@/components/admin/AdminJudge.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/forum",
+    component: () => import("@/components/admin/AdminForum.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/discussion/new",
+    component: () => import("@/components/admin/AdminNewPost.vue"),
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    }
+  },
+  {
+    path: "/admin/discussion/:id",
+    name: "NewPost",
+    component: () => import("@/components/admin/AdminDiscussion.vue"),
+    props: true,
+    meta: {
+      requiresAuth: true,
+      requiresAdmin: true,
+    },
   },
 ]
 

@@ -128,7 +128,7 @@
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-btn color="primary" text @click="viewEditExam(exam.id)">查看/编辑测试</v-btn>
-                                        <v-btn color="red" text @click="deleteExam(exam.id)">删除测试</v-btn>
+                                        <v-btn color="red" text @click="confirmDeleteExam(exam.id, exam.name)">删除测试</v-btn>
                                     </v-card-actions>
                                 </v-card>
                             </v-col>
@@ -183,7 +183,7 @@
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-btn color="primary" text @click="viewEditExam(exam.id)">查看/编辑测试</v-btn>
-                                        <v-btn color="red" text @click="deleteExam(exam.id)">删除测试</v-btn>
+                                        <v-btn color="red" text @click="confirmDeleteExam(exam.id, exam.name)">删除测试</v-btn>
                                     </v-card-actions>
                                 </v-card>
                             </v-col>
@@ -195,6 +195,31 @@
             </v-expansion-panels>
         </div>
     </div>
+    <v-dialog v-model="confirmDialogOpen" max-width="400px">
+        <v-card>
+            <v-card-title>
+                <v-icon color="primary">mdi-alert-circle-outline</v-icon>
+                <span class="headline ml-2">操作不可逆</span>
+            </v-card-title>
+            <v-card-text>确定删除题库 {{ this.toDeleteExamName }}吗？</v-card-text>
+            <v-card-actions>
+                <v-btn color="red" variant="text" @click="deleteExam()">
+                    确定
+                </v-btn>
+                <v-btn variant="plain" @click="confirmDialogOpen = false">
+                    取消
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+    <v-snackbar v-model="snackbar.show" :timeout="2000" :color="snackbar.color" min-width="25%">
+        <div style="font-size: 16px">{{ snackbar.message }}</div>
+        <template #actions>
+            <v-btn icon @click="snackbar.show = false">
+                <v-icon>mdi-close</v-icon>
+            </v-btn>
+        </template>
+    </v-snackbar>
 </template>
 
 <script>
@@ -259,63 +284,6 @@ export default {
                     starttime: "2024-01-15 09:00:00",
                     duration: 120,
                 },
-                {
-                    id: 31,
-                    name: "2023-24数分上期末",
-                    createdAt: "2024-01-15 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-01-15 09:00:00",
-                    duration: 120,
-                },
-                {
-                    id: 31,
-                    name: "2023-24数分上期末",
-                    createdAt: "2024-01-15 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-01-15 09:00:00",
-                    duration: 120,
-                },
-                {
-                    id: 31,
-                    name: "2023-24数分上期末",
-                    createdAt: "2024-01-15 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-01-15 09:00:00",
-                    duration: 120,
-                },
-                {
-                    id: 31,
-                    name: "2023-24数分上期末",
-                    createdAt: "2024-01-15 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-01-15 09:00:00",
-                    duration: 120,
-                },
-                {
-                    id: 31,
-                    name: "2023-24数分上期末",
-                    createdAt: "2024-01-15 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-01-15 09:00:00",
-                    duration: 120,
-                },
-                {
-                    id: 31,
-                    name: "2023-24数分上期末",
-                    createdAt: "2024-01-15 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-01-15 09:00:00",
-                    duration: 120,
-                },
-                {
-                    id: 31,
-                    name: "2023-24数分上期末",
-                    createdAt: "2024-01-15 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-01-15 09:00:00",
-                    duration: 120,
-                },
-
                 // ... 其他已结束的测试数据
             ],
             itemsPerPage: 4, // 每页显示的测试数量
@@ -325,6 +293,13 @@ export default {
             // 筛选条件
             filterName: "",
             filterSubject: "",
+            snackbar: {
+                show: false,
+                message: '',
+                color: 'error'
+            },
+            confirmDialogOpen: false,
+            toDeleteExamId: null
         };
     },
     mounted() {
@@ -408,27 +383,21 @@ export default {
         viewEditExam(id) {
             this.$router.push(`/admin/exam/${id}`);
         },
-        deleteExam(id) {
-            // 在此处添加删除考试的逻辑，例如调用 API 并更新考试列表
-            // 示例：
-            // this.$axios.delete(`/api/exams/${id}`).then(() => {
-            //     this.removeExamFromList(id);
-            //     this.showSnackbar('考试已删除', 'success');
-            // }).catch(() => {
-            //     this.showSnackbar('删除考试失败', 'error');
-            // });
-            // 这里只是一个示例，具体实现根据实际需求调整
-            if (confirm(`确认删除考试 ID: ${id} 吗？`)) {
-                // 假设删除成功，移除考试
-                this.removeExamFromList(id);
-                this.$emit('showSnackbar', '考试已删除', 'success'); // 假设有 Snackbar 组件
-            }
+        confirmDeleteExam(id, name) {
+            this.toDeleteExamId = id;
+            this.toDeleteExamName = name;
+            this.confirmDialogOpen = true;
         },
-        removeExamFromList(id) {
-            // 从 ongoingExams、comingExams、pastExams 中移除对应的考试
-            this.ongoingExams = this.ongoingExams.filter(exam => exam.id !== id);
-            this.comingExams = this.comingExams.filter(exam => exam.id !== id);
-            this.pastExams = this.pastExams.filter(exam => exam.id !== id);
+        deleteExam() {
+            this.showSnackbar(`已删除测试 ${this.toDeleteExamId} ${this.toDeleteExamName}`, 'success');
+            this.confirmDialogOpen = false;
+        },
+        showSnackbar(message, color = 'error') {
+            this.snackbar = {
+                show: true,
+                message,
+                color
+            };
         },
         resetPages() {
             this.ongoingPage = 1;
