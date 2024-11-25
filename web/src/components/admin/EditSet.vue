@@ -156,7 +156,7 @@
             <v-tabs-window-item :value="3">
                 <v-alert color="warning" class="mb-3" icon="mdi-circle-multiple-outline">
                     <v-alert-title>确认</v-alert-title>
-                    请确认题库信息设置是否正确。若均填写正确，请点击下方提交按钮。
+                    请确认题库信息编辑是否正确。若均填写正确，请点击下方提交按钮。直接离开本界面不会对原有题库进行更改。
                 </v-alert>
                 <v-btn color="primary" variant="outlined" @click="handleSubmit">提交</v-btn>
                 <!-- 预览内容 -->
@@ -331,8 +331,8 @@ export default {
             tempTab: 1,
             maxAllowedTab: 3,
             tabs: [
-                { value: 1, label: '设置基本信息' },
-                { value: 2, label: '设置题目' },
+                { value: 1, label: '编辑基本信息' },
+                { value: 2, label: '编辑题目' },
                 { value: 3, label: '预览题库' }
             ],
             form: {

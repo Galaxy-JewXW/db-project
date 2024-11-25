@@ -1,7 +1,7 @@
 <template>
     <v-banner sticky icon="mdi-plus" lines="one">
         <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可创建新的模拟测试。</div>
+            <div class="text-subtitle-1">作为辅导师，你可编辑此模拟测试。</div>
         </template>
 
         <template v-slot:actions>
@@ -20,8 +20,8 @@
 
     <div class="pa-2">
         <v-tabs-window v-model="tab" class="scroll-container mt-2">
-            <!-- 设置基本信息 -->
-            <v-tabs-window-item :value="1">
+            <!-- 编辑基本信息 -->
+            <v-tabs-window-item :value="1" eager>
                 <v-form ref="formRef" @submit.prevent>
                     <v-row no-gutters>
                         <v-col cols="12">
@@ -57,8 +57,8 @@
                 </v-form>
             </v-tabs-window-item>
 
-            <!-- 设置题目 -->
-            <v-tabs-window-item :value="2">
+            <!-- 编辑题目 -->
+            <v-tabs-window-item :value="2" eager>
                 <v-row>
                     <v-col cols="6">
                         <div class="pa-3">
@@ -160,8 +160,8 @@
                 </v-row>
             </v-tabs-window-item>
 
-            <!-- 设置题目分值 -->
-            <v-tabs-window-item :value="3">
+            <!-- 编辑题目分值 -->
+            <v-tabs-window-item :value="3" eager>
                 <v-form ref="scoreFormRef" @submit.prevent>
                     <v-row>
                         <v-col cols="12">
@@ -172,7 +172,7 @@
                         <v-col v-for="(group, groupIndex) in form.questions" :key="groupIndex" cols="12">
                             <v-card class="mb-4 ml-2 mr-2">
                                 <v-card-title class="text-h6">
-                                    {{ group.type }} （总分：{{ calculateTotalScore()[group.type] || 0 }}）
+                                    {{ group.type }}  （总分：{{ calculateTotalScore()[group.type] || 0 }}）
                                 </v-card-title>
                                 <v-divider></v-divider>
                                 <v-card-text>
@@ -203,10 +203,10 @@
             </v-tabs-window-item>
 
             <!-- 预览模拟测试 -->
-            <v-tabs-window-item :value="4">
+            <v-tabs-window-item :value="4" eager>
                 <v-alert color="warning" class="mb-3" icon="mdi-circle-multiple-outline">
                     <v-alert-title>确认</v-alert-title>
-                    请确认模拟测试信息设置是否正确。若均填写正确，请点击下方提交按钮。
+                    请确认模拟测试信息编辑是否正确。若均填写正确，请点击下方提交按钮。直接离开本界面不会对原有测试进行更改。
                 </v-alert>
                 <v-btn color="primary" variant="outlined" @click="handleSubmit">提交</v-btn>
                 <div class="pa-3">
@@ -371,15 +371,22 @@ import { mapMutations } from "vuex";
 
 export default {
     name: "AdminSet",
+    props: {
+        id: {
+            type: String,
+            required: true,
+        }
+    },
     data() {
         return {
             tab: 1,
             tempTab: 1,
-            maxAllowedTab: 1,
+            maxAllowedTab: 4,
+            currentId: null,
             tabs: [
-                { value: 1, label: "设置基本信息" },
-                { value: 2, label: "设置题目" },
-                { value: 3, label: "设置题目分值" },
+                { value: 1, label: "编辑基本信息" },
+                { value: 2, label: "编辑题目" },
+                { value: 3, label: "编辑题目分值" },
                 { value: 4, label: "预览模拟测试" },
             ],
             form: {
@@ -387,8 +394,10 @@ export default {
                 subject: "",
                 startTime: "",
                 duration: null,
+                description: "",
                 questions: [], // Array of groups with type, questions (id & score), currentPage
             },
+            originalForm: {},
             questions: [],
             snackbar: {
                 show: false,
@@ -402,10 +411,6 @@ export default {
                 questionType: "单项选择题",
                 content: `
 # Markdown 测试文档
-
-## 1. 简介
-这是一个用于测试的 Markdown 文档，用于验证各种 Markdown 特性以及 \`marked\` 库的渲染能力。以下内容包含各种元素，如标题、列表、表格、图片、链接、代码块以及 LaTeX 公式。
-
 `,
                 subject: "工科数学分析（上）",
                 source: "自出题",
@@ -422,15 +427,50 @@ export default {
     },
     mounted() {
         // 更新标题
-        const title = "创建模拟测试";
+        const title = "编辑模拟测试 - " + this.id;
+        this.currentId = parseInt(this.id);
+        console.log('接收到的 ID:', this.currentId);
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.fetchExam(this.currentId);
         this.getExercises(this.form.subject);
     },
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
         goBack() {
             this.$router.push("/admin/exam");
+        },
+        fetchExam(problemId) {
+            // 模拟直接从后端获取数据
+            const mockProblemData = {
+                name: "史上最难数分",
+                subject: "工科数学分析（上）",
+                startTime: "2024-11-25 14:20:00",
+                duration: 120,
+                questions: [
+                    {
+                        currentPage: 1,
+                        type: "单项选择题",
+                        questions: [
+                            {id: 12, score: 1},
+                            {id: 13, score: 1},
+                            {id: 14, score: 10},
+                        ]
+                    },
+                    {
+                        currentPage: 1,
+                        type: "多项选择题",
+                        questions: [
+                            {id: 121, score: 10},
+                            {id: 131, score: 10},
+                            {id: 141, score: 10},
+                        ]
+                    },
+                ],
+            };
+            this.form = { ...mockProblemData };
+            console.log(this.form);
+            this.originalForm = { ...mockProblemData };
         },
         formatDate(dateString) {
             const options = {
@@ -508,7 +548,7 @@ export default {
         async validateScoreForm() {
             try {
                 const isValid = await this.$refs.scoreFormRef.validate();
-                if (!isValid.valid) {
+                if (!isValid) {
                     this.showSnackbar("请为所有题目设置有效分数！");
                 }
                 return isValid;
@@ -548,6 +588,7 @@ export default {
                     }
                 } else if (newTab === 4) {
                     const isValid = await this.validateForm();
+                    console.log(isValid);
                     if (!isValid.valid) {
                         this.showSnackbar(
                             "基本信息未填写或有误，请及时修改"
@@ -563,6 +604,7 @@ export default {
                         return;
                     }
                     const scoreValid = await this.validateScoreForm();
+                    console.log(scoreValid);
                     if (!scoreValid) {
                         this.showSnackbar("请为所有题目设置有效分数");
                         this.tempTab = 3;
@@ -603,7 +645,6 @@ export default {
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
                 console.log(this.form);
-                this.showSnackbar("模拟测试创建成功！", "success");
                 this.goBack();
             } catch (error) {
                 console.error("表单提交出错：", error);

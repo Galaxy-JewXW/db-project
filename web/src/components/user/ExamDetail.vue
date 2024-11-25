@@ -172,7 +172,7 @@
                     counter
                     multiple
                     show-size
-                    accept=".pdf,.docx,.jpg,.png,.md"
+                    accept=".jpg,.png"
                   >
                     <template v-slot:selection="{ fileNames }">
                       <template v-for="fileName in fileNames" :key="fileName">
