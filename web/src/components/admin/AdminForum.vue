@@ -66,8 +66,11 @@
                                 </v-list-item-title>
                                 <v-list-item-subtitle>
                                     <div class="info-row">
-                                        <v-chip size="small" class="ma-1" variant="outlined">
+                                        <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
                                             {{ discussion.tag }}
+                                        </v-chip>
+                                        <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label >
+                                            加精 
                                         </v-chip>
                                         {{
                                             discussion.summary.length > 60
@@ -108,6 +111,7 @@ export default {
                     id: 1,
                     title: "关于工科数学分析的疑问",
                     publisher: "张三",
+                    isMarked: false,
                     avatar: "https://randomuser.me/api/portraits/women/85.jpg",
                     publishTime: "2024-10-01",
                     lastUpdated: "2024-11-16T04:23:45",
@@ -119,6 +123,7 @@ export default {
                     id: 2,
                     title: "离散数学在计算机科学中的应用",
                     publisher: "李四",
+                    isMarked: true,
                     avatar: "https://randomuser.me/api/portraits/women/70.jpg",
                     publishTime: "2024-09-25",
                     lastUpdated: "2024-11-15T15:30:00",
@@ -298,19 +303,19 @@ export default {
     font-weight: bold;
 }
 
-.v-chip {
+.filter-card .v-chip {
     margin: 1px;
     border: 1px solid #1867c0;
     cursor: pointer;
     color: #1867c0;
 }
 
-.selected-chip {
+.filter-card .selected-chip {
     background-color: #1867c0 !important;
     color: white !important;
 }
 
-.selected-chip .v-icon {
+.filter-card .selected-chip .v-icon {
     color: white !important;
 }
 
