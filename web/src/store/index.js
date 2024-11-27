@@ -42,5 +42,12 @@ export default createStore({
         return -100;
       }
     },
+    getUserId: (state) => {
+      if (state.user) {
+        return state.userId;
+      } else {
+        return -114514;
+      }
+    }
   },
 });

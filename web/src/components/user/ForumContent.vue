@@ -9,15 +9,8 @@
             <v-col cols="12" class="filter-section" style="padding-bottom: 0px">
               <div class="filter-group">
                 <span class="filter-label">按标签筛选:</span>
-                <v-chip
-                  v-for="tag in subjects"
-                  :key="tag"
-                  class="ma-2"
-                  color="primary"
-                  variant="outlined"
-                  :class="{ 'selected-chip': selectedTag === tag }"
-                  @click="toggleTag(tag)"
-                >
+                <v-chip v-for="tag in subjects" :key="tag" class="ma-2" color="primary" variant="outlined"
+                  :class="{ 'selected-chip': selectedTag === tag }" @click="toggleTag(tag)">
                   {{ tag }}
                   <v-icon v-if="selectedTag === tag" class="ml-2" small>
                     mdi-check
@@ -30,23 +23,12 @@
             <v-col cols="12" class="filter-section" style="padding-top: 0px">
               <div class="filter-group">
                 <span class="filter-label">按时间筛选:</span>
-                <v-chip
-                  v-for="range in timeRanges"
-                  :key="range.value"
-                  class="ma-2"
-                  color="primary"
-                  variant="outlined"
+                <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary" variant="outlined"
                   :class="{
                     'selected-chip': selectedTimeRange === range.value,
-                  }"
-                  @click="toggleTimeRange(range.value)"
-                >
+                  }" @click="toggleTimeRange(range.value)">
                   {{ range.text }}
-                  <v-icon
-                    v-if="selectedTimeRange === range.value"
-                    class="ml-2"
-                    small
-                  >
+                  <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
                     mdi-check
                   </v-icon>
                 </v-chip>
@@ -67,14 +49,8 @@
       <template v-if="filteredDiscussions.length > 0">
         <!-- 讨论贴列表 -->
         <v-list dense density="compact">
-          <v-list-item-group
-            v-for="(discussion, index) in filteredDiscussions"
-            :key="discussion.id"
-          >
-            <v-list-item
-              :prepend-avatar="discussion.avatar"
-              @click="openDiscussion(discussion)"
-            >
+          <v-list-item-group v-for="(discussion, index) in filteredDiscussions" :key="discussion.id">
+            <v-list-item :prepend-avatar="discussion.avatar" @click="openDiscussion(discussion)">
               <v-list-item-content>
                 <v-list-item-title class="text-subtitle-1 font-weight-bold">
                   <v-row align="center">
@@ -89,8 +65,11 @@
                 </v-list-item-title>
                 <v-list-item-subtitle>
                   <div class="info-row">
-                    <v-chip size="small" class="ma-1" variant="outlined">
+                    <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
                       {{ discussion.tag }}
+                    </v-chip>
+                    <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label>
+                      加精
                     </v-chip>
                     {{
                       discussion.summary.length > 60
@@ -131,6 +110,7 @@ export default {
           id: 1,
           title: "关于工科数学分析的疑问",
           publisher: "张三",
+          isMarked: false,
           avatar: "https://randomuser.me/api/portraits/women/85.jpg",
           publishTime: "2024-10-01",
           lastUpdated: "2024-11-16T04:23:45",
@@ -142,6 +122,7 @@ export default {
           id: 2,
           title: "离散数学在计算机科学中的应用",
           publisher: "李四",
+          isMarked: true,
           avatar: "https://randomuser.me/api/portraits/women/70.jpg",
           publishTime: "2024-09-25",
           lastUpdated: "2024-11-15T15:30:00",
@@ -321,16 +302,20 @@ export default {
   font-weight: bold;
 }
 
-.v-chip {
-  margin: 1px;
-  border: 1px solid #1867c0;
-  cursor: pointer;
-  color: #1867c0;
+.filter-card .v-chip {
+    margin: 1px;
+    border: 1px solid #1867c0;
+    cursor: pointer;
+    color: #1867c0;
 }
 
-.selected-chip {
-  background-color: #1867c0 !important;
-  color: white !important;
+.filter-card .selected-chip {
+    background-color: #1867c0 !important;
+    color: white !important;
+}
+
+.filter-card .selected-chip .v-icon {
+    color: white !important;
 }
 
 .selected-chip .v-icon {

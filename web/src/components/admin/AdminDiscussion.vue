@@ -50,16 +50,23 @@
                     </v-btn>
                 </v-col>
                 <v-col cols="auto">
-                    <v-btn rounded="0" @click="toggleMark" class="subscribe-btn"
-                        :variant="isMarked ? 'tonal' : 'text'" :color="'#fbc02d'">
+                    <v-btn rounded="0" @click="toggleMark" class="subscribe-btn" :variant="isMarked ? 'tonal' : 'text'"
+                        :color="'#fbc02d'">
                         <v-icon>{{ isMarked ? "mdi-star-minus-outline" : "mdi-star-plus-outline" }}</v-icon>
                         {{ isMarked ? "取消加精" : "加精" }}
                     </v-btn>
                 </v-col>
                 <v-col cols="auto">
-                    <v-btn rounded="0" variant="text" :color="'#574266'">
+                    <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(mainDiscussion.id)">
                         <v-icon left>mdi-comment-outline</v-icon>
                         评论
+                    </v-btn>
+                </v-col>
+                <v-col v-if="mainDiscussion.publisherId == currentUserId" cols="auto">
+                    <v-btn rounded="0" variant="text" :color="'#1867c0'"
+                        @click="editDiscussion(mainDiscussion.id, mainDiscussion.content)">
+                        <v-icon left>mdi-pencil</v-icon>
+                        编辑
                     </v-btn>
                 </v-col>
                 <v-col cols="auto">
@@ -110,9 +117,16 @@
                         </v-btn>
                     </v-col>
                     <v-col cols="auto">
-                        <v-btn rounded="0" variant="text" :color="'#574266'">
+                        <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(discussion.id)">
                             <v-icon left>mdi-comment-outline</v-icon>
                             评论
+                        </v-btn>
+                    </v-col>
+                    <v-col v-if="discussion.publisherId == currentUserId" cols="auto">
+                        <v-btn rounded="0" variant="text" :color="'#1867c0'"
+                            @click="editDiscussion(discussion.id, discussion.content)">
+                            <v-icon left>mdi-pencil</v-icon>
+                            编辑
                         </v-btn>
                     </v-col>
                     <v-col cols="auto">
@@ -129,10 +143,36 @@
     <v-btn class="floating-btn" fab color="primary" @click="returnForum()">
         <v-icon size="32">mdi-arrow-collapse-left</v-icon>
     </v-btn>
+
+    <v-dialog v-model="editDialog" height="45%" width="60%">
+        <v-card title="编辑">
+            <v-md-editor v-model="text" height="325px" width="20%"
+                left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
+                right-toolbar="preview toc sync-scroll"></v-md-editor>
+            <v-spacer></v-spacer>
+            <v-card-action>
+                <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
+            </v-card-action>
+        </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="commentDialog" height="45%" width="60%">
+        <v-card title="评论">
+            <v-md-editor v-model="text" height="325px" width="20%"
+                left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
+                right-toolbar="preview toc sync-scroll"></v-md-editor>
+            <v-spacer></v-spacer>
+            <v-card-action>
+                <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
+            </v-card-action>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
 import { mapMutations } from "vuex";
+import { mapState } from "vuex/dist/vuex.cjs.js";
+import store from "@/store";
 
 export default {
     name: "ForumContent",
@@ -144,10 +184,16 @@ export default {
     },
     data() {
         return {
+            currentUserId: null,
+            editDialog: false,
+            commentDialog: false,
+            emitId: null,
+            text: '',
             mainDiscussion: {
                 id: 2,
                 title: "离散数学在计算机科学中的应用",
                 publisher: "李四",
+                publisherId: 22373498,
                 avatar: "https://randomuser.me/api/portraits/women/40.jpg",
                 publishTime: "2024-09-25T15:30:00",
                 lastUpdated: "2024-11-15T15:30:00",
@@ -164,6 +210,7 @@ export default {
                 {
                     id: 3,
                     publisher: "李四2",
+                    publisherId: 22373300,
                     avatar: "https://randomuser.me/api/portraits/women/10.jpg",
                     publishTime: "2024-09-25T15:30:00",
                     lastUpdated: "2024-11-15T15:30:00",
@@ -173,6 +220,7 @@ export default {
                 {
                     id: 30,
                     publisher: "李四3",
+                    publisherId: 22373498,
                     avatar: "https://randomuser.me/api/portraits/women/98.jpg",
                     publishTime: "2024-09-25T15:30:00",
                     lastUpdated: "2024-11-15T15:30:00",
@@ -186,9 +234,11 @@ export default {
         const title = `讨论 - ${this.mainDiscussion.title}`;
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.currentUserId = store.getters.getUserId;
     },
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
+        ...mapState(["userId"]),
         formatDate(dateString) {
             const options = {
                 year: 'numeric',
@@ -227,6 +277,22 @@ export default {
                 console.warn(`未找到对应的讨论或评论，ID: ${discussionId}`);
             }
         },
+        editDiscussion(id, content) {
+            this.editDialog = true;
+            this.text = content;
+            this.emitId = id;
+        },
+        commentDiscussion(id) {
+            this.commentDialog = true;
+            this.text = '';
+            this.emitId = id;
+        },
+        emitEdit() {
+            console.log(this.emitId);
+            console.log(this.text);
+            this.commentDialog = false;
+            this.editDialog = false;
+        }
     },
 };
 </script>
