@@ -10,8 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import json
+import os
 from pathlib import Path
-
+current_dir = os.path.dirname(__file__)
+env_path = os.path.join(current_dir, 'env.json')
+with open(env_path) as env:
+    ENV = json.load(env)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,21 +42,21 @@ INSTALLED_APPS = [
     'corsheaders',
     'myapp2',
     'rest_framework',
-    # 'utils',
-    # 'users',
-    # 'images',
-    # 'message',
-    # 'questions',
-    # 'board',
-    # 'broadcast',
+    'utils',
+    'users',
+    'images',
+    'message',
+    'questions',
+    'board',
+    'broadcast',
 ]
-
+CORS_ALLOW_CREDENTIALS = True
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -149,5 +154,15 @@ STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [
+    MEDIA_ROOT
+]
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

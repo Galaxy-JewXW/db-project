@@ -261,7 +261,7 @@ export default {
           password: this.password.value,
         };
         axios
-          .post("http://127.0.0.1:8000/api/login/", loginData)
+          .post("http://127.0.0.1:8000/api/myapp2/login/", loginData)
           .then((response) => {
             const token = this.studentNumber.value;
             const user = response.data;
@@ -300,7 +300,7 @@ export default {
         }
         console.log("注册表单已提交:", registerData);
         axios
-          .post("http://127.0.0.1:8000/api/register/", registerData)
+          .post("http://127.0.0.1:8000/api/myapp2/register/", registerData)
           .then((response) => {
             this.snackbarMessage = "注册成功";
             this.snackbarColor = "success";

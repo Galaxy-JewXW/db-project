@@ -141,3 +141,5 @@ class DiscussionTests(TestCase):
         self.assertEqual(response.status_code, HTTP_200_OK)
         self.assertEqual(response.data['discussion']['title'], "Test Discussion")
         self.assertEqual(len(response.data['replies']), 1)
+
+    

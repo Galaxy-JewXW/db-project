@@ -5,11 +5,11 @@ from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from django.db.models import Count
 import random
 
-from learingCompanionInBeihang.apps.broadcast.models import Broadcast
-from learingCompanionInBeihang.apps.message.models import Message
-from learingCompanionInBeihang.apps.questions.models import Question, UserQuestionRecord
-from learingCompanionInBeihang.apps.users.models import User
-from learingCompanionInBeihang.apps.utils.views import decode_request
+from broadcast.models import Broadcast
+from message.models import Message
+from questions.models import Question, UserQuestionRecord
+from users.models import User
+from utils.views import decode_request
 
 
 class GetHomeView(APIView):

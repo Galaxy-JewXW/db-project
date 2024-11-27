@@ -195,6 +195,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import { mapMutations } from "vuex";
 import * as echarts from "echarts";
 
@@ -341,6 +342,27 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
+     async fetchHomeData() {
+      try {
+        // 确保请求路径和后端路由匹配
+        const response = await axios.post('http://127.0.0.1:8000/api/board/', {
+          user_id: 1, // 示例用户 ID
+        }, {
+          headers: {
+            'Content-Type': 'application/json', // 设置请求头
+          },
+        });
+
+        // 检查响应并更新数据
+        if (response.status === 200) {
+          this.messages = response.data.messages || [];
+        } else {
+          console.error('Unexpected response:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    },
     openDialog(notice) {
       this.selectedNotice = notice;
       this.dialogVisible = true;
@@ -481,7 +503,7 @@ export default {
     const title = "主页";
     this.setAppTitle(title);
     this.setPageTitle(title);
-
+    this.fetchHomeData();
     // 初始化雷达图
     this.initRadarChart();
   },
