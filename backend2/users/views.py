@@ -123,11 +123,9 @@ class PasswordModify(APIView):
             success=True,
             message="modify password successfully!"
         ))
-
-
+    
 class GetUserInfo(APIView):
-
-    @check_role(UserRole.ALL_USERS)
+    # @check_role(UserRole.ALL_USERS)
     def post(self, request, action_user: User = None):
         return Response(response_json(
             success=True,
@@ -144,23 +142,43 @@ class GetUserInfo(APIView):
             }
         ))
 
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+@method_decorator(csrf_exempt, name='dispatch')
 class ModifyUserInfo(APIView):
-
-    @check_role(UserRole.ALL_USERS)
-    def post(self, request, action_user: User = None):
+    # @check_role(UserRole.ALL_USERS) 什么东西
+    def post(self, request):
         try:
-            action_user.name = request.data['name']
-            action_user.avatar = request.data['avatar']
-            action_user.mail = request.data['mail']
-            action_user.save()
+            # 从请求数据中获取 user_id
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({
+                    'success': False,
+                    'message': 'User ID is required.'
+                }, status=400)
+
+            user = User.objects.get(student_id=user_id)  # 获取用户
+            user.name = request.data.get('name')
+            user.college = request.data.get('college')
+            user.mail = request.data.get('mail')
+            user.entryYear = request.data.get('year')
+            # print(request.data.get('name'))
+            # print(user.college)
+            # print(user.mail)
+            # print(user.entryYear)
+            # user.save()
+            # print(user)
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'User not found.'
+            }, status=404)
         except Exception as _e:
-            return Response(response_json(
-                success=False,
-                code=UserErrorCode.USER_SAVE_FAILED,
-                message="can't save user!"
-            ))
-        return Response(response_json(
-            success=True,
-            message="modify user information successfully!"
-        ))
+            return Response({
+                'success': False,
+                'message': "Can't save user information."
+            }, status=500)
+        return Response({
+            'success': True,
+            'message': 'User information updated successfully.'
+        })

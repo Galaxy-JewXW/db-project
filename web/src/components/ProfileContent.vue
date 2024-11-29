@@ -114,63 +114,32 @@
             <v-row dense>
               <!-- 昵称 -->
               <v-col cols="12">
-                <v-text-field
-                  label="昵称"
-                  v-model="formData.username"
-                  :rules="nameRules"
-                  variant="outlined"
-                  validate-on-blur
-                ></v-text-field>
+                <v-text-field label="昵称" v-model="formData.username" :rules="nameRules" variant="outlined"
+                  validate-on-blur></v-text-field>
               </v-col>
 
               <!-- 学工号 -->
               <v-col cols="12">
-                <v-text-field
-                  label="学工号"
-                  v-model="this.studentNumber"
-                  variant="outlined"
-                  hint="学工号不可修改"
-                  persistent-hint
-                  disabled
-                ></v-text-field>
+                <v-text-field label="学工号" v-model="this.studentNumber" variant="outlined" hint="学工号不可修改" persistent-hint
+                  disabled></v-text-field>
               </v-col>
 
               <!-- 学院/书院 -->
               <v-col cols="12">
-                <v-autocomplete
-                  clearable
-                  label="学院/书院"
-                  v-model="formData.college"
-                  :items="colleges"
-                  :rules="collegeRules"
-                  variant="outlined"
-                  validate-on-blur
-                ></v-autocomplete>
+                <v-autocomplete clearable label="学院/书院" v-model="formData.college" :items="colleges"
+                  :rules="collegeRules" variant="outlined" validate-on-blur></v-autocomplete>
               </v-col>
 
               <!-- 入学年份 -->
               <v-col cols="12">
-                <v-select
-                  :items="entryYears"
-                  label="入学年份"
-                  v-model="formData.enrollmentYear"
-                  :rules="entryYearRules"
-                  variant="outlined"
-                  validate-on-blur
-                ></v-select>
+                <v-select :items="entryYears" label="入学年份" v-model="formData.enrollmentYear" :rules="entryYearRules"
+                  variant="outlined" validate-on-blur></v-select>
               </v-col>
 
               <!-- 邮箱 -->
               <v-col cols="12">
-                <v-text-field
-                  label="邮箱"
-                  v-model="formData.email"
-                  :rules="emailRules"
-                  variant="outlined"
-                  validate-on-blur
-                  hint="请输入有效的邮箱地址"
-                  persistent-hint
-                ></v-text-field>
+                <v-text-field label="邮箱" v-model="formData.email" :rules="emailRules" variant="outlined"
+                  validate-on-blur hint="请输入有效的邮箱地址" persistent-hint></v-text-field>
               </v-col>
             </v-row>
           </v-form>
@@ -180,12 +149,7 @@
           <v-spacer></v-spacer>
           <v-btn text="取消" @click="dialog = false"></v-btn>
           <v-btn text="清除" @click="handleClear"></v-btn>
-          <v-btn
-            color="primary"
-            text="保存"
-            :disabled="!valid"
-            @click="submitForm"
-          ></v-btn>
+          <v-btn color="primary" text="保存" :disabled="!valid" @click="submitForm"></v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -194,6 +158,8 @@
 
 <script>
 import { mapMutations, mapState } from "vuex"; // 引入 mapMutations
+import store from "@/store";
+import axios from 'axios';
 
 export default {
   name: "ProfileContent",
@@ -320,11 +286,19 @@ export default {
       const email = this.user && this.user.email ? this.user.email : "error";
       this.formData.email = email;
       return email;
-    }
+    },
+    requestData() {
+      return {
+        user_id: store.getters.getUserId || "",
+        name: this.formData.username || "",
+        college: this.formData.college || "",
+        mail: this.formData.email || "",
+        year: this.formData.enrollmentYear || "",
+      };
+    },
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
-
     // 生成从当前年份向前 10 年的入学年份列表
     getEntryYears() {
       const currentYear = new Date().getFullYear();
@@ -336,9 +310,22 @@ export default {
     },
 
     // 提交表单数据
-    submitForm() {
+    async submitForm() {
       if (this.$refs.form.validate()) {
         // 更新用户信息
+        console.log("Request Data:", this.requestData);
+        console.log("Serialized Data:", JSON.stringify(this.requestData));
+        const response = await axios.post('http://127.0.0.1:8000/user/modify_user_info/', this.requestData, {
+          headers: {
+            'Content-Type': 'application/json', // 指定JSON格式
+          }
+        });
+        if (response.data.success) {
+          this.message = '用户信息修改成功！';
+        } else {
+          this.message = `错误: ${response.data.message}`;
+        }
+        console.log(this.formData.username);
         this.username = this.formData.username;
         this.college = this.formData.college;
         this.enrollmentYear = this.formData.enrollmentYear;

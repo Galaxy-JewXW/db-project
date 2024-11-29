@@ -48,6 +48,6 @@ export default createStore({
       } else {
         return -114514;
       }
-    }
+    },
   },
 });

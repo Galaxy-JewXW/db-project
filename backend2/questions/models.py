@@ -56,7 +56,7 @@ class Question(models.Model):
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)  # 难度
     answer = models.TextField(blank=True, null=True)  # 答案内容
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="added_questions")  # 创建者
-    question_banks = models.ManyToManyField(QuestionBank, related_name="questions")  # 题库关系
+    # question_banks = models.ManyToManyField(QuestionBank, related_name="questions")  # 题库关系
     option_count = models.IntegerField(default=0)  # 选项数量，默认 0
 
     def get_user_status(self, user):
@@ -128,7 +128,6 @@ class QuestionComment(models.Model):
     likes = models.ManyToManyField(User, related_name="liked_comments", blank=True)  # 点赞的用户
 
     def like_count(self):
-        """返回点赞数"""
         return self.likes.count()
 
     def __str__(self):

@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import get_notices
+from .views import GetHomeView
 
 urlpatterns = [
-    path('', get_notices, name='get_notices'),
+    path('', GetHomeView.as_view(), name='get_home'),  # 定义路由
 ]

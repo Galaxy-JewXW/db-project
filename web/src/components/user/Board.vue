@@ -198,7 +198,11 @@
 import axios from 'axios';
 import { mapMutations } from "vuex";
 import * as echarts from "echarts";
-
+import store from "@/store";
+// store.getters.getUserId
+const requestData = {
+  user_id: store.getters.getUserId // 假设你已经知道用户的ID，替换为实际值
+};
 export default {
   name: "ForumContent",
   data() {
@@ -341,28 +345,52 @@ export default {
     },
   },
   methods: {
-    ...mapMutations(["setAppTitle", "setPageTitle"]),
-     async fetchHomeData() {
+    async fetchHomeData() {
       try {
-        // 确保请求路径和后端路由匹配
-        const response = await axios.post('http://127.0.0.1:8000/api/board/', {
-          user_id: 1, // 示例用户 ID
-        }, {
+        const response = await axios.post('http://127.0.0.1:8000/api/board/', requestData, {
           headers: {
-            'Content-Type': 'application/json', // 设置请求头
-          },
+            'Content-Type': 'application/json', // 指定JSON格式
+          }
         });
-
-        // 检查响应并更新数据
-        if (response.status === 200) {
-          this.messages = response.data.messages || [];
-        } else {
-          console.error('Unexpected response:', response);
-        }
+        console.log(response);
+        const backendNotices = response.data.data.notices;
+        const messages_data = response.data.data.messages;
+        const progress = response.data.data.progress;
+        this.recommendedExercises = response.data.data.recommendedExercises;
+        console.log(response.data.data.recommendedExercises);
+        // 将后端返回的数据映射到前端需要的格式
+        this.notices = backendNotices.map((notice) => ({
+          id: notice.id, // 保留原来的 ID
+          title: notice.title, // 保留标题
+          publisher: notice.sender, // 后端的 sender 对应前端的 publisher
+          releaseTime: notice.sent_at, // 时间字段映射
+          content: notice.content, // 公告内容
+        }));
+        this.messages = messages_data.map((m) => ({
+          id: m.id,
+          sender: m.sender,
+          sendTime: m.sent_at, // 重命名字段
+          content: m.content,
+          avatar: m.sender_avatar, // 重命名字段
+        }));
+        const parseProgressData = (progressData) => {
+          const radarData = [];
+          for (const subjectDisplay in progressData) {
+            const data = progressData[subjectDisplay];
+            radarData.push({
+              subject: data.subject,
+              doneQuestions: data.user_question_count,
+              totalQuestions: data.total_question_count,
+            });
+          }
+          return radarData;
+        };
+        this.radarData = parseProgressData(progress);
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
     },
+    ...mapMutations(["setAppTitle", "setPageTitle"]),
     openDialog(notice) {
       this.selectedNotice = notice;
       this.dialogVisible = true;

@@ -6,26 +6,20 @@ from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
 from broadcast.models import Broadcast
 from message.models import Message
 from questions.models import Question, UserQuestionRecord
-from users.models import User
 from utils.views import decode_request
 from django.http import JsonResponse
-from .models import Notice
+from users.models import User
 
-def get_notices(request):
-    notices = Notice.objects.all().values('id', 'title', 'publisher', 'releaseTime', 'content')
-    return JsonResponse({"notices": list(notices)})
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
+
 @method_decorator(csrf_exempt, name='dispatch')
 class GetHomeView(APIView):
-    permission_classes = [AllowAny]
     def post(self, request):
         try:
-            data = decode_request(request)
-            user_id = data['user_id']  # 获取当前用户
-            user = User.objects.get(id=user_id)
-
+            user_id = request.data.get('user_id')  # 获取当前用户
+            user = User.objects.get(student_id=user_id)
             # 获取最新公告（最多3条）
             broadcasts = Broadcast.objects.all().order_by('-sent_at')[:3]
             broadcast_data = [
@@ -54,7 +48,7 @@ class GetHomeView(APIView):
             # 获取当前进度（各科目做题数量）
             progress_data = {}
             for subject, subject_display in Question.SUBJECT_CHOICES:
-                user_question_count = UserQuestionRecord.objects.filter(user=user, question_subject=subject).count()
+                user_question_count = UserQuestionRecord.objects.filter(user=user, question_subject=subject, is_correct=True).count()
                 total_question_count = Question.objects.filter(subject=subject).count()
                 progress_data[subject_display] = {
                     "subject": subject_display,
@@ -62,18 +56,17 @@ class GetHomeView(APIView):
                     "total_question_count": total_question_count
                 }
 
-            # 推荐题目
-            # 1. 获取最新错题（最多3道）
+            # # 推荐题目
+            # # 1. 获取最新错题（最多3道）
             wrong_questions = (
                 UserQuestionRecord.objects.filter(user=user, is_correct=False)
                 .order_by('-attempted_at')
                 .values_list('question_id', flat=True)[:3]
             )
             wrong_questions_data = list(Question.objects.filter(id__in=wrong_questions))
-
             # 2. 获取剩余需要补足的题目
             num_wrong_questions = len(wrong_questions_data)
-            num_additional_questions = max(0, 5 - num_wrong_questions)
+            num_additional_questions = max(0, 7 - num_wrong_questions)
 
             # 随机选取未做过的题目，排除错题
             remaining_questions = (
@@ -98,6 +91,7 @@ class GetHomeView(APIView):
                 q.id
                 for q in recommended_questions
             ]
+            print(recommended_exercise_data)
 
             return Response({
                 "success": True,
@@ -105,7 +99,7 @@ class GetHomeView(APIView):
                     "notices": broadcast_data,
                     "messages": message_data,
                     "progress": progress_data,
-                    "recommended_questions": recommended_questions_data,
+                    # "recommended_questions": recommended_questions_data,
                     "recommendedExercises": recommended_exercise_data,
                 }
             }, status=HTTP_200_OK)
