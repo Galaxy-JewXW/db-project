@@ -12,24 +12,13 @@
       <v-row>
         <!-- 标题输入框 -->
         <v-col cols="12" md="6">
-          <v-text-field
-            v-model="title"
-            label="标题"
-            :rules="[rules.required]"
-            variant="outlined"
-          />
+          <v-text-field v-model="title" label="标题" :rules="[rules.required]" variant="outlined" />
         </v-col>
 
         <!-- 所属科目下拉选择 -->
         <v-col cols="12" md="6">
-          <v-autocomplete
-            v-model="subject"
-            :items="subjects"
-            label="所属科目"
-            :rules="[rules.required]"
-            variant="outlined"
-            clearable
-          />
+          <v-autocomplete v-model="subject" :items="subjects" label="所属科目" :rules="[rules.required]" variant="outlined"
+            clearable />
         </v-col>
       </v-row>
     </v-form>
@@ -43,13 +32,9 @@
     <v-divider></v-divider>
 
     <!-- Markdown 编辑器 -->
-    <v-md-editor
-      v-model="text"
-      height="325px"
-      width="20%"
+    <v-md-editor v-model="text" height="325px" width="20%"
       left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
-      right-toolbar="preview toc sync-scroll"
-    ></v-md-editor>
+      right-toolbar="preview toc sync-scroll"></v-md-editor>
 
     <!-- 按钮行 -->
     <v-row class="btns">
@@ -59,12 +44,7 @@
   </div>
 
   <!-- Snackbar -->
-  <v-snackbar
-    v-model="snackbarOpen"
-    :timeout="snackbarTimeout"
-    :color="snackbarColor"
-    min-width="25%"
-  >
+  <v-snackbar v-model="snackbarOpen" :timeout="snackbarTimeout" :color="snackbarColor" min-width="25%">
     <div style="font-size: 16px">{{ snackbarMessage }}</div>
     <template #actions>
       <v-btn icon @click="snackbarOpen = false">
@@ -76,6 +56,8 @@
 
 <script>
 import { mapMutations } from "vuex"; // 引入 mapMutations
+import store from "@/store";
+import axios from 'axios';
 
 export default {
   name: "DiscussionsContent",
@@ -106,6 +88,16 @@ export default {
     this.setAppTitle(title);
     this.setPageTitle(title);
   },
+  computed: {
+    requestData() {
+      return {
+        user_id: store.getters.getUserId || "",
+        title: this.title || "",
+        content: this.text || "",
+        tag: this.subject || "",
+      };
+    },
+  },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
 
@@ -115,6 +107,7 @@ export default {
 
     // 发布功能
     async submitPost() {
+      console.log("nmd");
       if (this.$refs.form.validate() && this.text.length !== 0) {
         // 如果表单验证通过
         console.log("标题:", this.title);
@@ -125,7 +118,24 @@ export default {
         this.snackbarMessage = "提交成功";
         this.snackbarColor = "success";
         this.snackbarOpen = true;
-
+        try {
+          // 发起 POST 请求
+          console.log(this.requestData);
+          const response = await axios.post('http://127.0.0.1:8000/api/discussions/create_discussion/', this.requestData, {
+            headers: {
+              'Content-Type': 'application/json', // 指定JSON格式
+            }
+          });
+        } catch (error) {
+          if (error.response && error.response.status === 400) {
+            this.$toast.error('标题和内容不能为空！');
+          } else if (error.response && error.response.status === 404) {
+            this.$toast.error('用户不存在！');
+          } else {
+            this.$toast.error('创建讨论失败，请稍后重试。');
+          }
+          console.error('提交失败:', error);
+        }
         this.returnForum();
       } else {
         // 如果表单验证失败，获取验证失败的字段错误信息

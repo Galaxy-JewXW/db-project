@@ -36,7 +36,7 @@ class Discussion(models.Model):
             )
 
     def __str__(self):
-        return f"{self.title} - {self.publisher.username}"
+        return f"{self.title} - {self.publisher.name}"
 
 
 class Reply(models.Model):
@@ -59,5 +59,5 @@ class Reply(models.Model):
         )
 
     def __str__(self):
-        return f"Reply by {self.publisher.username} on {self.discussion.title}"
+        return f"Reply by {self.publisher.name} on {self.discussion.title}"
 

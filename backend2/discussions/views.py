@@ -8,13 +8,18 @@ from discussions.models import Discussion, Reply
 from users.models import User
 from utils.views import decode_request
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from rest_framework.permissions import AllowAny
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CreateDiscussion(APIView):
     def post(self, request):
         try:
             data = decode_request(request)
             user_id = data.get('user_id')
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
+            print(user)
             title = data.get('title')
             content = data.get('content')
             tag = data.get('tag')

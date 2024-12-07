@@ -386,8 +386,6 @@ export default {
           return radarData;
         };
         this.radarData = parseProgressData(progress);
-
-        this.initRadarChart();
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
@@ -433,11 +431,6 @@ export default {
       return ((item.doneQuestions / item.totalQuestions) * 100).toFixed(2);
     },
     initRadarChart() {
-      // 如果已有雷达图实例，先销毁
-      if (this.radarChart) {
-        this.radarChart.dispose();
-      }
-
       // 初始化 ECharts 实例
       this.radarChart = echarts.init(this.$refs.radarChart);
 
@@ -468,14 +461,14 @@ export default {
             name: item.subject,
             max: 100,
           })),
-          radius: "40%", // 使用百分比单位
+          radius: "40%", // 调整雷达图大小
           center: ["50%", "50%"], // 居中显示
           name: {
             textStyle: {
-              fontSize: 12,
-              width: 40,
-              overflow: "breakAll",
-              lineHeight: 16,
+              fontSize: 12, // 调整字体大小
+              width: 40, // 设置文字宽度，根据需要调整
+              overflow: "breakAll", // 自动换行
+              lineHeight: 16, // 调整行高
             },
           },
         },
@@ -503,11 +496,14 @@ export default {
           },
         ],
       };
+
       // 设置选项
       this.radarChart.setOption(option);
+
       // 监听窗口大小变化，自动调整图表大小
       window.addEventListener("resize", this.handleResize);
     },
+
     handleResize() {
       if (this.radarChart) {
         this.radarChart.resize();
@@ -536,6 +532,8 @@ export default {
     this.setAppTitle(title);
     this.setPageTitle(title);
     this.fetchHomeData();
+    // 初始化雷达图
+    this.initRadarChart();
   },
   beforeDestroy() {
     // 销毁图表实例，清理事件监听器

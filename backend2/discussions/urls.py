@@ -1,31 +1,24 @@
 from django.urls import path
-from discussions import views
+from .views import (
+    CreateDiscussion,
+    LikePost,
+    SubscribeDiscussion,
+    CreateReply,
+    EditDiscussion,
+    EditReply,
+    GetAllDiscussions,
+    GetDiscussionReplies,
+    GetDiscussionById
+)
 
 urlpatterns = [
-    # Create a new discussion
-    path('create_discussion', views.CreateDiscussion.as_view(), name='create_discussion'),
-
-    # Like or unlike a discussion
-    path('like_discussion', views.LikePost.as_view(), name='like_discussion'),
-
-    # Subscribe or unsubscribe to a discussion
-    path('subscribe_discussion', views.SubscribeDiscussion.as_view(), name='subscribe_discussion'),
-
-    # Create a reply to a discussion
-    path('create_reply', views.CreateReply.as_view(), name='create_reply'),
-
-    # Edit a discussion
-    path('edit_discussion', views.EditDiscussion.as_view(), name='edit_discussion'),
-
-    # Edit a reply
-    path('edit_reply', views.EditReply.as_view(), name='edit_reply'),
-
-    # Get all discussions with filters
-    path('get_all_discussions', views.GetAllDiscussions.as_view(), name='get_all_discussions'),
-
-    # Get replies for a specific discussion
-    path('get_discussion_replies', views.GetDiscussionReplies.as_view(), name='get_discussion_replies'),
-
-    # Get detailed information for a specific discussion, including replies
-    path('get_discussion', views.GetDiscussionById.as_view(), name='get_discussion'),
+    path('create_discussion/', CreateDiscussion.as_view(), name='create_discussion'),
+    path('like_discussion', LikePost.as_view(), name='like_discussion'),
+    path('subscribe_discussion', SubscribeDiscussion.as_view(), name='subscribe_discussion'),
+    path('create_reply', CreateReply.as_view(), name='create_reply'),
+    path('edit_discussion', EditDiscussion.as_view(), name='edit_discussion'),
+    path('edit_reply', EditReply.as_view(), name='edit_reply'),
+    path('get_all_discussions', GetAllDiscussions.as_view(), name='get_all_discussions'),
+    path('get_discussion_replies', GetDiscussionReplies.as_view(), name='get_discussion_replies'),
+    path('get_discussion', GetDiscussionById.as_view(), name='get_discussion'),
 ]

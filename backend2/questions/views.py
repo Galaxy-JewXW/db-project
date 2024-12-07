@@ -641,7 +641,6 @@ class DeleteQuestionBank(APIView):
             question_bank_id = request.data['question_bank_id']
             user = User.objects.get(id=user_id)
 
-            # 检查权限：是否为管理员
             if user.user_role != 1:
                 return Response({
                     "success": False,
@@ -649,7 +648,6 @@ class DeleteQuestionBank(APIView):
                     "message": "只有管理员可以删除题库。"
                 }, status=HTTP_400_BAD_REQUEST)
 
-            # 获取题库
             try:
                 question_bank = QuestionBank.objects.get(id=question_bank_id)
             except QuestionBank.DoesNotExist:
