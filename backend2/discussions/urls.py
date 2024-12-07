@@ -8,17 +8,19 @@ from .views import (
     EditReply,
     GetAllDiscussions,
     GetDiscussionReplies,
-    GetDiscussionById
+    GetDiscussionById,
+    LikeReply
 )
 
 urlpatterns = [
-    path('create_discussion/', CreateDiscussion.as_view(), name='create_discussion'),
-    path('like_discussion', LikePost.as_view(), name='like_discussion'),
-    path('subscribe_discussion', SubscribeDiscussion.as_view(), name='subscribe_discussion'),
-    path('create_reply', CreateReply.as_view(), name='create_reply'),
-    path('edit_discussion', EditDiscussion.as_view(), name='edit_discussion'),
-    path('edit_reply', EditReply.as_view(), name='edit_reply'),
-    path('get_all_discussions', GetAllDiscussions.as_view(), name='get_all_discussions'),
-    path('get_discussion_replies', GetDiscussionReplies.as_view(), name='get_discussion_replies'),
-    path('get_discussion', GetDiscussionById.as_view(), name='get_discussion'),
+    path('create_discussion/', CreateDiscussion.as_view(), name='create_discussion'), #ok
+    path('like_discussion/', LikePost.as_view(), name='like_discussion'), #ok
+    path('like_reply/', LikeReply.as_view(), name='like_reply'), #ok
+    path('subscribe_discussion/', SubscribeDiscussion.as_view(), name='subscribe_discussion'), #ok
+    path('create_reply/', CreateReply.as_view(), name='create_reply'),
+    path('edit_discussion/', EditDiscussion.as_view(), name='edit_discussion'),
+    path('edit_reply/', EditReply.as_view(), name='edit_reply'),
+    path('get_all_discussions/', GetAllDiscussions.as_view(), name='get_all_discussions'), #ok
+    path('get_discussion_replies/', GetDiscussionReplies.as_view(), name='get_discussion_replies'),
+    path('get_discussion/', GetDiscussionById.as_view(), name='get_discussion'), #ok
 ]

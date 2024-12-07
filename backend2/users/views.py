@@ -162,12 +162,7 @@ class ModifyUserInfo(APIView):
             user.college = request.data.get('college')
             user.mail = request.data.get('mail')
             user.entryYear = request.data.get('year')
-            # print(request.data.get('name'))
-            # print(user.college)
-            # print(user.mail)
-            # print(user.entryYear)
             user.save()
-            # print(user)
         except User.DoesNotExist:
             return Response({
                 'success': False,

@@ -100,7 +100,7 @@
 
 <script>
 import { mapMutations } from "vuex";
-
+import axios from 'axios';
 export default {
   name: "DiscussionArea",
   data() {
@@ -152,6 +152,7 @@ export default {
     const title = "讨论区";
     this.setAppTitle(title);
     this.setPageTitle(title);
+    this.getAllDiscussions();
   },
   computed: {
     filteredDiscussions() {
@@ -206,7 +207,37 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
+    async getAllDiscussions() {
+      try {
+        const requestData = {
+          tag: this.tag,         // 当前选择的标签
+          time_range: this.timeRange,  // 当前选择的时间范围
+        };
+        const response = await axios.post('http://127.0.0.1:8000/api/discussions/get_all_discussions/', requestData, {
+          headers: { 'Content-Type': 'application/json' }
+        });
 
+        if (response.data.success) {
+          console.log(response.data.discussions)
+          this.discussions = response.data.discussions;
+        }
+
+      } catch (error) {
+        console.error('请求失败:', error);
+      }
+    },
+
+    // 选择标签时重新获取数据
+    onTagChange(newTag) {
+      this.tag = newTag;
+      this.getAllDiscussions();  // 更新讨论数据
+    },
+
+    // 选择时间范围时重新获取数据
+    onTimeRangeChange(newTimeRange) {
+      this.timeRange = newTimeRange;
+      this.getAllDiscussions();  // 更新讨论数据
+    },
     formatDate(dateStr) {
       const options = { year: "numeric", month: '2-digit', day: '2-digit' };
       return new Date(dateStr).toLocaleDateString(undefined, options);
@@ -228,7 +259,6 @@ export default {
       this.$router.push(`/discussion/${discussion.id}`);
     },
     openNewPost() {
-      console.log(111);
       this.$router.push(`/discussion/new`);
     },
     toggleTag(tag) {
@@ -304,19 +334,19 @@ export default {
 }
 
 .filter-card .v-chip {
-    margin: 1px;
-    border: 1px solid #1867c0;
-    cursor: pointer;
-    color: #1867c0;
+  margin: 1px;
+  border: 1px solid #1867c0;
+  cursor: pointer;
+  color: #1867c0;
 }
 
 .filter-card .selected-chip {
-    background-color: #1867c0 !important;
-    color: white !important;
+  background-color: #1867c0 !important;
+  color: white !important;
 }
 
 .filter-card .selected-chip .v-icon {
-    color: white !important;
+  color: white !important;
 }
 
 .selected-chip .v-icon {

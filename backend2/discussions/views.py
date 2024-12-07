@@ -49,11 +49,39 @@ class LikePost(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get('user_id')
-        user = User.objects.get(id=user_id)
-        discussion_id = data.get('discussion_id')
-
+        user = User.objects.get(student_id=user_id)
+        discussion_id = data.get('dis_id')
         try:
             discussion = Discussion.objects.get(id=discussion_id)
+            if user in discussion.likes.all():
+                discussion.likes.remove(user)  # 取消点赞
+                liked = False
+            else:
+                print("ok")
+                discussion.likes.add(user)  # 点赞
+                liked = True
+
+            return Response({"success": True, "liked": liked, "like_count": discussion.likes.count()},
+                            status=HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'User not found'
+            }, status=HTTP_404_NOT_FOUND)
+
+        except Discussion.DoesNotExist:
+            return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
+
+class LikeReply(APIView):
+    def post(self, request):
+        data = decode_request(request)
+        user_id = data.get('user_id')
+        user = User.objects.get(student_id=user_id)
+        reply_id = data.get('dis_id')
+        print(reply_id)
+        print(reply_id)
+        try:
+            discussion = Reply.objects.get(id=reply_id)
             if user in discussion.likes.all():
                 discussion.likes.remove(user)  # 取消点赞
                 liked = False
@@ -69,17 +97,16 @@ class LikePost(APIView):
                 'error': 'User not found'
             }, status=HTTP_404_NOT_FOUND)
 
-        except Discussion.DoesNotExist:
-            return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
+        except Reply.DoesNotExist:
+            return Response({"error": "Reply not found."}, status=HTTP_404_NOT_FOUND)
 
 
 class SubscribeDiscussion(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get('user_id')
-        user = User.objects.get(id=user_id)
-        discussion_id = data.get('discussion_id')
-
+        user = User.objects.get(student_id=user_id)
+        discussion_id = data.get('dis_id')
         try:
             discussion = Discussion.objects.get(id=discussion_id)
             if user in discussion.subscribers.all():
@@ -247,23 +274,6 @@ class GetAllDiscussions(APIView):
 
         # 基本查询
         discussions = Discussion.objects.all()
-
-        # 按标签筛选
-        if tag:
-            discussions = discussions.filter(tag=tag)
-
-        # 按时间范围筛选
-        if time_range:
-            now_time = now()
-            if time_range == "7d":
-                discussions = discussions.filter(last_updated__gte=now_time - timedelta(days=7))
-            elif time_range == "1m":
-                discussions = discussions.filter(last_updated__gte=now_time - timedelta(days=30))
-            elif time_range == "6m":
-                discussions = discussions.filter(last_updated__gte=now_time - timedelta(days=180))
-            elif time_range == "1y":
-                discussions = discussions.filter(last_updated__gte=now_time - timedelta(days=365))
-
         # 按更新时间排序
         discussions = discussions.order_by("-last_updated")
 
@@ -291,7 +301,7 @@ class GetDiscussionReplies(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get("user_id")
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(student_id=user_id)
         discussion_id = data.get('discussion_id')
 
         try:
@@ -328,17 +338,15 @@ class GetDiscussionReplies(APIView):
         except Discussion.DoesNotExist:
             return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class GetDiscussionById(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get("user_id")
-        discussion_id = data.get("discussion_id")
-
+        discussion_id = data.get("dis_id")
         try:
             # 获取主帖
             discussion = Discussion.objects.get(id=discussion_id)
-            user = User.objects.get(id=user_id)
 
             # 获取所有回复
             replies = discussion.replies.all().order_by("publish_time")
@@ -351,9 +359,8 @@ class GetDiscussionById(APIView):
                     "publishTime": reply.publish_time,
                     "lastUpdated": reply.last_updated,
                     "content": reply.content,
-                    "isLiked": reply.likes.filter(id=user_id).exists()  # 当前用户是否点赞
+                    "isLiked": reply.likes.filter(student_id=user_id).exists()  # 当前用户是否点赞
                 })
-
             # 构造主帖数据
             discussion_data = {
                 "id": discussion.id,
@@ -364,8 +371,8 @@ class GetDiscussionById(APIView):
                 "lastUpdated": discussion.last_updated,
                 "tag": discussion.tag,
                 "content": discussion.content,
-                "isLiked": discussion.likes.filter(id=user_id).exists(),  # 当前用户是否点赞
-                "isSubscribed": discussion.subscribers.filter(id=user_id).exists(),  # 当前用户是否已订阅
+                "isLiked": discussion.likes.filter(student_id=user_id).exists(),  # 当前用户是否点赞
+                "isSubscribed": discussion.subscribers.filter(student_id=user_id).exists(),  # 当前用户是否已订阅
             }
 
             return Response({

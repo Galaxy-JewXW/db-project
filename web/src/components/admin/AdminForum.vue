@@ -69,8 +69,9 @@
                                         <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
                                             {{ discussion.tag }}
                                         </v-chip>
-                                        <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label >
-                                            加精 
+                                        <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange"
+                                            label>
+                                            加精
                                         </v-chip>
                                         {{
                                             discussion.summary.length > 60
@@ -101,7 +102,7 @@
 
 <script>
 import { mapMutations } from "vuex";
-
+import axios from 'axios';
 export default {
     name: "DiscussionArea",
     data() {
@@ -153,6 +154,7 @@ export default {
         const title = "讨论区";
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.getAllDiscussions();
     },
     computed: {
         filteredDiscussions() {
@@ -207,7 +209,25 @@ export default {
     },
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
+        async getAllDiscussions() {
+            try {
+                const requestData = {
+                    tag: this.tag,         // 当前选择的标签
+                    time_range: this.timeRange,  // 当前选择的时间范围
+                };
+                const response = await axios.post('http://127.0.0.1:8000/api/discussions/get_all_discussions/', requestData, {
+                    headers: { 'Content-Type': 'application/json' }
+                });
 
+                if (response.data.success) {
+                    console.log(response.data.discussions)
+                    this.discussions = response.data.discussions;
+                }
+
+            } catch (error) {
+                console.error('请求失败:', error);
+            }
+        },
         formatDate(dateStr) {
             const options = { year: "numeric", month: '2-digit', day: '2-digit' };
             return new Date(dateStr).toLocaleDateString(undefined, options);

@@ -170,6 +170,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import { mapMutations } from "vuex";
 import { mapState } from "vuex/dist/vuex.cjs.js";
 import store from "@/store";
@@ -235,10 +236,45 @@ export default {
         this.setAppTitle(title);
         this.setPageTitle(title);
         this.currentUserId = store.getters.getUserId;
+        this.sendDataToBackend();
     },
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
         ...mapState(["userId"]),
+        async sendDataToBackend() {
+            try {
+                // 获取 user_id 和 dis_id
+                const userId = this.$store.getters.getUserId; // 假设你使用 Vuex 获取 user_id
+                const disId = this.$route.params.id;         // 从路由获取 dis_id
+
+                // 打包请求数据
+                const requestData = {
+                    user_id: userId,
+                    dis_id: disId
+                };
+
+                // 发送 POST 请求到后端 API，并指定请求头为 application/json
+                const response = await axios.post('http://127.0.0.1:8000/api/discussions/get_discussion/', requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                    }
+                });
+                if (response.data.success) {
+                    this.mainDiscussion = response.data.discussion;
+                    this.followDiscussion = response.data.replies;
+                    // 处理后端响应
+                    const title = `讨论 - ${this.mainDiscussion.title}`;
+                    this.setAppTitle(title);
+                    this.setPageTitle(title);
+                    console.log('请求成功:', response.data);
+                } else {
+                    console.log('请求失败');
+                }
+            } catch (error) {
+                // 请求失败时处理错误
+                console.error('请求失败:', error);
+            }
+        },
         formatDate(dateString) {
             const options = {
                 year: 'numeric',
