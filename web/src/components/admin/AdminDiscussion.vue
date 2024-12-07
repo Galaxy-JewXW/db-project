@@ -26,7 +26,6 @@
             </v-card-item>
             <v-divider></v-divider>
             <v-card-text>
-                <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
                 <!-- 显示主讨论内容 -->
                 <div style="margin-left: -29px">
                     <v-md-preview :text="mainDiscussion.content"></v-md-preview>
@@ -107,7 +106,6 @@
                 </v-card-item>
                 <v-divider></v-divider>
                 <v-card-text>
-                    <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
                     <!-- 显示跟随讨论内容 -->
                     <div style="margin-left: -29px">
                         <v-md-preview :text="discussion.content"></v-md-preview>

@@ -1,9 +1,5 @@
 <template>
-  <v-alert color="#1867c0" icon="mdi-comment-multiple-outline">
-    <v-alert-title>欢迎你畅所欲言！</v-alert-title>
-    <v-alert-subtitle>
-      在讨论区发布贴文，表示你已阅读并同意我们的讨论区规范。
-    </v-alert-subtitle>
+  <v-alert color="#1867c0" icon="mdi-comment-multiple-outline" title="欢迎你畅所欲言！" text="在讨论区发布贴文，表示你已阅读并同意我们的讨论区规范。">
   </v-alert>
 
   <div class="scroll-container">
@@ -107,13 +103,9 @@ export default {
 
     // 发布功能
     async submitPost() {
-      console.log("nmd");
-      if (this.$refs.form.validate() && this.text.length !== 0) {
-        // 如果表单验证通过
-        console.log("标题:", this.title);
-        console.log("所属科目:", this.subject);
-        console.log("内容:", this.text);
-
+      const valid = await this.$refs.form.validate();
+      if (valid.valid) {
+        console.log("nmd");
         // 显示成功的 Snackbar
         this.snackbarMessage = "提交成功";
         this.snackbarColor = "success";
@@ -138,6 +130,7 @@ export default {
         }
         this.returnForum();
       } else {
+        console.log("nmd1");
         // 如果表单验证失败，获取验证失败的字段错误信息
         let errorMessage = "";
 

@@ -25,7 +25,6 @@
       </v-card-item>
       <v-divider></v-divider>
       <v-card-text>
-        <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
         <!-- 显示主讨论内容 -->
         <div style="margin-left: -29px">
           <v-md-preview :text="mainDiscussion.content"></v-md-preview>
@@ -245,6 +244,7 @@ export default {
           }
         });
         if (response.data.success) {
+          console.log(response.data);
           this.mainDiscussion = response.data.discussion;
           this.followDiscussion = response.data.replies;
           this.isSubscribed = response.data.discussion.isSubscribed;
