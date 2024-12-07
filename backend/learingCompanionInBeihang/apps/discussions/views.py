@@ -374,3 +374,79 @@ class GetDiscussionById(APIView):
 
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+
+class DeleteDiscussion(APIView):
+    """
+    删除指定 ID 的讨论帖，仅允许管理员或讨论帖的发布者删除。
+    """
+
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            user_id = data.get("user_id")
+            discussion_id = data.get("discussion_id")
+
+            user = User.objects.get(id=user_id)
+            discussion = Discussion.objects.get(id=discussion_id)
+
+            # 权限检查：必须是管理员或讨论发布者
+            if user.user_role != 1 and discussion.publisher != user:
+                return Response({
+                    "success": False,
+                    "error": "You do not have permission to delete this discussion."
+                }, status=HTTP_400_BAD_REQUEST)
+
+            # 删除讨论
+            discussion.delete()
+            return Response({
+                "success": True,
+                "message": f"Discussion {discussion_id} deleted successfully."
+            }, status=HTTP_200_OK)
+
+        except Discussion.DoesNotExist:
+            return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+
+
+class DeleteReply(APIView):
+    """
+    删除指定 ID 的回复，仅允许管理员或回复的发布者删除。
+    """
+
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            user_id = data.get("user_id")
+            reply_id = data.get("reply_id")
+
+            user = User.objects.get(id=user_id)
+            reply = Reply.objects.get(id=reply_id)
+
+            # 权限检查：必须是管理员或回复发布者
+            if user.user_role != 1 and reply.publisher != user:
+                return Response({
+                    "success": False,
+                    "error": "You do not have permission to delete this reply."
+                }, status=HTTP_400_BAD_REQUEST)
+
+            # 删除回复
+            reply.delete()
+            return Response({
+                "success": True,
+                "message": f"Reply {reply_id} deleted successfully."
+            }, status=HTTP_200_OK)
+
+        except Reply.DoesNotExist:
+            return Response({"error": "Reply not found."}, status=HTTP_404_NOT_FOUND)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)

@@ -142,4 +142,102 @@ class DiscussionTests(TestCase):
         self.assertEqual(response.data['discussion']['title'], "Test Discussion")
         self.assertEqual(len(response.data['replies']), 1)
 
-    
+    def test_delete_discussion(self):
+        # Create a discussion
+        self.discussion10 = Discussion.objects.create(
+            title="Test Discussion",
+            content="This is a test discussion.",
+            publisher=self.user1,
+            avatar="https://randomuser.me/api/portraits/women/85.jpg",
+            tag="Test Tag"
+        )
+
+        # Create a reply
+        self.reply10 = Reply.objects.create(
+            discussion=self.discussion10,
+            content="This is a test reply.",
+            publisher=self.user2,
+            avatar="https://randomuser.me/api/portraits/men/45.jpg"
+        )
+        # 普通用户尝试删除他人帖子
+        data = {
+            "user_id": self.user2.id,
+            "discussion_id": self.discussion10.id
+        }
+        response = self.client.post('/discussions/delete_discussion', data, format='json')
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertTrue(Discussion.objects.filter(id=self.discussion10.id).exists())
+
+        # 发布者删除帖子
+        data = {
+            "user_id": self.user1.id,
+            "discussion_id": self.discussion10.id
+        }
+        response = self.client.post('/discussions/delete_discussion', data, format='json')
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertFalse(Discussion.objects.filter(id=self.discussion10.id).exists())
+
+    def test_delete_reply(self):
+        # Create a discussion
+        self.discussion11 = Discussion.objects.create(
+            title="Test Discussion",
+            content="This is a test discussion.",
+            publisher=self.user1,
+            avatar="https://randomuser.me/api/portraits/women/85.jpg",
+            tag="Test Tag"
+        )
+
+        # Create a reply
+        self.reply11 = Reply.objects.create(
+            discussion=self.discussion11,
+            content="This is a test reply.",
+            publisher=self.user2,
+            avatar="https://randomuser.me/api/portraits/men/45.jpg"
+        )
+
+        # 普通用户尝试删除他人回复
+        data = {
+            "user_id": self.user1.id,
+            "reply_id": self.reply11.id
+        }
+        response = self.client.post('/discussions/delete_reply', data, format='json')
+        self.assertEqual(response.status_code, HTTP_400_BAD_REQUEST)
+        self.assertTrue(Reply.objects.filter(id=self.reply11.id).exists())
+
+        # 发布者删除回复
+        data = {
+            "user_id": self.user2.id,
+            "reply_id": self.reply11.id
+        }
+        response = self.client.post('/discussions/delete_reply', data, format='json')
+        self.assertEqual(response.status_code, HTTP_200_OK)
+        self.assertFalse(Reply.objects.filter(id=self.reply11.id).exists())
+
+    def test_delete_discussion_with_replies(self):
+        # Create a discussion
+        self.discussion12 = Discussion.objects.create(
+            title="Test Discussion",
+            content="This is a test discussion.",
+            publisher=self.user1,
+            avatar="https://randomuser.me/api/portraits/women/85.jpg",
+            tag="Test Tag"
+        )
+
+        # Create a reply
+        self.reply12 = Reply.objects.create(
+            discussion=self.discussion12,
+            content="This is a test reply.",
+            publisher=self.user2,
+            avatar="https://randomuser.me/api/portraits/men/45.jpg"
+        )
+        # 发布者删除帖子
+        data = {
+            "user_id": self.user1.id,
+            "discussion_id": self.discussion12.id
+        }
+        response = self.client.post('/discussions/delete_discussion', data, format='json')
+        self.assertEqual(response.status_code, HTTP_200_OK)
+
+        # 确认帖子及其回复均被删除
+        self.assertFalse(Discussion.objects.filter(id=self.discussion12.id).exists())
+        self.assertFalse(Reply.objects.filter(discussion=self.discussion12).exists())

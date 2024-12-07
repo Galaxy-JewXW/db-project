@@ -28,4 +28,11 @@ urlpatterns = [
 
     # Get detailed information for a specific discussion, including replies
     path('get_discussion', views.GetDiscussionById.as_view(), name='get_discussion'),
+
+    # 删除讨论帖
+    path('delete_discussion', views.DeleteDiscussion.as_view(), name='delete_discussion'),
+
+    # 删除回复
+    path('delete_reply', views.DeleteReply.as_view(), name='delete_reply'),
+
 ]
