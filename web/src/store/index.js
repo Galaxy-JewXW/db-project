@@ -1,13 +1,13 @@
 // src/store/index.js
-import { createStore } from 'vuex';
+import { createStore } from "vuex";
 import axios from "axios";
 
 export default createStore({
   state: {
     userId: null,
     user: null,
-    appTitle: '准备就绪',
-    pageTitle: '准备就绪',
+    appTitle: "准备就绪",
+    pageTitle: "准备就绪",
   },
   mutations: {
     setAppTitle(state, title) {
@@ -25,13 +25,22 @@ export default createStore({
       console.log(user);
       localStorage.setItem("user", JSON.stringify(user));
     },
+    modifyUserInfo(state, userInfo) {
+      console.log(userInfo);
+      state.user.name = userInfo.username;
+      state.user.college = userInfo.college;
+      state.user.email = userInfo.email;
+      state.user.entry_year = userInfo.enrollmentYear;
+      console.log(state.user);
+      localStorage.setItem("user", JSON.stringify(state.user));
+    },
     cleanUserId(state) {
       state.userId = null;
       state.user = null;
       localStorage.removeItem("userId");
       localStorage.removeItem("user");
       delete axios.defaults.headers.common["Authorization"];
-    }
+    },
   },
   getters: {
     isAuthenticated: (state) => !!state.user,

@@ -265,6 +265,8 @@ export default {
           .then((response) => {
             const token = this.studentNumber.value;
             const user = response.data;
+            console.log("登录成功");
+            console.log(user);
             this.setUserId(token);
             this.setUserInfo(user);
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;

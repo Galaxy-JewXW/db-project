@@ -298,7 +298,7 @@ export default {
     },
   },
   methods: {
-    ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
+    ...mapMutations(["setAppTitle", "setPageTitle", "modifyUserInfo"]),
     // 生成从当前年份向前 10 年的入学年份列表
     getEntryYears() {
       const currentYear = new Date().getFullYear();
@@ -312,9 +312,6 @@ export default {
     // 提交表单数据
     async submitForm() {
       if (this.$refs.form.validate()) {
-        // 更新用户信息
-        console.log("Request Data:", this.requestData);
-        console.log("Serialized Data:", JSON.stringify(this.requestData));
         const response = await axios.post('http://127.0.0.1:8000/user/modify_user_info/', this.requestData, {
           headers: {
             'Content-Type': 'application/json', // 指定JSON格式
@@ -322,28 +319,14 @@ export default {
         });
         if (response.data.success) {
           this.message = '用户信息修改成功！';
+          this.modifyUserInfo(this.formData);
         } else {
           this.message = `错误: ${response.data.message}`;
         }
-        console.log(this.formData.username);
-        this.username = this.formData.username;
-        this.college = this.formData.college;
-        this.enrollmentYear = this.formData.enrollmentYear;
-        this.email = this.formData.email;
-
         // 关闭对话框
         this.dialog = false;
-
         // 清除表单
         this.handleClear();
-
-        // 可以在这里调用 API 或者 Vuex action 来保存修改到后端
-        console.log("个人信息已更新:", {
-          username: this.username,
-          college: this.college,
-          enrollmentYear: this.enrollmentYear,
-          email: this.email,
-        });
       } else {
         console.log("表单验证失败");
       }

@@ -163,6 +163,26 @@ const customRoutes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/discussion/new",
+    component: () => import("@/components/user/NewPost.vue"),
+    meta: {
+      appTitle: "发布新讨论",
+      pageTitle: "发布新讨论",
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/discussion/:id",
+    name: "DiscussionContent",
+    component: () => import("@/components/user/DiscussionContent.vue"),
+    props: true,
+    meta: {
+      appTitle: "讨论详情",
+      pageTitle: "讨论详情",
+      requiresAuth: true,
+    },
+  },
+  {
     path: "/problemset/:id",
     name: "ProblemSetDetail",
     component: () => import("@/components/user/ProblemSetDetail.vue"),
@@ -196,17 +216,6 @@ const customRoutes = [
     },
   },
   {
-    path: "/discussion/new",
-    name: "NewPost",
-    component: () => import("@/components/user/NewPost.vue"),
-    props: true,
-    meta: {
-      appTitle: "发布新讨论",
-      pageTitle: "发布新讨论",
-      requiresAuth: true,
-    },
-  },
-  {
     path: "/admin/profile",
     name: "Profile",
     component: () => import("@/components/ProfileContent.vue"),
@@ -214,17 +223,6 @@ const customRoutes = [
     meta: {
       appTitle: "个人中心",
       pageTitle: "个人中心",
-      requiresAuth: true,
-    },
-  },
-  {
-    path: "/discussion/:id",
-    name: "DiscussionContent",
-    component: () => import("@/components/user/DiscussionContent.vue"),
-    props: true,
-    meta: {
-      appTitle: "讨论详情",
-      pageTitle: "讨论详情",
       requiresAuth: true,
     },
   },

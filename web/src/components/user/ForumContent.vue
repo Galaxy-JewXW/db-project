@@ -228,6 +228,7 @@ export default {
       this.$router.push(`/discussion/${discussion.id}`);
     },
     openNewPost() {
+      console.log(111);
       this.$router.push(`/discussion/new`);
     },
     toggleTag(tag) {

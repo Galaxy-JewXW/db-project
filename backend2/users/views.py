@@ -166,7 +166,7 @@ class ModifyUserInfo(APIView):
             # print(user.college)
             # print(user.mail)
             # print(user.entryYear)
-            # user.save()
+            user.save()
             # print(user)
         except User.DoesNotExist:
             return Response({
