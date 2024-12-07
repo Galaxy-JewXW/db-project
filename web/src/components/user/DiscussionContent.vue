@@ -23,14 +23,17 @@
           <v-icon v-if="isSubscribed" color="#fbc02d">mdi-bell</v-icon>
         </template>
       </v-card-item>
+      <v-divider></v-divider>
       <v-card-text>
-        <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
         <!-- 显示主讨论内容 -->
         <div style="margin-left: -29px">
           <v-md-preview :text="mainDiscussion.content"></v-md-preview>
         </div>
       </v-card-text>
-
+      <v-divider></v-divider>
+      <div class="pl-4 text-body-2 text-medium-emphasis pt-2 pb-2">
+        最近更新于 {{ formatDate(mainDiscussion.lastUpdated) }}
+      </div>
       <!-- 订阅和点赞按钮区域 -->
       <v-divider></v-divider>
       <v-row no-gutters>
@@ -93,13 +96,17 @@
             <v-icon v-if="discussion.isLiked" color="#ee3f4d">mdi-thumb-up</v-icon>
           </template>
         </v-card-item>
+        <v-divider></v-divider>
         <v-card-text>
-          <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
           <!-- 显示跟随讨论内容 -->
           <div style="margin-left: -29px">
             <v-md-preview :text="discussion.content"></v-md-preview>
           </div>
         </v-card-text>
+        <v-divider></v-divider>
+        <div class="pl-4 text-body-2 text-medium-emphasis pt-2 pb-2">
+          最近更新于 {{ formatDate(discussion.lastUpdated) }}
+        </div>
         <v-divider></v-divider>
         <v-row no-gutters>
           <v-col cols="auto">
@@ -203,16 +210,6 @@ export default {
           publishTime: "2024-09-25T15:30:00",
           lastUpdated: "2024-11-15T15:30:00",
           content: "内容1",
-          isLiked: false,
-        },
-        {
-          id: 30,
-          publisher: "李四3",
-          publisherId: 22373498,
-          avatar: "https://randomuser.me/api/portraits/women/98.jpg",
-          publishTime: "2024-09-25T15:30:00",
-          lastUpdated: "2024-11-15T15:30:00",
-          content: "内容2",
           isLiked: false,
         },
       ],
@@ -369,7 +366,7 @@ export default {
     async emitEdit() {
       const requestData = {
         user_id: this.$store.getters.getUserId,
-        discussion_id: (!this.isComment||this.isMainDiscussion)?this.emitId:this.$route.params.id,
+        discussion_id: (!this.isComment || this.isMainDiscussion) ? this.emitId : this.$route.params.id,
         content: this.text,
       };
 
