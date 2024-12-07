@@ -172,7 +172,7 @@ class GetAllBroadcasts(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get('user_id')
-        print(user_id)
+        
         try:
             # 获取用户信息
             user = User.objects.get(student_id=user_id)
