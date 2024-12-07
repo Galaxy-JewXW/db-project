@@ -41,14 +41,14 @@
           <v-btn rounded="0" @click="toggleLike('main')" class="like-btn"
             :variant="mainDiscussion.isLiked ? 'tonal' : 'text'" color="#ee3f4d">
             <v-icon>{{ mainDiscussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline" }}</v-icon>
-            {{ mainDiscussion.isLiked ? "取消点赞" : "点赞" }}
+            &nbsp;{{ mainDiscussion.like_count }}
           </v-btn>
         </v-col>
         <v-col cols="auto">
           <v-btn rounded="0" @click="toggleSubscription" class="subscribe-btn"
             :variant="isSubscribed ? 'tonal' : 'text'" :color="'#fbc02d'">
             <v-icon>{{ isSubscribed ? "mdi-bell-off" : "mdi-bell-outline" }}</v-icon>
-            {{ isSubscribed ? "取消订阅" : "订阅" }}
+            &nbsp;{{ mainDiscussion.sub_count }}
           </v-btn>
         </v-col>
         <v-col cols="auto">
@@ -113,7 +113,7 @@
             <v-btn rounded="0" @click="toggleLike(discussion.id)" class="like-btn"
               :variant="discussion.isLiked ? 'tonal' : 'text'" :color="'#ee3f4d'">
               <v-icon>{{ discussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline" }}</v-icon>
-              {{ discussion.isLiked ? "取消点赞" : "点赞" }}
+              &nbsp;{{ discussion.like_count }}
             </v-btn>
           </v-col>
           <v-col cols="auto">
@@ -150,9 +150,9 @@
         left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
         right-toolbar="preview toc sync-scroll"></v-md-editor>
       <v-spacer></v-spacer>
-      <v-card-action>
+      <v-card-actions>
         <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
-      </v-card-action>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 
@@ -162,9 +162,9 @@
         left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
         right-toolbar="preview toc sync-scroll"></v-md-editor>
       <v-spacer></v-spacer>
-      <v-card-action>
+      <v-card-actions>
         <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
-      </v-card-action>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
@@ -176,6 +176,7 @@ import { mapState } from "vuex/dist/vuex.cjs.js";
 import store from "@/store";
 export default {
   name: "ForumContent",
+  inheritAttrs: false,
   data() {
     return {
       currentUserId: null,
@@ -199,6 +200,8 @@ export default {
   ...
   `,
         isLiked: false,
+        like_count: 0,
+        sub_count: 0,
       },
       isSubscribed: false,
       followDiscussion: [
@@ -211,6 +214,7 @@ export default {
           lastUpdated: "2024-11-15T15:30:00",
           content: "内容1",
           isLiked: false,
+          like_count: 0,
         },
       ],
     };
@@ -280,6 +284,11 @@ export default {
     },
     async toggleSubscription() {
       this.isSubscribed = !this.isSubscribed;
+      if (this.isSubscribed) {
+        this.mainDiscussion.sub_count++;
+      } else {
+        this.mainDiscussion.sub_count--;
+      }
       try {
         const userId = this.$store.getters.getUserId; // 假设你使用 Vuex 获取 user_id
         const disId = this.$route.params.id; // 使用传入的 discussionId 作为 dis_id
@@ -305,6 +314,11 @@ export default {
       // 更新讨论的 isLiked 状态
       if (discussionId === "main") {
         this.mainDiscussion.isLiked = !this.mainDiscussion.isLiked;
+        if (this.mainDiscussion.isLiked) {
+          this.mainDiscussion.like_count++;
+        } else {
+          this.mainDiscussion.like_count--;
+        }
       } else {
         // 检查是否是跟随讨论的ID
         const discussion = this.followDiscussion.find(
@@ -312,6 +326,11 @@ export default {
         );
         if (discussion) {
           discussion.isLiked = !discussion.isLiked;
+          if (discussion.isLiked) {
+            discussion.like_count++;
+          } else {
+            discussion.like_count--;
+          }
         } else {
           // 如果ID未找到，抛出警告
           console.warn(`未找到对应的讨论或评论，ID: ${discussionId}`);
