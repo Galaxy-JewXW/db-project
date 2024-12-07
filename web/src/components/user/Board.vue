@@ -105,10 +105,10 @@
                 align-items: flex-start;
                 padding: 16px;
               ">
-              <v-col cols="12" md="6">
-                <div id="chart1"></div>
-              </v-col>
-              <v-col cols="12" md="6">
+              <!-- 雷达图 -->
+              <div ref="radarChart" style="width: 400px; height: 300px"></div>
+              <!-- 右侧内容区域 -->
+              <div style="padding-left: 16px">
                 <div v-for="(item, index) in radarData" :key="index" style="margin-bottom: 12px">
                   <div class="right-content-title">
                     {{ item.subject }}
@@ -119,7 +119,7 @@
                     - <span class="font-weight-bold text-h6">{{ calculatePercentage(item) }}%</span>
                   </div>
                 </div>
-              </v-col>
+              </div>
             </div>
           </v-card>
 
@@ -197,8 +197,9 @@
 <script>
 import axios from 'axios';
 import { mapMutations } from "vuex";
+import * as echarts from "echarts";
 import store from "@/store";
-import ApexCharts from 'apexcharts';
+// store.getters.getUserId
 const requestData = {
   user_id: store.getters.getUserId // 假设你已经知道用户的ID，替换为实际值
 };
@@ -259,6 +260,7 @@ export default {
       messageDialogVisible: false,
       selectedNotice: {},
       selectedMessage: {},
+      radarChart: null,
       radarData: [
         {
           subject: "工科数学分析（上）",
@@ -347,31 +349,30 @@ export default {
       try {
         const response = await axios.post('http://127.0.0.1:8000/api/board/', requestData, {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json', // 指定JSON格式
           }
         });
         console.log(response);
-
         const backendNotices = response.data.data.notices;
         const messages_data = response.data.data.messages;
         const progress = response.data.data.progress;
         this.recommendedExercises = response.data.data.recommendedExercises;
-
+        console.log(response.data.data.recommendedExercises);
+        // 将后端返回的数据映射到前端需要的格式
         this.notices = backendNotices.map((notice) => ({
-          id: notice.id,
-          title: notice.title,
-          publisher: notice.sender,
-          releaseTime: notice.sent_at,
-          content: notice.content,
+          id: notice.id, // 保留原来的 ID
+          title: notice.title, // 保留标题
+          publisher: notice.sender, // 后端的 sender 对应前端的 publisher
+          releaseTime: notice.sent_at, // 时间字段映射
+          content: notice.content, // 公告内容
         }));
         this.messages = messages_data.map((m) => ({
           id: m.id,
           sender: m.sender,
-          sendTime: m.sent_at,
+          sendTime: m.sent_at, // 重命名字段
           content: m.content,
-          avatar: m.sender_avatar,
+          avatar: m.sender_avatar, // 重命名字段
         }));
-
         const parseProgressData = (progressData) => {
           const radarData = [];
           for (const subjectDisplay in progressData) {
@@ -384,11 +385,7 @@ export default {
           }
           return radarData;
         };
-
         this.radarData = parseProgressData(progress);
-
-        // 数据获取完成后初始化图表
-        this.initApexChart();
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
@@ -433,6 +430,85 @@ export default {
       if (item.totalQuestions === 0) return 0;
       return ((item.doneQuestions / item.totalQuestions) * 100).toFixed(2);
     },
+    initRadarChart() {
+      // 初始化 ECharts 实例
+      this.radarChart = echarts.init(this.$refs.radarChart);
+
+      // 计算百分比数据
+      const percentages = this.radarData.map((item) => {
+        if (item.totalQuestions === 0) return 0;
+        return (item.doneQuestions / item.totalQuestions) * 100;
+      });
+
+      // 为了在 formatter 中访问 radarData，将其赋值给局部变量
+      const radarData = this.radarData;
+
+      // 配置选项
+      const option = {
+        tooltip: {
+          formatter: function (params) {
+            let res = params.seriesName + "<br/>";
+            for (let i = 0; i < params.value.length; i++) {
+              let indicatorName = radarData[i].subject;
+              let value = params.value[i].toFixed(2) + "%";
+              res += indicatorName + "：" + value + "<br/>";
+            }
+            return res;
+          },
+        },
+        radar: {
+          indicator: this.radarData.map((item) => ({
+            name: item.subject,
+            max: 100,
+          })),
+          radius: "40%", // 调整雷达图大小
+          center: ["50%", "50%"], // 居中显示
+          name: {
+            textStyle: {
+              fontSize: 12, // 调整字体大小
+              width: 40, // 设置文字宽度，根据需要调整
+              overflow: "breakAll", // 自动换行
+              lineHeight: 16, // 调整行高
+            },
+          },
+        },
+        series: [
+          {
+            name: "做题进度",
+            type: "radar",
+            data: [
+              {
+                value: percentages,
+                name: "当前进度",
+                areaStyle: {
+                  color: "rgba(0, 128, 255, 0.3)",
+                },
+                lineStyle: {
+                  color: "rgba(0, 128, 255, 0.5)",
+                },
+                symbol: "circle",
+                symbolSize: 5,
+                itemStyle: {
+                  color: "rgba(0, 128, 255, 0.8)",
+                },
+              },
+            ],
+          },
+        ],
+      };
+
+      // 设置选项
+      this.radarChart.setOption(option);
+
+      // 监听窗口大小变化，自动调整图表大小
+      window.addEventListener("resize", this.handleResize);
+    },
+
+    handleResize() {
+      if (this.radarChart) {
+        this.radarChart.resize();
+      }
+    },
     goToExercise(exerciseId) {
       console.log(`Navigate to exercise ID: ${exerciseId}`);
       this.$router.push(`/exercise/${exerciseId}`);
@@ -450,62 +526,26 @@ export default {
       const date = new Date(dateString);
       return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
-    initApexChart() {
-      // 当 radarData 准备好后再计算并初始化图表
-      const seriesData = this.radarData.map(item => {
-        const ratio = item.totalQuestions === 0 ? 0 : (item.doneQuestions / item.totalQuestions) * 100;
-        return ratio.toFixed(2);
-      });
-
-      const labelsData = this.radarData.map(item => item.subject);
-
-      // 计算总的完成比例
-      const totalDone = this.radarData.reduce((sum, item) => sum + item.doneQuestions, 0);
-      const totalQuestions = this.radarData.reduce((sum, item) => sum + item.totalQuestions, 0);
-      const totalRatio = totalQuestions === 0 ? 0 : ((totalDone / totalQuestions) * 100).toFixed(2);
-
-      var options1 = {
-        chart: {
-          height: 280,
-          type: "radialBar",
-        },
-        series: seriesData,
-        labels: labelsData,
-        plotOptions: {
-          radialBar: {
-            dataLabels: {
-              total: {
-                show: true,
-                label: '总进度',
-                formatter: function () {
-                  return totalRatio + '%';
-                }
-              }
-            }
-          }
-        }
-      };
-      // 每次重新初始化图表前，确保销毁旧图表，以防叠加
-      const chartContainer = document.querySelector("#chart1");
-      chartContainer.innerHTML = '';
-      new ApexCharts(chartContainer, options1).render();
-    }
   },
   mounted() {
     const title = "主页";
     this.setAppTitle(title);
     this.setPageTitle(title);
     this.fetchHomeData();
+    // 初始化雷达图
+    this.initRadarChart();
+  },
+  beforeDestroy() {
+    // 销毁图表实例，清理事件监听器
+    if (this.radarChart) {
+      this.radarChart.dispose();
+    }
+    window.removeEventListener("resize", this.handleResize);
   },
 };
 </script>
 
 <style scoped>
-#chart1 {
-  width: 70%;
-  margin: auto;
-}
-
 .sticky-title {
   position: sticky;
   top: 0;

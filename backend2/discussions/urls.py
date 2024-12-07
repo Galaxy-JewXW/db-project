@@ -9,10 +9,15 @@ from .views import (
     GetAllDiscussions,
     GetDiscussionReplies,
     GetDiscussionById,
-    LikeReply
+    LikeReply,
+    DeleteDiscussion,
+    DeleteReply,
+    MarkDiscussion
 )
 
 urlpatterns = [
+    path('delete_discussion/', DeleteDiscussion.as_view(), name='delete_discussion'),
+    path('delete_reply/', DeleteReply.as_view(), name='delete_reply'),
     path('create_discussion/', CreateDiscussion.as_view(), name='create_discussion'), #ok
     path('like_discussion/', LikePost.as_view(), name='like_discussion'), #ok
     path('like_reply/', LikeReply.as_view(), name='like_reply'), #ok
@@ -23,4 +28,5 @@ urlpatterns = [
     path('get_all_discussions/', GetAllDiscussions.as_view(), name='get_all_discussions'), #ok
     path('get_discussion_replies/', GetDiscussionReplies.as_view(), name='get_discussion_replies'),
     path('get_discussion/', GetDiscussionById.as_view(), name='get_discussion'), #ok
+    path('mark_discussion/', MarkDiscussion.as_view(), name='mark_discussion'), #ok
 ]

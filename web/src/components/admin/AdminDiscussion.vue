@@ -26,6 +26,7 @@
             </v-card-item>
             <v-divider></v-divider>
             <v-card-text>
+                <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
                 <!-- 显示主讨论内容 -->
                 <div style="margin-left: -29px">
                     <v-md-preview :text="mainDiscussion.content"></v-md-preview>
@@ -60,20 +61,21 @@
                     </v-btn>
                 </v-col>
                 <v-col cols="auto">
-                    <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(mainDiscussion.id)">
+                    <v-btn rounded="0" variant="text" :color="'#574266'"
+                        @click="commentDiscussion(mainDiscussion.id, true, true)">
                         <v-icon left>mdi-comment-outline</v-icon>
                         评论
                     </v-btn>
                 </v-col>
                 <v-col v-if="mainDiscussion.publisherId == currentUserId" cols="auto">
                     <v-btn rounded="0" variant="text" :color="'#1867c0'"
-                        @click="editDiscussion(mainDiscussion.id, mainDiscussion.content)">
+                        @click="editDiscussion(mainDiscussion.id, mainDiscussion.content, true, false)">
                         <v-icon left>mdi-pencil</v-icon>
                         编辑
                     </v-btn>
                 </v-col>
                 <v-col cols="auto">
-                    <v-btn rounded="0" variant="text" color="red">
+                    <v-btn rounded="0" variant="text" color="red" @click="deleted(1, true)">
                         <v-icon left>mdi-trash-can-outline</v-icon>
                         删除讨论贴
                     </v-btn>
@@ -105,6 +107,7 @@
                 </v-card-item>
                 <v-divider></v-divider>
                 <v-card-text>
+                    <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
                     <!-- 显示跟随讨论内容 -->
                     <div style="margin-left: -29px">
                         <v-md-preview :text="discussion.content"></v-md-preview>
@@ -124,20 +127,21 @@
                         </v-btn>
                     </v-col>
                     <v-col cols="auto">
-                        <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(discussion.id)">
+                        <v-btn rounded="0" variant="text" :color="'#574266'"
+                            @click="commentDiscussion(discussion.id, false, true)">
                             <v-icon left>mdi-comment-outline</v-icon>
                             评论
                         </v-btn>
                     </v-col>
                     <v-col v-if="discussion.publisherId == currentUserId" cols="auto">
                         <v-btn rounded="0" variant="text" :color="'#1867c0'"
-                            @click="editDiscussion(discussion.id, discussion.content)">
+                            @click="editDiscussion(discussion.id, discussion.content, false, false)">
                             <v-icon left>mdi-pencil</v-icon>
                             编辑
                         </v-btn>
                     </v-col>
                     <v-col cols="auto">
-                        <v-btn rounded="0" variant="text" color="red">
+                        <v-btn rounded="0" variant="text" color="red" @click="deleted(discussion.id, false)">
                             <v-icon left>mdi-trash-can-outline</v-icon>
                             删除回复
                         </v-btn>
@@ -248,6 +252,38 @@ export default {
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
         ...mapState(["userId"]),
+        publisherId: 22373300,
+        async deleted(id, isMainDiscussion) {
+            console.log(id);
+            const requestData = {
+                user_id: this.$store.getters.getUserId,
+                discussion_id: (!isMainDiscussion) ? id : this.$route.params.id,
+            };
+            let url = '';
+            // 根据 isComment 和 isMaindiscussion 决定 url 的值
+            if (isMainDiscussion) {
+                url = 'http://127.0.0.1:8000/api/discussions/delete_discussion/';
+            } else {
+                url = 'http://127.0.0.1:8000/api/discussions/delete_reply/';
+            }
+            try {
+                const response = await axios.post(url, requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                        // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+                    }
+                });
+                console.log(response.status);
+                // 处理响应
+                if (response.status === 200) {
+                    console.log("to this");
+                    if (isMainDiscussion) this.$router.push(`/admin/forum`);
+                    else this.sendDataToBackend();
+                }
+            } catch (error) {
+                console.error('发送通知时出错:', error);
+            }
+        },
         async sendDataToBackend() {
             try {
                 // 获取 user_id 和 dis_id
@@ -269,6 +305,8 @@ export default {
                 if (response.data.success) {
                     this.mainDiscussion = response.data.discussion;
                     this.followDiscussion = response.data.replies;
+                    this.isSubscribed = response.data.discussion.isSubscribed;
+                    this.isMarked = response.data.discussion.isMarked;
                     // 处理后端响应
                     const title = `讨论 - ${this.mainDiscussion.title}`;
                     this.setAppTitle(title);
@@ -321,8 +359,34 @@ export default {
                 console.error('请求失败:', error);
             }
         },
-        toggleMark() {
+        async toggleMark() {
             this.isMarked = !this.isMarked;
+            try {
+                // 获取 user_id 和 dis_id
+                const userId = this.$store.getters.getUserId; // 假设你使用 Vuex 获取 user_id
+                const disId = this.$route.params.id; // 使用传入的 discussionId 作为 dis_id
+
+                // 打包请求数据
+                console.log("this");
+                const requestData = {
+                    user_id: userId,
+                    dis_id: disId
+                };
+                let url = 'http://127.0.0.1:8000/api/discussions/mark_discussion/';
+                // 发送 POST 请求到后端 API，并指定请求头为 application/json
+                const response = await axios.post(url, requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                    }
+                });
+
+                // 处理后端响应
+                console.log('请求成功:', response.data);
+
+            } catch (error) {
+                // 请求失败时处理错误
+                console.error('请求失败:', error);
+            }
         },
         async toggleLike(discussionId) {
             // 更新讨论的 isLiked 状态
@@ -374,19 +438,59 @@ export default {
                 console.error('请求失败:', error);
             }
         },
-        editDiscussion(id, content) {
+        editDiscussion(id, content, isMainDiscussion, isComment) {
             this.editDialog = true;
             this.text = content;
             this.emitId = id;
+            this.isMainDiscussion = isMainDiscussion;
+            this.isComment = isComment;
         },
-        commentDiscussion(id) {
+        commentDiscussion(id, isMainDiscussion, isComment) {
             this.commentDialog = true;
             this.text = '';
             this.emitId = id;
+            this.isMainDiscussion = isMainDiscussion;
+            this.isComment = isComment;
         },
-        emitEdit() {
+        async emitEdit() {
+            const requestData = {
+                user_id: this.$store.getters.getUserId,
+                discussion_id: (!this.isComment || this.isMainDiscussion) ? this.emitId : this.$route.params.id,
+                content: this.text,
+            };
+
+            let url = '';
+            console.log(requestData.discussion_id);
+            console.log(this.isComment);
+            // 根据 isComment 和 isMaindiscussion 决定 url 的值
+            if (this.isComment) {
+                url = 'http://127.0.0.1:8000/api/discussions/create_reply/';
+            } else if (this.isMainDiscussion) {
+                url = 'http://127.0.0.1:8000/api/discussions/edit_discussion/';
+            } else {
+                url = 'http://127.0.0.1:8000/api/discussions/edit_reply/';
+            }
+            console.log(url);
+            try {
+                // 发送 POST 请求
+                const response = await axios.post(url, requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                        // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+                    }
+                });
+                console.log(response.status);
+                // 处理响应
+                if (response.status === 200) {
+                    console.log("df");
+                    this.sendDataToBackend();
+                }
+            } catch (error) {
+                console.error('发送通知时出错:', error);
+            }
             console.log(this.emitId);
             console.log(this.text);
+
             this.commentDialog = false;
             this.editDialog = false;
         }

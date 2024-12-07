@@ -25,6 +25,7 @@
       </v-card-item>
       <v-divider></v-divider>
       <v-card-text>
+        <v-divider style="padding-top: 10px; padding-bottom: 0px"></v-divider>
         <!-- 显示主讨论内容 -->
         <div style="margin-left: -29px">
           <v-md-preview :text="mainDiscussion.content"></v-md-preview>
@@ -66,7 +67,7 @@
           </v-btn>
         </v-col>
         <v-col v-if="mainDiscussion.publisherId == currentUserId" cols="auto">
-          <v-btn rounded="0" variant="text" :color="'red'">
+          <v-btn rounded="0" variant="text" :color="'red'" @click="deleted(1, true)">
             <v-icon left>mdi-trash-can-outline</v-icon>
             删除
           </v-btn>
@@ -130,7 +131,7 @@
             </v-btn>
           </v-col>
           <v-col v-if="discussion.publisherId == currentUserId" cols="auto">
-            <v-btn rounded="0" variant="text" :color="'red'">
+            <v-btn rounded="0" variant="text" :color="'red'" @click="deleted(discussion.id, false)">
               <v-icon left>mdi-trash-can-outline</v-icon>
               删除
             </v-btn>
@@ -247,6 +248,7 @@ export default {
           this.mainDiscussion = response.data.discussion;
           this.followDiscussion = response.data.replies;
           this.isSubscribed = response.data.discussion.isSubscribed;
+          this.isMarked = response.data.discussion.isMarked;
           const title = `讨论 - ${this.mainDiscussion.title}`;
           this.setAppTitle(title);
           this.setPageTitle(title);
@@ -363,6 +365,36 @@ export default {
       this.isMainDiscussion = isMainDiscussion;
       this.isComment = isComment;
     },
+    async deleted(id, isMainDiscussion) {
+      console.log(id);
+      const requestData = {
+        user_id: this.$store.getters.getUserId,
+        discussion_id: (!isMainDiscussion) ? id : this.$route.params.id,
+      };
+      let url = '';
+      // 根据 isComment 和 isMaindiscussion 决定 url 的值
+      if (isMainDiscussion) {
+        url = 'http://127.0.0.1:8000/api/discussions/delete_discussion/';
+      } else {
+        url = 'http://127.0.0.1:8000/api/discussions/delete_reply/';
+      }
+      try {
+        const response = await axios.post(url, requestData, {
+          headers: {
+            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+            // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+          }
+        });
+        console.log(response.status);
+        // 处理响应
+        if (response.status === 200) {
+          if (isMainDiscussion) this.$router.push(`/forum`);
+          else this.sendDataToBackend();
+        }
+      } catch (error) {
+        console.error('发送通知时出错:', error);
+      }
+    },
     async emitEdit() {
       const requestData = {
         user_id: this.$store.getters.getUserId,
@@ -371,7 +403,6 @@ export default {
       };
 
       let url = '';
-      console.log(this.isMainDiscussion);
       // 根据 isComment 和 isMaindiscussion 决定 url 的值
       if (this.isComment) {
         url = 'http://127.0.0.1:8000/api/discussions/create_reply/';
@@ -380,7 +411,6 @@ export default {
       } else {
         url = 'http://127.0.0.1:8000/api/discussions/edit_reply/';
       }
-      console.log(url);
       try {
         // 发送 POST 请求
         const response = await axios.post(url, requestData, {

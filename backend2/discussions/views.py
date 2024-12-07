@@ -12,7 +12,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateDiscussion(APIView):
     def post(self, request):
@@ -58,7 +57,6 @@ class LikePost(APIView):
                 discussion.likes.remove(user)  # 取消点赞
                 liked = False
             else:
-                print("ok")
                 discussion.likes.add(user)  # 点赞
                 liked = True
 
@@ -73,7 +71,27 @@ class LikePost(APIView):
         except Discussion.DoesNotExist:
             return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
 
+class MarkDiscussion(APIView):
+    def post(self, request):
+        data = decode_request(request)
+        user_id = data.get('user_id')
+        user = User.objects.get(student_id=user_id)
+        discussion_id = data.get('dis_id')
+        try:
+            discussion = Discussion.objects.get(id=discussion_id)
+            
+            discussion.isMarked = not discussion.isMarked
+            discussion.save()
+            return Response({"success": True},status=HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'User not found'
+            }, status=HTTP_404_NOT_FOUND)
 
+        except Discussion.DoesNotExist:
+            return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
+        
 class LikeReply(APIView):
     def post(self, request):
         data = decode_request(request)
@@ -135,7 +153,7 @@ class CreateReply(APIView):
         user = User.objects.get(student_id=user_id)
         discussion_id = data.get("discussion_id")
         content = data.get("content")
-
+        
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
 
@@ -287,6 +305,7 @@ class GetAllDiscussions(APIView):
                 "publishTime": discussion.publish_time,
                 "lastUpdated": discussion.last_updated,
                 "tag": discussion.tag,
+                "isMarked": discussion.isMarked,
                 "summary": discussion.content[:100]  # 摘要显示内容前100字符
             })
 
@@ -337,7 +356,6 @@ class GetDiscussionReplies(APIView):
         except Discussion.DoesNotExist:
             return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
 
-
 @method_decorator(csrf_exempt, name='dispatch')
 class GetDiscussionById(APIView):
     def post(self, request):
@@ -372,6 +390,7 @@ class GetDiscussionById(APIView):
                 "publishTime": discussion.publish_time,
                 "lastUpdated": discussion.last_updated,
                 "tag": discussion.tag,
+                "isMarked": discussion.isMarked,
                 "content": discussion.content,
                 "isLiked": discussion.likes.filter(student_id=user_id).exists(),  # 当前用户是否点赞
                 "isSubscribed": discussion.subscribers.filter(student_id=user_id).exists(),  # 当前用户是否已订阅
@@ -388,22 +407,18 @@ class GetDiscussionById(APIView):
 
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
-
-
+@method_decorator(csrf_exempt, name='dispatch')
 class DeleteDiscussion(APIView):
     """
     删除指定 ID 的讨论帖，仅允许管理员或讨论帖的发布者删除。
     """
-
     def post(self, request):
         try:
             data = decode_request(request)
             user_id = data.get("user_id")
             discussion_id = data.get("discussion_id")
-
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             discussion = Discussion.objects.get(id=discussion_id)
-
             # 权限检查：必须是管理员或讨论发布者
             if user.user_role != 1 and discussion.publisher != user:
                 return Response({
@@ -427,7 +442,7 @@ class DeleteDiscussion(APIView):
         except KeyError as e:
             return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class DeleteReply(APIView):
     """
     删除指定 ID 的回复，仅允许管理员或回复的发布者删除。
@@ -437,9 +452,8 @@ class DeleteReply(APIView):
         try:
             data = decode_request(request)
             user_id = data.get("user_id")
-            reply_id = data.get("reply_id")
-
-            user = User.objects.get(id=user_id)
+            reply_id = data.get("discussion_id")
+            user = User.objects.get(student_id=user_id)
             reply = Reply.objects.get(id=reply_id)
 
             # 权限检查：必须是管理员或回复发布者

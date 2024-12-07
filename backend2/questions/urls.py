@@ -21,7 +21,7 @@ urlpatterns = [
     path('get_question_comments', views.GetQuestionComments.as_view(), name='get_question_comments'),
 
     # 获取所有 QuestionBank
-    path('get_all_question_banks', views.GetAllQuestionBanks.as_view(), name='get_all_question_banks'),
+    path('get_all_question_banks/', views.GetAllQuestionBanks.as_view(), name='get_all_question_banks'),
 
     # 获取所有 Question
     path('get_all_questions', views.GetAllQuestions.as_view(), name='get_all_questions'),
@@ -30,10 +30,10 @@ urlpatterns = [
     path('get_questions_by_subject', views.GetQuestionsBySubject.as_view(), name='get_questions_by_subject'),
 
     # 获取某一科目的所有 QuestionBank
-    path('get_question_banks_by_subject', views.GetQuestionBanksBySubject.as_view(), name='get_question_banks_by_subject'),
+    path('get_question_banks_by_subject/', views.GetQuestionBanksBySubject.as_view(), name='get_question_banks_by_subject'),
 
     # 获取某一 QuestionBank 内的所有 Question
-    path('get_questions_by_questionbank', views.GetQuestionsByQuestionBank.as_view(), name='get_questions_by_questionbank'),
+    path('get_questions_by_questionbank/', views.GetQuestionsByQuestionBank.as_view(), name='get_questions_by_questionbank'),
 
     # 获取某一特定 id 的 Question 详细信息
     path('get_question_by_id', views.GetQuestionById.as_view(), name='get_question_by_id'),

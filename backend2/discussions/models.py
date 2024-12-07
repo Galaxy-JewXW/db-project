@@ -20,6 +20,7 @@ class Discussion(models.Model):
     publisher = models.ForeignKey(User, on_delete=models.CASCADE, related_name="published_discussions")  # 发帖者
     avatar = models.URLField(blank=True, null=True)  # 发帖者头像
     publish_time = models.DateTimeField(default=now)  # 发布时间
+    isMarked = models.BooleanField(default=False)  
     last_updated = models.DateTimeField(auto_now=True)  # 最后更新时间
     tag = models.CharField(max_length=100, choices=SUBJECT_CHOICES, blank=True, null=True)  # 标签，学科相关
     subscribers = models.ManyToManyField(User, related_name="subscribed_discussions", blank=True)  # 订阅用户

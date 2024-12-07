@@ -102,7 +102,7 @@ export default {
     ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
 
     returnForum() {
-      this.$router.push(`/admin/forum`);
+      this.$router.push(`/forum`);
     },
 
     // 发布功能

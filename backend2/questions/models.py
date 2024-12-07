@@ -12,6 +12,7 @@ class QuestionBank(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)  # 主键
+    name = models.CharField(max_length=100, default="")
     subject = models.CharField(max_length=100, choices=SUBJECT_CHOICES)  # 所属科目，限制为可选科目
     estimated_time = models.IntegerField()  # 预计用时（分钟）
     created_at = models.DateTimeField(auto_now_add=True)  # 创建日期
@@ -53,6 +54,7 @@ class Question(models.Model):
     added_at = models.DateField()  # 添加时间
     source = models.CharField(max_length=100, blank=True, null=True)  # 题目来源
     tags = models.JSONField()  # JSON 格式
+    
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)  # 难度
     answer = models.TextField(blank=True, null=True)  # 答案内容
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="added_questions")  # 创建者

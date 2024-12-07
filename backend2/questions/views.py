@@ -109,7 +109,7 @@ class CreateQuestionBank(APIView):
         try:
             user_id = request.data['user_id']
             data = request.data['data']
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
 
             # 创建 QuestionBank
             question_bank = QuestionBank.objects.create(
@@ -270,20 +270,19 @@ class GetAllQuestionBanks(APIView):
         # 获取所有题库
         try:
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
-
+            user = User.objects.get(student_id=user_id)
             question_banks = QuestionBank.objects.all()
-
-            # 构造返回的数据
             question_banks_data = []
             for qb in question_banks:
                 question_banks_data.append({
                     "id": qb.id,
+                    "name": qb.name,
                     "subject": qb.subject,
-                    "estimated_time": qb.estimated_time,
-                    "created_at": qb.created_at,
-                    "creator": qb.creator.name,
+                    "estimatedTime": qb.estimated_time,
+                    "createdAt": qb.created_at,
+                    "createdBy": qb.creator.name,
                     "question_count": qb.question_count,
+                    "description": qb.description,
                 })
 
             return Response({
@@ -304,7 +303,7 @@ class GetAllQuestions(APIView):
         try:
             # 获取所有题目
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             questions = Question.objects.all()
 
             # 构造返回的数据
@@ -428,7 +427,7 @@ class GetQuestionsByQuestionBank(APIView):
         try:
             # 获取指定题库
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             question_bank_id = request.data['question_bank_id']
             question_bank = QuestionBank.objects.get(id=question_bank_id)
 
@@ -438,27 +437,31 @@ class GetQuestionsByQuestionBank(APIView):
             # 构造返回的数据
             # 初始化返回数据
             questions_data = []
+            question_ids_list = []
+            
+            questions = question_bank.questions.filter(type=question_type)
+
+            for question in questions:
+                user_status = question.get_user_status(user)  # 调用方法获取 user_status
+
+                if user_status != '未做过':
+                    question_ids_list.append(question.id)
 
             # 遍历题目类型并按类型获取题目 ID
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = question_bank.questions.filter(type=question_type).order_by("id")
 
-                # 如果该类型的题目存在，添加到结果
                 if questions.exists():
                     questions_data.append({
                         "type": type_label,
-                        "questions": [
-                            {
-                                "id": question.id,
-                                "user_status": question.get_user_status(user)  # 用户是否已作答
-                            }
-                            for question in questions
-                        ]
+                        "ids": [question.id for question in questions],
+                        "currentPage": 1
                     })
 
             return Response({
                 "success": True,
-                "questions": questions_data
+                "questions": questions_data,
+                "finish_question": question_ids_list
             }, status=HTTP_200_OK)
 
         except User.DoesNotExist:
