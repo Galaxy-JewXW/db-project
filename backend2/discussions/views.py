@@ -239,7 +239,10 @@ class EditReply(APIView):
         user = User.objects.get(student_id=user_id)
         reply_id = data.get("discussion_id")
         content = data.get("content")
-
+        print(content)
+        print(user)
+        print(reply_id)
+        print(user_id)
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
 
@@ -377,6 +380,7 @@ class GetDiscussionById(APIView):
                     "avatar": reply.avatar,
                     "publishTime": reply.publish_time,
                     "lastUpdated": reply.last_updated,
+                    "like_count": discussion.likes.count(),
                     "content": reply.content,
                     "isLiked": reply.likes.filter(student_id=user_id).exists()  # 当前用户是否点赞
                 })
@@ -392,6 +396,8 @@ class GetDiscussionById(APIView):
                 "tag": discussion.tag,
                 "isMarked": discussion.isMarked,
                 "content": discussion.content,
+                "like_count": discussion.likes.count(),
+                "sub_count": discussion.subscribers.count(),
                 "isLiked": discussion.likes.filter(student_id=user_id).exists(),  # 当前用户是否点赞
                 "isSubscribed": discussion.subscribers.filter(student_id=user_id).exists(),  # 当前用户是否已订阅
             }

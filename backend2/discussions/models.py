@@ -30,7 +30,7 @@ class Discussion(models.Model):
         """通知订阅者更新"""
         for subscriber in self.subscribers.all():
             Message.objects.create(
-                sender=None,  # 系统消息
+                sender=User.objects.get(id=1),  # 系统消息
                 receiver=subscriber,
                 content=f"您关注的帖子《{self.title}》更新了: {update_content[:50]}",
                 is_read=False,
