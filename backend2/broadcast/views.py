@@ -16,10 +16,12 @@ class PublishBroadcast(APIView):
         try:
             data = decode_request(request)
             user_id = data.get('user_id')
-            user = User.objects.get(id=user_id)
-            sender = data.get("sender")  # 默认发件人名字为"系统通知"
+            user = User.objects.get(student_id=user_id)
+            # sender = data.get("sender")  # 默认发件人名字为"系统通知"
+            sender = user.name
             title = data.get("title")
             content = data.get("content")
+            print(user_id)
 
             if user.user_role != 1:
                 return Response({
@@ -27,7 +29,7 @@ class PublishBroadcast(APIView):
                     "error": "权限不足",
                     "message": "权限不足"
                 }, status=HTTP_400_BAD_REQUEST)
-
+            print(user.user_role)
             # 创建新的广播消息
             broadcast = Broadcast.objects.create(sender=sender, title=title, content=content)
 
@@ -64,11 +66,11 @@ class EditBroadcast(APIView):
         try:
             data = decode_request(request)
             user_id = data.get('user_id')
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             broadcast_id = data.get("broadcast_id")
             new_title = data.get("title")
             new_content = data.get("content")
-
+            print(new_content)
             if user.user_role != 1:
                 return Response({
                     "success": False,
@@ -124,7 +126,7 @@ class DeleteBroadcast(APIView):
         try:
             data = decode_request(request)
             user_id = data.get('user_id')
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             broadcast_id = data.get("broadcast_id")
 
             if user.user_role != 1:
@@ -170,12 +172,12 @@ class GetAllBroadcasts(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get('user_id')
-
+        print(user_id)
         try:
             # 获取用户信息
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
 
-            if user.user_role != 1:
+            if user.user_role < 1:
                 return Response({
                     "success": False,
                     "error": "权限不足",
@@ -190,9 +192,9 @@ class GetAllBroadcasts(APIView):
             for broadcast in broadcasts:
                 broadcasts_data.append({
                     "id": broadcast.id,
-                    "sender": broadcast.sender,
+                    "publisher": broadcast.sender,
                     "sent_at": broadcast.sent_at,
-                    "last_updated": broadcast.last_updated,
+                    "releaseTime": broadcast.last_updated,
                     "title": broadcast.title,
                     "content": broadcast.content,
                 })

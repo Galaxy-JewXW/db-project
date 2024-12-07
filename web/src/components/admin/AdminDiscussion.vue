@@ -291,13 +291,34 @@ export default {
         returnForum() {
             this.$router.push(`/admin/forum`);
         },
-        toggleSubscription() {
+        async toggleSubscription() {
             this.isSubscribed = !this.isSubscribed;
+            try {
+                const userId = this.$store.getters.getUserId; // 假设你使用 Vuex 获取 user_id
+                const disId = this.$route.params.id; // 使用传入的 discussionId 作为 dis_id
+
+                const requestData = {
+                    user_id: userId,
+                    dis_id: disId
+                };
+                let url = 'http://127.0.0.1:8000/api/discussions/subscribe_discussion/';
+                // 发送 POST 请求到后端 API，并指定请求头为 application/json
+                const response = await axios.post(url, requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                    }
+                });
+                console.log('请求成功:', response.data);
+
+            } catch (error) {
+                console.error('请求失败:', error);
+            }
         },
         toggleMark() {
             this.isMarked = !this.isMarked;
         },
-        toggleLike(discussionId) {
+        async toggleLike(discussionId) {
+            // 更新讨论的 isLiked 状态
             if (discussionId === "main") {
                 this.mainDiscussion.isLiked = !this.mainDiscussion.isLiked;
             } else {
@@ -307,10 +328,43 @@ export default {
                 );
                 if (discussion) {
                     discussion.isLiked = !discussion.isLiked;
-                    return;
+                } else {
+                    // 如果ID未找到，抛出警告
+                    console.warn(`未找到对应的讨论或评论，ID: ${discussionId}`);
+                    return;  // 退出方法，防止继续执行后面的请求
                 }
-                // 如果ID未找到，抛出错误或忽略
-                console.warn(`未找到对应的讨论或评论，ID: ${discussionId}`);
+            }
+
+            try {
+                // 获取 user_id 和 dis_id
+                const userId = this.$store.getters.getUserId; // 假设你使用 Vuex 获取 user_id
+                const disId = this.$route.params.id; // 使用传入的 discussionId 作为 dis_id
+
+                // 打包请求数据
+                const requestData = {
+                    user_id: userId,
+                    dis_id: discussionId == "main" ? disId : discussionId
+                };
+                let url = '';
+                // 根据discussionId决定URL
+                if (discussionId === "main") {
+                    url = 'http://127.0.0.1:8000/api/discussions/like_discussion/';
+                } else {
+                    url = 'http://127.0.0.1:8000/api/discussions/like_reply/';
+                }
+                // 发送 POST 请求到后端 API，并指定请求头为 application/json
+                const response = await axios.post(url, requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                    }
+                });
+
+                // 处理后端响应
+                console.log('请求成功:', response.data);
+
+            } catch (error) {
+                // 请求失败时处理错误
+                console.error('请求失败:', error);
             }
         },
         editDiscussion(id, content) {

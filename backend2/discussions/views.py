@@ -78,8 +78,6 @@ class LikeReply(APIView):
         user_id = data.get('user_id')
         user = User.objects.get(student_id=user_id)
         reply_id = data.get('dis_id')
-        print(reply_id)
-        print(reply_id)
         try:
             discussion = Reply.objects.get(id=reply_id)
             if user in discussion.likes.all():
@@ -132,10 +130,10 @@ class CreateReply(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get("user_id")
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(student_id=user_id)
         discussion_id = data.get("discussion_id")
         content = data.get("content")
-
+        
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
 
@@ -178,10 +176,9 @@ class EditDiscussion(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get("user_id")
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(student_id=user_id)
         discussion_id = data.get("discussion_id")
         content = data.get("content")
-
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
 
@@ -219,8 +216,8 @@ class EditReply(APIView):
     def post(self, request):
         data = decode_request(request)
         user_id = data.get("user_id")
-        user = User.objects.get(id=user_id)
-        reply_id = data.get("reply_id")
+        user = User.objects.get(student_id=user_id)
+        reply_id = data.get("discussion_id")
         content = data.get("content")
 
         if not content:
@@ -355,6 +352,7 @@ class GetDiscussionById(APIView):
                 replies_data.append({
                     "id": reply.id,
                     "publisher": reply.publisher.name,
+                    "publisherId": reply.publisher.student_id,
                     "avatar": reply.avatar,
                     "publishTime": reply.publish_time,
                     "lastUpdated": reply.last_updated,
@@ -366,6 +364,7 @@ class GetDiscussionById(APIView):
                 "id": discussion.id,
                 "title": discussion.title,
                 "publisher": discussion.publisher.name,
+                "publisherId": discussion.publisher.student_id,
                 "avatar": discussion.avatar,
                 "publishTime": discussion.publish_time,
                 "lastUpdated": discussion.last_updated,

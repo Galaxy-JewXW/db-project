@@ -49,13 +49,14 @@
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(mainDiscussion.id)">
+          <v-btn rounded="0" variant="text" :color="'#574266'"
+            @click="commentDiscussion(mainDiscussion.id, true, true)">
             <v-icon left>mdi-comment-outline</v-icon>
             评论
           </v-btn>
         </v-col>
         <v-col v-if="mainDiscussion.publisherId == currentUserId" cols="auto"
-          @click="editDiscussion(mainDiscussion.id, mainDiscussion.content)">
+          @click="editDiscussion(mainDiscussion.id, mainDiscussion.content, true, false)">
           <v-btn rounded="0" variant="text" :color="'#1867c0'">
             <v-icon left>mdi-pencil</v-icon>
             编辑
@@ -109,14 +110,14 @@
             </v-btn>
           </v-col>
           <v-col cols="auto">
-            <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(discussion.id)">
+            <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(discussion.id, false, true)">
               <v-icon left>mdi-comment-outline</v-icon>
               评论
             </v-btn>
           </v-col>
           <v-col v-if="discussion.publisherId == currentUserId" cols="auto">
             <v-btn rounded="0" variant="text" :color="'#1867c0'"
-              @click="editDiscussion(discussion.id, discussion.content)">
+              @click="editDiscussion(discussion.id, discussion.content, false, false)">
               <v-icon left>mdi-pencil</v-icon>
               编辑
             </v-btn>
@@ -173,6 +174,8 @@ export default {
       currentUserId: null,
       editDialog: false,
       commentDialog: false,
+      isMainDiscussion: false,
+      isComment: false,
       emitId: null,
       text: '',
       mainDiscussion: {
@@ -349,19 +352,58 @@ export default {
         console.error('请求失败:', error);
       }
     },
-    editDiscussion(id, content) {
+    editDiscussion(id, content, isMainDiscussion, isComment) {
       this.editDialog = true;
       this.text = content;
       this.emitId = id;
+      this.isMainDiscussion = isMainDiscussion;
+      this.isComment = isComment;
     },
-    commentDiscussion(id) {
+    commentDiscussion(id, isMainDiscussion, isComment) {
       this.commentDialog = true;
       this.text = '';
       this.emitId = id;
+      this.isMainDiscussion = isMainDiscussion;
+      this.isComment = isComment;
     },
-    emitEdit() {
+    async emitEdit() {
+      const requestData = {
+        user_id: this.$store.getters.getUserId,
+        discussion_id: (!this.isComment||this.isMainDiscussion)?this.emitId:this.$route.params.id,
+        content: this.text,
+      };
+
+      let url = '';
+      console.log(this.isMainDiscussion);
+      // 根据 isComment 和 isMaindiscussion 决定 url 的值
+      if (this.isComment) {
+        url = 'http://127.0.0.1:8000/api/discussions/create_reply/';
+      } else if (this.isMainDiscussion) {
+        url = 'http://127.0.0.1:8000/api/discussions/edit_discussion/';
+      } else {
+        url = 'http://127.0.0.1:8000/api/discussions/edit_reply/';
+      }
+      console.log(url);
+      try {
+        // 发送 POST 请求
+        const response = await axios.post(url, requestData, {
+          headers: {
+            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+            // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+          }
+        });
+        console.log(response.status);
+        // 处理响应
+        if (response.status === 200) {
+          console.log("df");
+          this.sendDataToBackend();
+        }
+      } catch (error) {
+        console.error('发送通知时出错:', error);
+      }
       console.log(this.emitId);
       console.log(this.text);
+
       this.commentDialog = false;
       this.editDialog = false;
     }

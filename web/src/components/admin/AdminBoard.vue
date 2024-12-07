@@ -124,7 +124,7 @@
 
 <script>
 import { mapMutations } from 'vuex';
-
+import axios from 'axios';
 export default {
     name: 'AdminBoard',
     data() {
@@ -180,13 +180,12 @@ export default {
         const title = '主页';
         this.setAppTitle(title);
         this.setPageTitle(title);
-
+        this.fetchData();
         // 按发布时间对 notices 进行排序，越新的排在最前面
         this.notices.sort((a, b) => new Date(b.releaseTime) - new Date(a.releaseTime));
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
-
         // 格式化日期
         formatDate(dateString) {
             const options = {
@@ -219,8 +218,30 @@ export default {
             this.toDeleteNotice = notice;
             this.deleteDialogOpen = true;
         },
-        deleteNotice() {
+        async deleteNotice() {
             this.deleteDialogOpen = false;
+            const requestData = {
+                user_id: this.$store.getters.getUserId,
+                broadcast_id: this.toDeleteNotice.id,
+            };
+            try {
+                // 发送 POST 请求
+                const response = await axios.post('http://127.0.0.1:8000/api/broadcast/delete_broadcast/', requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                        // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+                    }
+                });
+
+                // 处理响应
+                if (response.status === 200) {
+                    console.log("df");
+                    // 假设后端返回了创建的通知信息
+                    this.fetchData();
+                }
+            } catch (error) {
+                console.error('发送通知时出错:', error);
+            }
             this.snackbarMessage = `已删除公告${this.toDeleteNotice.id} "${this.toDeleteNotice.title}" `;
             this.snackbarColor = 'success';
             this.snackbarOpen = true;
@@ -243,9 +264,51 @@ export default {
                 this.submitDialogOpen = false;
             }
         },
-        submitNotice() {
+        async fetchData() {
+            const requestData = {
+                user_id: this.$store.getters.getUserId,
+            };
+            try {
+                // 发送 POST 请求
+                const response = await axios.post('http://127.0.0.1:8000/api/broadcast/get_all_broadcasts/', requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                        // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+                    }
+                });
+                this.notices = response.data.broadcasts;
+            } catch (error) {
+                console.error('发送通知时出错:', error);
+            }
+        },
+        async submitNotice() {
             // 执行提交逻辑
             console.log(this.currentNotice);
+            const requestData = {
+                user_id: this.$store.getters.getUserId,
+                broadcast_id: this.currentNotice.id,
+                new_title: this.currentNotice.title,
+                publisher: this.currentNoticepublisher,
+                content: this.currentNotice.content,
+            };
+            try {
+                // 发送 POST 请求
+                const response = await axios.post('http://127.0.0.1:8000/api/broadcast/edit_broadcast/', requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                        // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+                    }
+                });
+
+                // 处理响应
+                if (response.status === 200) {
+                    console.log("df");
+                    // 假设后端返回了创建的通知信息
+                    this.fetchData();
+                }
+            } catch (error) {
+                console.error('发送通知时出错:', error);
+            }
             this.snackbarMessage = '修改成功';
             this.snackbarColor = 'success';
             this.snackbarOpen = true;

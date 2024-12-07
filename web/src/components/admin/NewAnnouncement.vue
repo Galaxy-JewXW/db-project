@@ -103,6 +103,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 import { mapMutations } from "vuex"; // 引入 mapMutations
 
 export default {
@@ -159,6 +160,26 @@ export default {
     async submitPost() {
       console.log("标题:", this.title);
       console.log("内容:", this.text);
+      const requestData = {
+        user_id: this.$store.getters.getUserId,
+        title: this.title,
+        content: this.text
+      };
+      try {
+        // 发送 POST 请求
+        const response = await axios.post('http://127.0.0.1:8000/api/broadcast/publish_broadcast/', requestData, {
+          headers: {
+            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+            // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
+          }
+        });
+
+        // 处理响应
+        if (response.status === 200) {
+        }
+      } catch (error) {
+        console.error('发送通知时出错:', error);
+      }
 
       // 显示成功的 Snackbar
       this.snackbarMessage = "提交成功";
@@ -188,6 +209,7 @@ export default {
 
     // 返回首页
     returnBack() {
+
       this.$router.push(`/admin/home`);
     },
   },
