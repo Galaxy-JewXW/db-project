@@ -171,7 +171,7 @@
 
 <script>
 import axios from 'axios';
-import { mapMutations } from "vuex";
+import { mapMutations, mapActions } from "vuex";
 import { mapState } from "vuex/dist/vuex.cjs.js";
 import store from "@/store";
 export default {
@@ -229,6 +229,7 @@ export default {
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
     ...mapState(["userId"]),
+    ...mapActions('snackbar', ['showSnackbar']),
     async sendDataToBackend() {
       try {
         // 获取 user_id 和 dis_id
@@ -445,12 +446,14 @@ export default {
         console.log(response.status);
         // 处理响应
         if (response.status === 200) {
+          console.log(11);
           this.showSnackbar({
             message: message + "成功",
             color: 'success',
             timeout: 2000
           });
           console.log("df");
+
           this.sendDataToBackend();
         }
       } catch (error) {

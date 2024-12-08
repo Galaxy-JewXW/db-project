@@ -344,24 +344,55 @@ export default {
     },
 
     // 上传头像
-    uploadAvatar() {
-      // 实现上传头像的逻辑
+    async uploadAvatar() {
+      // 创建文件输入框
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      fileInput.accept = "image/*";
+      fileInput.accept = "image/*"; // 只允许选择图片文件
+
+      // 文件选择后执行的回调
       fileInput.onchange = (e) => {
-        const file = e.target.files[0];
+        const file = e.target.files[0]; // 获取用户选择的文件
         if (file) {
+          // 创建一个 FileReader 来读取文件内容
           const reader = new FileReader();
-          reader.onload = (event) => {
-            this.avatar = event.target.result;
+          reader.onload = async (event) => {
+            // 读取文件成功，设置头像
+            this.avatar = event.target.result; // 这里你可以根据需要设置头像的预览
             console.log("新头像已上传");
+
+            // 创建 FormData 对象，将文件和标题添加到 FormData
+            const formData = new FormData();
+            formData.append("avatar", file);
+            formData.append("title", file.name); // 可以将文件名作为标题
+            formData.append("userId",this.$store.getters.getUserId);
+            // 发送 POST 请求到后端
+            try {
+              const response = await fetch("http://127.0.0.1:8000/api/images/upload-avatar/", {
+                method: "POST",
+                body: formData, // 将 FormData 作为请求体
+              });
+
+              const result = await response.json();
+              if (response.ok) {
+                // 显示图床 URL
+                console.log("头像上传成功！图床链接：", result.url);
+              } else {
+                // 显示错误消息
+                console.error("上传失败：", result.message || "发生了错误");
+              }
+            } catch (error) {
+              console.error("上传时发生错误：", error.message);
+            }
           };
+
+          // 读取文件为 DataURL（可以用于预览）
           reader.readAsDataURL(file);
         }
       };
+      // 点击输入框，选择文件
       fileInput.click();
-    },
+    }
   },
 };
 </script>

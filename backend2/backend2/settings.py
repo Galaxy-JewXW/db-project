@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import json
 import os
+
 from pathlib import Path
 current_dir = os.path.dirname(__file__)
 env_path = os.path.join(current_dir, 'env.json')
@@ -19,7 +20,8 @@ with open(env_path) as env:
     ENV = json.load(env)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+MEDIA_URL = '/media/'  # 访问媒体文件的URL
+MEDIA_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'media')  # 使用当前文件目录来设置media路径
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/

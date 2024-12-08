@@ -519,6 +519,8 @@ export default {
                         color: 'success',
                         timeout: 2000
                     });
+                    this.commentDialog = false;
+                    this.editDialog = false;
                     this.sendDataToBackend();
                 }
             } catch (error) {
