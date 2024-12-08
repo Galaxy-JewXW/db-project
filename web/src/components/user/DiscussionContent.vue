@@ -4,20 +4,20 @@
     <v-card class="mx-auto main-card" max-width="85%">
       <!-- 主讨论部分 -->
       <v-card-item :prepend-avatar="mainDiscussion.avatar">
-        <v-card-item-title class="text-h6 font-weight-regular">
+        <template v-slot:title class="text-h6 font-weight-regular">
           <v-row align="center" no-gutters>
             <v-col cols="auto">
               {{ mainDiscussion.publisher }}
             </v-col>
           </v-row>
-        </v-card-item-title>
-        <v-card-item-subtitle>
+        </template>
+        <template v-slot:subtitle>
           <v-row align="center" no-gutters>
             <v-col cols="auto" class="text-body-1 text-disabled">
               {{ formatDate(mainDiscussion.publishTime) }}
             </v-col>
           </v-row>
-        </v-card-item-subtitle>
+        </template>
         <template v-slot:append>
           <v-icon v-if="mainDiscussion.isLiked" color="#ee3f4d">mdi-thumb-up</v-icon>
           <v-icon v-if="isSubscribed" color="#fbc02d">mdi-bell</v-icon>
@@ -78,20 +78,20 @@
     <div v-for="discussion in followDiscussion" :key="discussion.id">
       <v-card class="mx-auto follow-card" max-width="85%" style="margin-bottom: 20px;">
         <v-card-item :prepend-avatar="discussion.avatar">
-          <v-card-item-title class="text-h6 font-weight-regular">
+          <template v-slot:title class="text-h6 font-weight-regular">
             <v-row align="center" no-gutters>
               <v-col cols="auto">
                 {{ discussion.publisher }}
               </v-col>
             </v-row>
-          </v-card-item-title>
-          <v-card-item-subtitle>
+          </template>
+          <template v-slot:subtitle>
             <v-row align="center" no-gutters>
               <v-col cols="auto" class="text-body-1 text-disabled">
                 {{ formatDate(discussion.publishTime) }}
               </v-col>
             </v-row>
-          </v-card-item-subtitle>
+          </template>
           <template v-slot:append>
             <v-icon v-if="discussion.isLiked" color="#ee3f4d">mdi-thumb-up</v-icon>
           </template>

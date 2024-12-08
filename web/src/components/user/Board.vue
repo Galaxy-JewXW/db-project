@@ -430,8 +430,8 @@ export default {
       return content.substring(0, maxLength) + "...";
     },
     calculatePercentage(item) {
-      if (item.totalQuestions === 0) return 0;
-      return ((item.doneQuestions / item.totalQuestions) * 100).toFixed(2);
+      const ratio = item.totalQuestions === 0 ? 0 : (item.doneQuestions / item.totalQuestions) * 100;
+      return ratio.toFixed(2);
     },
     goToExercise(exerciseId) {
       console.log(`Navigate to exercise ID: ${exerciseId}`);

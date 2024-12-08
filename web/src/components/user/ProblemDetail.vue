@@ -52,8 +52,7 @@
 
             <!-- 按钮区域，放置在同一行 -->
             <v-row class="ma-2">
-              <v-col cols="6">
-                <v-btn
+              <v-btn
                   prepend-icon="mdi-lightbulb"
                   color="primary"
                   @click="viewAnswer"
@@ -61,17 +60,6 @@
                 >
                   查看答案
                 </v-btn>
-              </v-col>
-              <v-col cols="6">
-                <v-btn
-                  prepend-icon="mdi-comment-text"
-                  color="secondary"
-                  @click="viewDiscussion"
-                  block
-                >
-                  相关讨论
-                </v-btn>
-              </v-col>
             </v-row>
           </v-card-text>
         </v-card>
@@ -260,10 +248,6 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
 
       this.answer = mockAnswerData;
       this.dialog = true;
-    },
-
-    viewDiscussion() {
-      console.log("相关讨论");
     },
 
     // 处理用户点击“做对了”或“做错了”
