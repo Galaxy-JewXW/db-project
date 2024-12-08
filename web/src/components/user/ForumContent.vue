@@ -49,43 +49,42 @@
       <template v-if="filteredDiscussions.length > 0">
         <!-- 讨论贴列表 -->
         <v-list dense density="compact">
-          <v-list-item-group v-for="(discussion, index) in filteredDiscussions" :key="discussion.id">
+          <template v-for="(discussion, index) in filteredDiscussions" :key="discussion.id">
             <v-list-item :prepend-avatar="discussion.avatar" @click="openDiscussion(discussion)">
-              <v-list-item-content>
-                <v-list-item-title class="text-subtitle-1 font-weight-bold">
-                  <v-row align="center">
-                    <v-col cols="auto">
-                      {{ discussion.title }}
-                    </v-col>
-                    <v-col cols="auto" class="text-body-2">
-                      @ {{ discussion.publisher }} 发布于
-                      {{ formatDate(discussion.publishTime) }}
-                    </v-col>
-                  </v-row>
-                </v-list-item-title>
-                <v-list-item-subtitle>
-                  <div class="info-row">
-                    <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
-                      {{ discussion.tag }}
-                    </v-chip>
-                    <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label>
-                      加精
-                    </v-chip>
-                    {{
-                      discussion.summary.length > 60
-                        ? discussion.summary.slice(0, 60) + "..."
-                        : discussion.summary
-                    }}
-                  </div>
-                </v-list-item-subtitle>
-              </v-list-item-content>
+              <v-list-item-title class="text-subtitle-1 font-weight-bold">
+                <v-row align="center">
+                  <v-col cols="auto">
+                    {{ discussion.title }}
+                  </v-col>
+                  <v-col cols="auto" class="text-body-2">
+                    @ {{ discussion.publisher }} 发布于
+                    {{ formatDate(discussion.publishTime) }}
+                  </v-col>
+                </v-row>
+              </v-list-item-title>
+              <v-list-item-subtitle>
+                <div class="info-row">
+                  <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
+                    {{ discussion.tag }}
+                  </v-chip>
+                  <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label>
+                    加精
+                  </v-chip>
+                  {{
+                    discussion.summary.length > 60
+                      ? discussion.summary.slice(0, 60) + "..."
+                      : discussion.summary
+                  }}
+                </div>
+              </v-list-item-subtitle>
+
               <template v-slot:append>
                 {{ formatLastUpdated(discussion.lastUpdated) }}
               </template>
             </v-list-item>
             <!-- 添加分割线，每个item后面 -->
             <v-divider v-if="index < filteredDiscussions.length - 1" />
-          </v-list-item-group>
+          </template>
         </v-list>
       </template>
 
