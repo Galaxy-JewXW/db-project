@@ -164,24 +164,15 @@
       <div v-else class="no-results">没有测试</div>
     </div>
   </v-container>
-  <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="`success`" min-width="45%">
-    <div style="font-size: 16px">{{ snackbarMessage }}</div>
-    <template #actions>
-      <v-btn icon @click="snackbarOpen = false">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </template>
-  </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapMutations, mapActions } from "vuex";
 
 export default {
   name: "ExamList",
   data() {
     return {
-      snackbarOpen: false,
       snackbarMessage: "",
       showPastExamsDialog: false,
       ongoingExams: [
@@ -314,7 +305,7 @@ export default {
   methods: {
     // 映射 Vuex 的 mutation
     ...mapMutations(["setAppTitle", "setPageTitle"]),
-
+    ...mapActions('snackbar', ['showSnackbar']),
     formatDate(dateString) {
       const options = {
         year: 'numeric',
@@ -334,19 +325,29 @@ export default {
         this.$router.push(`/exam/${exam.id}`);
       } else {
         this.enrolledExams.push(exam.id);
-        this.snackbarMessage = "成功报名：" + exam.name;
-        this.snackbarOpen = true;
+        this.showSnackbar({
+          message: `成功报名 ${exam.name}`,
+          color: 'success',
+          timeout: 2000
+        });
       }
     },
     modifyEnrollmentStatus(exam) {
       if (this.enrolledExams.includes(exam.id)) {
         this.enrolledExams = this.enrolledExams.filter((id) => id !== exam.id);
-        this.snackbarMessage = "成功取消报名：" + exam.name;
+        this.showSnackbar({
+          message: `成功取消报名 ${exam.name}`,
+          color: 'success',
+          timeout: 2000
+        });
       } else {
         this.enrolledExams.push(exam.id);
-        this.snackbarMessage = "成功报名：" + exam.name;
+        this.showSnackbar({
+          message: `成功报名 ${exam.name}`,
+          color: 'success',
+          timeout: 2000
+        });
       }
-      this.snackbarOpen = true;
     },
     isExamComing(exam) {
       return this.comingExams.some((e) => e.id === exam.id);

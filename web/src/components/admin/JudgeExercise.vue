@@ -51,21 +51,11 @@
                 </v-col>
             </v-row>
         </v-container>
-
-        <!-- Snackbar 用于显示分数保存成功的消息 -->
-        <v-snackbar v-model="snackbar" :timeout="500" top right color="green">
-            分数已保存！
-            <template v-slot:action="{ attrs }">
-                <v-btn color="white" text v-bind="attrs" @click="snackbar = false">
-                    关闭
-                </v-btn>
-            </template>
-        </v-snackbar>
     </div>
 </template>
 
 <script>
-import { mapMutations } from 'vuex'; // 引入 mapMutations
+import { mapMutations, mapActions } from 'vuex'; // 引入 mapMutations
 
 export default {
     name: 'GradingPage',
@@ -85,7 +75,6 @@ export default {
             stdanswer: '',
             answers: [],
             selectedScore: 1, // 默认分数
-            snackbar: false, // 控制 Snackbar 显示
             totalScore: 10, // 题目的总分
         };
     },
@@ -125,6 +114,7 @@ export default {
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']), // 映射 Vuex 的 mutations
+        ...mapActions('snackbar', ['showSnackbar']),
         goBack() {
             this.$router.push(`/admin/judge/${this.examId}`);
         },
@@ -187,8 +177,11 @@ export default {
                     `已保存学生 ${selectedAnswer.student} 的分数: ${score}`
                 );
 
-                // 显示 Snackbar
-                this.snackbar = true;
+                this.showSnackbar({
+                    message: '分数已提交',
+                    color: 'success',
+                    timeout: 1500
+                });
             }
         },
     },

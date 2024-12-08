@@ -96,18 +96,10 @@
       </v-card>
     </v-dialog>
   </div>
-  <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="snackbarColor" min-width="25%">
-    <div style="font-size: 16px">{{ snackbarMessage }}</div>
-    <template #actions>
-      <v-btn icon @click="snackbarOpen = false">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </template>
-  </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from "vuex"; // 引入 mapMutations
+import { mapMutations, mapActions } from "vuex"; // 引入 mapMutations
 import axios from "axios";
 export default {
   name: "LoginContent",
@@ -136,9 +128,6 @@ export default {
       entryYears: [],
       avatar: "",
       // 学院/书院列表
-      snackbarOpen: false,
-      snackbarMessage: "",
-      snackbarColor: "error",
       colleges: [
         "材料科学与工程学院",
         "电子信息工程学院",
@@ -243,7 +232,7 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle", "setUserId", "setUserInfo"]), // 映射 Vuex 的 mutations
-
+    ...mapActions('snackbar', ['showSnackbar']),
     // 生成从当前年份向前 10 年的入学年份列表
     getEntryYears() {
       const currentYear = new Date().getFullYear();
@@ -265,7 +254,11 @@ export default {
           .then((response) => {
             const token = this.studentNumber.value;
             const user = response.data;
-            console.log("登录成功");
+            this.showSnackbar({
+              message: `欢迎你，${user.name}！`,
+              color: 'success',
+              timeout: 2000
+            });
             console.log(user);
             this.setUserId(token);
             this.setUserInfo(user);
@@ -273,14 +266,18 @@ export default {
             this.$router.push("/home");
           })
           .catch((error) => {
-            this.snackbarMessage = error.response.data.message;
-            this.snackbarColor = "error";
-            this.snackbarOpen = true;
+            this.showSnackbar({
+              message: error.response.data.message,
+              color: 'error',
+              timeout: 2000
+            });
           });
       } else {
-        this.snackbarMessage = "表单验证失败，请重试";
-        this.snackbarColor = "error";
-        this.snackbarOpen = true;
+        this.showSnackbar({
+          message: '表单验证失败',
+          color: 'error',
+          timeout: 2000
+        });
       }
     },
     handleResetLogin() {
@@ -304,22 +301,28 @@ export default {
         axios
           .post("http://127.0.0.1:8000/api/myapp2/register/", registerData)
           .then((response) => {
-            this.snackbarMessage = "注册成功";
-            this.snackbarColor = "success";
-            this.snackbarOpen = true;
+            this.showSnackbar({
+              message: '注册成功',
+              color: 'success',
+              timeout: 2000
+            });
             this.dialog = false;
             this.studentNumber.value = this.studentNumberReg;
             this.password.value = this.confirmPassword;
           })
           .catch((error) => {
-            this.snackbarMessage = error.response.data.message;
-            this.snackbarColor = "error";
-            this.snackbarOpen = true;
+            this.showSnackbar({
+              message: error.response.data.message,
+              color: 'error',
+              timeout: 2000
+            });
           });
       } else {
-        this.snackbarMessage = "注册验证失败";
-        this.snackbarColor = "error";
-        this.snackbarOpen = true;
+        this.showSnackbar({
+          message: '注册验证失败',
+          color: 'error',
+          timeout: 2000
+        });
       }
     },
     // 清空注册表单内容

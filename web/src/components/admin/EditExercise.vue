@@ -267,20 +267,10 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
-
-    <!-- Snackbar 提示 -->
-    <v-snackbar v-model="snackbar.show" :timeout="2000" :color="snackbar.color" min-width="25%">
-        <div style="font-size: 16px">{{ snackbar.message }}</div>
-        <template #actions>
-            <v-btn icon @click="snackbar.show = false">
-                <v-icon>mdi-close</v-icon>
-            </v-btn>
-        </template>
-    </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations, mapActions } from 'vuex';
 
 export default {
     name: 'EditExercise',
@@ -311,11 +301,6 @@ export default {
                 content: '',
                 answer: '',
                 difficulty: null,
-            },
-            snackbar: {
-                show: false,
-                message: '',
-                color: 'error'
             },
             selectedOptions: [],
             confirmDialogOpen: false,
@@ -358,7 +343,7 @@ export default {
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
-
+        ...mapActions('snackbar', ['showSnackbar']),
         isTabDisabled(value) {
             if (this.tab === 1) {
                 // 在 "原始题目" 时，只有 "编辑基本信息" 可以访问
@@ -472,17 +457,12 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
 
         deleteExercise() {
             // TODO: 添加删除逻辑
-            console.log('删除题目 ID:', this.currentId);
-            this.showSnackbar('题目已删除', 'success');
+            this.showSnackbar({
+                message: '题目已删除',
+                color: 'success',
+                timeout: 2000
+            });
             this.goBack();
-        },
-
-        showSnackbar(message, color = 'error') {
-            this.snackbar = {
-                show: true,
-                message,
-                color
-            };
         },
 
         updateMultipleAnswer() {
@@ -498,12 +478,20 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
             try {
                 const { valid } = await this.$refs.formRef.validate();
                 if (!valid) {
-                    this.showSnackbar('请填写所有必填字段！');
+                    this.showSnackbar({
+                        message: '请填写所有必填字段！',
+                        color: 'success',
+                        timeout: 2000
+                    });
                 }
                 return valid;
             } catch (error) {
                 console.error('表单验证出错：', error);
-                this.showSnackbar('表单验证出错');
+                this.showSnackbar({
+                    message: '表单验证出错',
+                    color: 'error',
+                    timeout: 2000
+                });
                 return false;
             }
         },
@@ -519,13 +507,21 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
 
             // 验证题目内容是否为空
             if (!this.form.content) {
-                this.showSnackbar('题目内容不能为空');
+                this.showSnackbar({
+                    message: '题目内容不能为空',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tab = 3;
                 return;
             }
 
             if (!this.form.answer) {
-                this.showSnackbar('题目答案不能为空');
+                this.showSnackbar({
+                    message: '题目答案不能为空',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tab = 4;
                 return;
             }
@@ -533,11 +529,19 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
                 console.log(this.form);
-                this.showSnackbar('题目已提交', 'success');
+                this.showSnackbar({
+                    message: '编辑题目成功',
+                    color: 'success',
+                    timeout: 2000
+                });
                 this.goBack();
             } catch (error) {
                 console.error('表单提交出错：', error);
-                this.showSnackbar('表单提交失败');
+                this.showSnackbar({
+                    message: '表单提交出错',
+                    color: 'error',
+                    timeout: 2000
+                });
             }
         },
     },

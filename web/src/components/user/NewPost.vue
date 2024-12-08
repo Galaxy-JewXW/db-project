@@ -38,16 +38,6 @@
       <v-btn variant="plain" @click="clearForm">清除</v-btn>
     </v-row>
   </div>
-
-  <!-- Snackbar -->
-  <v-snackbar v-model="snackbarOpen" :timeout="snackbarTimeout" :color="snackbarColor" min-width="25%">
-    <div style="font-size: 16px">{{ snackbarMessage }}</div>
-    <template #actions>
-      <v-btn icon @click="snackbarOpen = false">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </template>
-  </v-snackbar>
 </template>
 
 <script>
@@ -73,10 +63,6 @@ export default {
       rules: {
         required: (value) => !!value || "该字段为必填项",
       },
-      snackbarOpen: false,
-      snackbarMessage: "",
-      snackbarColor: "error",
-      snackbarTimeout: 1000,
     };
   },
   mounted() {
@@ -106,10 +92,6 @@ export default {
       const valid = await this.$refs.form.validate();
       if (valid.valid) {
         console.log("nmd");
-        // 显示成功的 Snackbar
-        this.snackbarMessage = "提交成功";
-        this.snackbarColor = "success";
-        this.snackbarOpen = true;
         try {
           // 发起 POST 请求
           console.log(this.requestData);
@@ -117,6 +99,11 @@ export default {
             headers: {
               'Content-Type': 'application/json', // 指定JSON格式
             }
+          });
+          this.showSnackbar({
+            message: '发布成功',
+            color: 'success',
+            timeout: 2000
           });
         } catch (error) {
           if (error.response && error.response.status === 400) {
@@ -143,9 +130,11 @@ export default {
           errorMessage += "内容不能为空";
         }
 
-        this.snackbarMessage = errorMessage;
-        this.snackbarColor = "error";
-        this.snackbarOpen = true;
+        this.showSnackbar({
+          message: errorMessage,
+          color: 'error',
+          timeout: 2000
+        });
       }
     },
 

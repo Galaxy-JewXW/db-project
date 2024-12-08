@@ -422,13 +422,17 @@ export default {
       };
 
       let url = '';
+      let message = '';
       // 根据 isComment 和 isMaindiscussion 决定 url 的值
       if (this.isComment) {
         url = 'http://127.0.0.1:8000/api/discussions/create_reply/';
+        message = '回复发送';
       } else if (this.isMainDiscussion) {
         url = 'http://127.0.0.1:8000/api/discussions/edit_discussion/';
+        message = '修改讨论贴';
       } else {
         url = 'http://127.0.0.1:8000/api/discussions/edit_reply/';
+        message = '修改回复';
       }
       try {
         // 发送 POST 请求
@@ -441,11 +445,21 @@ export default {
         console.log(response.status);
         // 处理响应
         if (response.status === 200) {
+          this.showSnackbar({
+            message: message + "成功",
+            color: 'success',
+            timeout: 2000
+          });
           console.log("df");
           this.sendDataToBackend();
         }
       } catch (error) {
         console.error('发送通知时出错:', error);
+        this.showSnackbar({
+          message: message + "时出错",
+          color: 'error',
+          timeout: 2000
+        });
       }
       console.log(this.emitId);
       console.log(this.text);

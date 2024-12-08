@@ -300,20 +300,10 @@
             </div>
         </v-card>
     </v-dialog>
-
-    <!-- Snackbar for notifications -->
-    <v-snackbar v-model="snackbar.show" :timeout="1000" :color="snackbar.color" min-width="25%">
-        <div style="font-size: 16px">{{ snackbar.message }}</div>
-        <template #actions>
-            <v-btn icon @click="snackbar.show = false">
-                <v-icon>mdi-close</v-icon>
-            </v-btn>
-        </template>
-    </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations, mapActions } from 'vuex';
 
 export default {
     name: 'AdminSet',
@@ -343,11 +333,6 @@ export default {
                 questions: []
             },
             questions: [],
-            snackbar: {
-                show: false,
-                message: '',
-                color: 'error'
-            },
             pageSize: 40,
             dialog: false,
             currentQuestion: {
@@ -451,6 +436,7 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
+        ...mapActions('snackbar', ['showSnackbar']),
         fetchProblemSet(id) {
             const mockData = {
                 name: '上学期期中',
@@ -486,13 +472,6 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
         goBack() {
             this.$router.push('/admin/problemset');
         },
-        showSnackbar(message, color = 'error') {
-            this.snackbar = {
-                show: true,
-                message,
-                color
-            };
-        },
         getExercises(subject) {
             const questions = [
                 {
@@ -522,12 +501,19 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
             try {
                 const isValid = await this.$refs.formRef.validate();
                 if (!isValid.valid) {
-                    this.showSnackbar('请填写所有必填字段，并确保字段合法！');
+                    this.showSnackbar({
+                        message: '请填写所有必填字段，并确保字段合法！',
+                        color: 'error',
+                        timeout: 2000
+                    });
                 }
                 return isValid;
             } catch (error) {
-                console.error('表单验证出错：', error);
-                this.showSnackbar('表单验证出错');
+                this.showSnackbar({
+                    message: '表单验证出错',
+                    color: 'error',
+                    timeout: 2000
+                });
                 return false;
             }
         },
@@ -537,7 +523,11 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
                 const isValid = await this.validateForm();
                 console.log(isValid);
                 if (!isValid.valid) {
-                    this.showSnackbar('基本信息未填写或有误，请及时修改');
+                    this.showSnackbar({
+                        message: '基本信息未填写或有误，请及时修改',
+                        color: 'error',
+                        timeout: 2000
+                    });
                     this.tempTab = oldTab; // 还原到当前页
                     return;
                 }
@@ -553,24 +543,41 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
             // 验证第一页的表单
             const isValid = await this.validateForm();
             if (!isValid.valid) {
-                this.showSnackbar('基本信息未填写或有误，请及时修改');
+                this.showSnackbar({
+                    message: '基本信息未填写或有误，请及时修改',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tempTab = 1;
                 this.tab = 1;
                 return;
             }
             if (this.form.questions.length === 0) {
-                this.showSnackbar('题库内容不能为空');
+                this.showSnackbar({
+                    message: '题目内容不能为空',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tempTab = 2;
                 this.tab = 2;
                 return;
             }
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
+                this.showSnackbar({
+                    message: '编辑题库成功',
+                    color: 'success',
+                    timeout: 2000
+                });
                 console.log(this.form);
                 this.goBack();
             } catch (error) {
                 console.error('表单提交出错：', error);
-                this.showSnackbar('表单提交失败');
+                this.showSnackbar({
+                    message: '表单提交出错',
+                    color: 'error',
+                    timeout: 2000
+                });
             }
         },
         viewQuestion(type, id) {
@@ -584,9 +591,17 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
                 // 类型存在，检查id是否已经存在
                 if (!this.form.questions[typeIndex].ids.includes(id)) {
                     this.form.questions[typeIndex].ids.push(id);
-                    this.showSnackbar(`已添加题目 - ${id} 到 ${type}`, 'success');
+                    this.showSnackbar({
+                        message: `已添加题目 - ${id} 到 ${type}`,
+                        color: 'success',
+                        timeout: 2000
+                    });
                 } else {
-                    this.showSnackbar(`题目 - ${id} 已添加`, 'info');
+                    this.showSnackbar({
+                        message: `题目 - ${id} 已添加`,
+                        color: 'warning',
+                        timeout: 2000
+                    });
                 }
             } else {
                 // 类型不存在，添加新的类型和id
@@ -595,7 +610,11 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
                     ids: [id],
                     currentPage: 1,
                 });
-                this.showSnackbar(`已添加题目 - ${id} 到 ${type}`, 'success');
+                this.showSnackbar({
+                    message: `已添加题目 - ${id} 到 ${type}`,
+                    color: 'success',
+                    timeout: 2000
+                });
             }
             this.sortQuestions();
         },
@@ -606,7 +625,11 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
                 const idIndex = this.form.questions[typeIndex].ids.indexOf(id);
                 if (idIndex !== -1) {
                     this.form.questions[typeIndex].ids.splice(idIndex, 1);
-                    this.showSnackbar(`已从 ${type} 移除题目 - ${id} `, 'success');
+                    this.showSnackbar({
+                        message: `已从 ${type} 移除题目 - ${id} `,
+                        color: 'success',
+                        timeout: 2000
+                    });
                     // 如果该类型下没有题目了，移除整个类型
                     if (this.form.questions[typeIndex].ids.length === 0) {
                         this.form.questions.splice(typeIndex, 1);

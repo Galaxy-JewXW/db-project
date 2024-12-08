@@ -111,19 +111,10 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
-    <v-snackbar v-model="snackbarOpen" :timeout="snackbarTimeout" :color="snackbarColor" min-width="25%"
-        style="z-index: 10000;">
-        <div style="font-size: 16px">{{ snackbarMessage }}</div>
-        <template #actions>
-            <v-btn icon @click="snackbarOpen = false">
-                <v-icon>mdi-close</v-icon>
-            </v-btn>
-        </template>
-    </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations, mapActions } from 'vuex';
 import axios from 'axios';
 export default {
     name: 'AdminBoard',
@@ -169,10 +160,6 @@ export default {
             toDeleteNotice: null,
             submitDialogOpen: false,
             deleteDialogOpen: false,
-            snackbarOpen: false,
-            snackbarMessage: '',
-            snackbarTimeout: 1000,
-            snackbarColor: 'error', // 错误颜色
         };
     },
     mounted() {
@@ -186,6 +173,7 @@ export default {
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
+        ...mapActions('snackbar', ['showSnackbar']),
         // 格式化日期
         formatDate(dateString) {
             const options = {
@@ -241,25 +229,36 @@ export default {
                 }
             } catch (error) {
                 console.error('发送通知时出错:', error);
+                this.showSnackbar({
+                    message: '删除公告时出错',
+                    color: 'error',
+                    timeout: 2000
+                });
             }
-            this.snackbarMessage = `已删除公告${this.toDeleteNotice.id} "${this.toDeleteNotice.title}" `;
-            this.snackbarColor = 'success';
-            this.snackbarOpen = true;
+            this.showSnackbar({
+                message: `已删除公告 ${this.toDeleteNotice.id} "${this.toDeleteNotice.title}"`,
+                color: 'success',
+                timeout: 2000
+            });
             this.toDeleteNotice = null;
         },
         confirmNotice() {
             if (!this.currentNotice.title || !this.currentNotice.content) {
-                this.snackbarMessage = '标题或内容不能为空';
-                this.snackbarColor = 'error';
-                this.snackbarOpen = true;
+                this.showSnackbar({
+                    message: '标题或内容不能为空',
+                    color: 'error',
+                    timeout: 2000
+                });
                 return;
             }
             if (this.hasChanges()) {
                 this.submitDialogOpen = true;
             } else {
-                this.snackbarMessage = '修改成功';
-                this.snackbarColor = 'success';
-                this.snackbarOpen = true;
+                this.showSnackbar({
+                    message: "修改公告成功",
+                    color: 'success',
+                    timeout: 2000,
+                });
                 this.editDialogOpen = false;
                 this.submitDialogOpen = false;
             }
@@ -309,9 +308,11 @@ export default {
             } catch (error) {
                 console.error('发送通知时出错:', error);
             }
-            this.snackbarMessage = '修改成功';
-            this.snackbarColor = 'success';
-            this.snackbarOpen = true;
+            this.showSnackbar({
+                message: "发布公告成功",
+                color: 'success',
+                timeout: 2000
+            });
             this.editDialogOpen = false;
             this.submitDialogOpen = false;
         },

@@ -94,15 +94,12 @@
         </v-tabs-window-item>
 
         <v-tabs-window-item :value="3">
-            <v-alert
-                v-if="form.questionType === '单项选择题' || form.questionType === '多项选择题'"
-                color="primary" icon="mdi-ab-testing">
+            <v-alert v-if="form.questionType === '单项选择题' || form.questionType === '多项选择题'" color="primary"
+                icon="mdi-ab-testing">
                 <v-alert-title>提示</v-alert-title>
                 你选择的题型是客观题型"{{ form.questionType }}"，选项个数为{{ form.optionsCount }}，请设置答案。
             </v-alert>
-            <v-alert
-                v-if="form.questionType === '判断题'"
-                color="primary" icon="mdi-ab-testing">
+            <v-alert v-if="form.questionType === '判断题'" color="primary" icon="mdi-ab-testing">
                 <v-alert-title>提示</v-alert-title>
                 你选择的题型是客观题型"{{ form.questionType }}"，选项个数为2，请设置答案。
             </v-alert>
@@ -195,20 +192,10 @@
             </v-row>
         </v-tabs-window-item>
     </v-tabs-window>
-
-    <!-- Snackbar 提示 -->
-    <v-snackbar v-model="snackbar.show" :timeout="2000" :color="snackbar.color" min-width="25%">
-        <div style="font-size: 16px">{{ snackbar.message }}</div>
-        <template #actions>
-            <v-btn icon @click="snackbar.show = false">
-                <v-icon>mdi-close</v-icon>
-            </v-btn>
-        </template>
-    </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations, mapActions } from 'vuex';
 
 export default {
     name: 'NewExercise',
@@ -231,11 +218,6 @@ export default {
                 content: '',
                 answer: '',
                 difficulty: null,
-            },
-            snackbar: {
-                show: false,
-                message: '',
-                color: 'error'
             },
             selectedOptions: []
         };
@@ -279,17 +261,9 @@ export default {
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
-
+        ...mapActions('snackbar', ['showSnackbar']),
         goBack() {
             this.$router.push("/admin/exercise");
-        },
-
-        showSnackbar(message, color = 'error') {
-            this.snackbar = {
-                show: true,
-                message,
-                color
-            };
         },
 
         updateMultipleAnswer() {
@@ -304,12 +278,20 @@ export default {
             try {
                 const { valid } = await this.$refs.formRef.validate();
                 if (!valid) {
-                    this.showSnackbar('请填写所有必填字段！');
+                    this.showSnackbar({
+                        message: '请填写所有必填字段',
+                        color: 'error',
+                        timeout: 2000
+                    });
                 }
                 return valid;
             } catch (error) {
                 console.error('表单验证出错：', error);
-                this.showSnackbar('表单验证出错');
+                this.showSnackbar({
+                    message: '表单验证出错',
+                    color: 'error',
+                    timeout: 2000
+                });
                 return false;
             }
         },
@@ -325,24 +307,41 @@ export default {
 
             // 验证题目内容是否为空
             if (!this.form.content) {
-                this.showSnackbar('题目内容不能为空');
+                this.showSnackbar({
+                    message: '题目内容不能为空',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tab = 2;
                 return;
             }
 
             if (!this.form.answer) {
-                this.showSnackbar('题目答案不能为空');
+                this.showSnackbar({
+                    message: '题目答案不能为空',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tab = 3;
                 return;
             }
 
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
+                this.showSnackbar({
+                    message: '创建题目成功',
+                    color: 'success',
+                    timeout: 2000
+                });
                 console.log(this.form);
                 this.goBack();
             } catch (error) {
                 console.error('表单提交出错：', error);
-                this.showSnackbar('表单提交失败');
+                this.showSnackbar({
+                    message: '表单提交出错',
+                    color: 'error',
+                    timeout: 2000
+                });
             }
         },
     },

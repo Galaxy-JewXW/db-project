@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { routes as autoRoutes } from "vue-router/auto-routes";
 import NotFound from "@/components/NotFound.vue"; // 导入 404 页面组件
 import store from "@/store";
+import { mapActions } from "vuex"; 
 import Unauthorized from "@/components/Unauthorized.vue";
 
 const adminRoutes = [
@@ -349,11 +350,21 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !isAuthenticated) {
     // 如果目标路由需要认证但用户未认证，重定向到登录页
     next({ path: '/login', query: { redirect: to.fullPath } });
+    store.dispatch("snackbar/showSnackbar", {
+      message: '你必须先登录，才能访问本系统内容',
+      color: 'warning',
+      timeout: 2000
+    });
   } else if (to.meta.requiresGuest && isAuthenticated) {
     // 如果目标路由仅限未认证用户且用户已认证，重定向到首页
     next({ path: '/home' });
   } else if (to.meta.requiresAdmin && userRole <= 0) {
     // 如果目标路由需要管理员权限但用户角色不足，重定向到未授权页面
+    store.dispatch("snackbar/showSnackbar", {
+      message: '你的权限无法访问此内容',
+      color: 'error',
+      timeout: 2000
+    });
     next({ path: '/unauthorized' });
   } else {
     // 否则，允许导航

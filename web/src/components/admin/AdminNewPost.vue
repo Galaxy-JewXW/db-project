@@ -38,20 +38,10 @@
       <v-btn variant="plain" @click="clearForm">清除</v-btn>
     </v-row>
   </div>
-
-  <!-- Snackbar -->
-  <v-snackbar v-model="snackbarOpen" :timeout="snackbarTimeout" :color="snackbarColor" min-width="25%">
-    <div style="font-size: 16px">{{ snackbarMessage }}</div>
-    <template #actions>
-      <v-btn icon @click="snackbarOpen = false">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </template>
-  </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from "vuex"; // 引入 mapMutations
+import { mapMutations, mapActions } from "vuex"; // 引入 mapMutations
 import store from "@/store";
 import axios from 'axios';
 
@@ -73,10 +63,6 @@ export default {
       rules: {
         required: (value) => !!value || "该字段为必填项",
       },
-      snackbarOpen: false,
-      snackbarMessage: "",
-      snackbarColor: "error",
-      snackbarTimeout: 1000,
     };
   },
   mounted() {
@@ -96,7 +82,7 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
-
+    ...mapActions('snackbar', ['showSnackbar']),
     returnForum() {
       this.$router.push(`/admin/forum`);
     },
@@ -111,11 +97,6 @@ export default {
         console.log("标题:", this.title);
         console.log("所属科目:", this.subject);
         console.log("内容:", this.text);
-
-        // 显示成功的 Snackbar
-        this.snackbarMessage = "提交成功";
-        this.snackbarColor = "success";
-        this.snackbarOpen = true;
         try {
           // 发起 POST 请求
           console.log(this.requestData);
@@ -124,15 +105,29 @@ export default {
               'Content-Type': 'application/json', // 指定JSON格式
             }
           });
+          this.showSnackbar({
+            message: '创建讨论成功',
+            color: 'success',
+            timeout: 2000
+          });
         } catch (error) {
+          let errstr = '';
           if (error.response && error.response.status === 400) {
+            errstr = '标题和内容不能为空';
             this.$toast.error('标题和内容不能为空！');
           } else if (error.response && error.response.status === 404) {
+            errstr = '用户不存在';
             this.$toast.error('用户不存在！');
           } else {
+            errstr = '创建讨论失败';
             this.$toast.error('创建讨论失败，请稍后重试。');
           }
           console.error('提交失败:', error);
+          this.showSnackbar({
+            message: errstr,
+            color: 'error',
+            timeout: 2000
+          });
         }
         this.returnForum();
       } else {
@@ -148,9 +143,11 @@ export default {
           errorMessage += "内容不能为空";
         }
 
-        this.snackbarMessage = errorMessage;
-        this.snackbarColor = "error";
-        this.snackbarOpen = true;
+        this.showSnackbar({
+            message: errorMessage,
+            color: 'error',
+            timeout: 2000
+          });
       }
     },
 

@@ -50,11 +50,20 @@
         </v-row>
       </v-container>
     </v-main>
+
+    <v-snackbar v-model="snackbar.visible" :timeout="snackbar.timeout" :color="snackbar.color" min-width="25%" style="z-index: 100000;">
+      <div style="font-size: 16px">{{ snackbar.message }}</div>
+      <template #actions>
+        <v-btn icon @click="hideSnackbar">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-app>
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapGetters, mapActions } from "vuex";
 import store from '@/store';
 
 export default {
@@ -76,6 +85,7 @@ export default {
   },
   computed: {
     ...mapState(["appTitle", "pageTitle", "user"]),
+    ...mapGetters('snackbar', ['snackbar']),
     isLoginRoute() {
       return this.$route.path === "/login";
     },
@@ -149,6 +159,7 @@ export default {
     },
   },
   methods: {
+    ...mapActions('snackbar', ['hideSnackbar']),
     updateTime() {
       const now = new Date();
       const dateOptions = { year: "numeric", month: "2-digit", day: "2-digit" };

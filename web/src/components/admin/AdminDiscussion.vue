@@ -180,7 +180,7 @@
 
 <script>
 import axios from 'axios';
-import { mapMutations } from "vuex";
+import { mapMutations, mapActions } from "vuex";
 import { mapState } from "vuex/dist/vuex.cjs.js";
 import store from "@/store";
 
@@ -251,6 +251,7 @@ export default {
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
         ...mapState(["userId"]),
+        ...mapActions('snackbar', ['showSnackbar']),
         async deleted(id, isMainDiscussion) {
             console.log(id);
             const requestData = {
@@ -258,10 +259,13 @@ export default {
                 discussion_id: (!isMainDiscussion) ? id : this.$route.params.id,
             };
             let url = '';
+            let message = '';
             // 根据 isComment 和 isMaindiscussion 决定 url 的值
             if (isMainDiscussion) {
+                message = '删除讨论贴';
                 url = 'http://127.0.0.1:8000/api/discussions/delete_discussion/';
             } else {
+                message = '删除回复';
                 url = 'http://127.0.0.1:8000/api/discussions/delete_reply/';
             }
             try {
@@ -275,11 +279,21 @@ export default {
                 // 处理响应
                 if (response.status === 200) {
                     console.log("to this");
+                    this.showSnackbar({
+                        message: message + '成功',
+                        color: 'success',
+                        timeout: 2000
+                    });
                     if (isMainDiscussion) this.$router.push(`/admin/forum`);
                     else this.sendDataToBackend();
                 }
             } catch (error) {
                 console.error('发送通知时出错:', error);
+                this.showSnackbar({
+                        message: message + '时出错',
+                        color: 'error',
+                        timeout: 2000
+                    });
             }
         },
         async sendDataToBackend() {
@@ -473,15 +487,19 @@ export default {
             };
 
             let url = '';
+            let message = '';
             console.log(requestData.discussion_id);
             console.log(this.isComment);
             // 根据 isComment 和 isMaindiscussion 决定 url 的值
             if (this.isComment) {
                 url = 'http://127.0.0.1:8000/api/discussions/create_reply/';
+                message = '回复发送';
             } else if (this.isMainDiscussion) {
                 url = 'http://127.0.0.1:8000/api/discussions/edit_discussion/';
+                message = '修改讨论贴';
             } else {
                 url = 'http://127.0.0.1:8000/api/discussions/edit_reply/';
+                message = '修改回复';
             }
             console.log(url);
             try {
@@ -496,10 +514,20 @@ export default {
                 // 处理响应
                 if (response.status === 200) {
                     console.log("df");
+                    this.showSnackbar({
+                        message: message + "成功",
+                        color: 'success',
+                        timeout: 2000
+                    });
                     this.sendDataToBackend();
                 }
             } catch (error) {
                 console.error('发送通知时出错:', error);
+                this.showSnackbar({
+                    message: message + "时出错",
+                    color: 'error',
+                    timeout: 2000
+                });
             }
             console.log(this.emitId);
             console.log(this.text);

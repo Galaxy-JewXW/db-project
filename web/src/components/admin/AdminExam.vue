@@ -212,18 +212,10 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
-    <v-snackbar v-model="snackbar.show" :timeout="2000" :color="snackbar.color" min-width="25%">
-        <div style="font-size: 16px">{{ snackbar.message }}</div>
-        <template #actions>
-            <v-btn icon @click="snackbar.show = false">
-                <v-icon>mdi-close</v-icon>
-            </v-btn>
-        </template>
-    </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapMutations, mapActions } from "vuex";
 
 export default {
     name: "ProblemSet",
@@ -293,11 +285,6 @@ export default {
             // 筛选条件
             filterName: "",
             filterSubject: "",
-            snackbar: {
-                show: false,
-                message: '',
-                color: 'error'
-            },
             confirmDialogOpen: false,
             toDeleteExamId: null
         };
@@ -359,6 +346,7 @@ export default {
     },
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
+        ...mapActions('snackbar', ['showSnackbar']),
         formatDate(dateString) {
             const options = {
                 year: "numeric",
@@ -389,15 +377,12 @@ export default {
             this.confirmDialogOpen = true;
         },
         deleteExam() {
-            this.showSnackbar(`已删除测试 ${this.toDeleteExamId} ${this.toDeleteExamName}`, 'success');
+            this.showSnackbar({
+                    message: `已删除测试 ${this.toDeleteExamId} ${this.toDeleteExamName}`,
+                    color: 'success',
+                    timeout: 2000
+                });
             this.confirmDialogOpen = false;
-        },
-        showSnackbar(message, color = 'error') {
-            this.snackbar = {
-                show: true,
-                message,
-                color
-            };
         },
         resetPages() {
             this.ongoingPage = 1;

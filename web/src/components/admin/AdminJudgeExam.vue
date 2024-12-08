@@ -86,16 +86,6 @@
                 </v-expansion-panel>
             </v-expansion-panels>
         </div>
-
-        <!-- Snackbar for notifications -->
-        <v-snackbar v-model="snackbarOpen" :timeout="1000" :color="snackbarColor">
-            <div style="font-size: 16px">{{ snackbarMessage }}</div>
-            <template #actions>
-                <v-btn icon @click="snackbarOpen = false">
-                    <v-icon>mdi-close</v-icon>
-                </v-btn>
-            </template>
-        </v-snackbar>
     </div>
 </template>
 
@@ -118,9 +108,6 @@ export default {
             loading: false,
             error: null,
             dialog: false, // 控制dialog显示
-            snackbarOpen: false,
-            snackbarMessage: "",
-            snackbarColor: "",
             question: "", // 存储题面的Markdown文本
             loadingQuestion: false, // 控制加载状态
             finishedQuestions: [], // 完成的题目
@@ -389,10 +376,5 @@ export default {
     max-width: 100vw;
     max-height: 100vh;
     margin: 0;
-}
-
-/* Snackbar styles */
-.v-snackbar {
-    font-size: 16px;
 }
 </style>

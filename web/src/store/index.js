@@ -1,8 +1,11 @@
 // src/store/index.js
 import { createStore } from "vuex";
 import axios from "axios";
-
+import snackbar from './modules/snackbar';
 export default createStore({
+  modules: {
+    snackbar,
+  },
   state: {
     userId: null,
     user: null,

@@ -172,7 +172,7 @@
                         <v-col v-for="(group, groupIndex) in form.questions" :key="groupIndex" cols="12">
                             <v-card class="mb-4 ml-2 mr-2">
                                 <v-card-title class="text-h6">
-                                    {{ group.type }}  （总分：{{ calculateTotalScore()[group.type] || 0 }}）
+                                    {{ group.type }} （总分：{{ calculateTotalScore()[group.type] || 0 }}）
                                 </v-card-title>
                                 <v-divider></v-divider>
                                 <v-card-text>
@@ -354,20 +354,10 @@
             </div>
         </v-card>
     </v-dialog>
-
-    <!-- Snackbar for notifications -->
-    <v-snackbar v-model="snackbar.show" :timeout="1000" :color="snackbar.color" min-width="25%">
-        <div style="font-size: 16px">{{ snackbar.message }}</div>
-        <template #actions>
-            <v-btn icon @click="snackbar.show = false">
-                <v-icon>mdi-close</v-icon>
-            </v-btn>
-        </template>
-    </v-snackbar>
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapMutations, mapActions } from "vuex";
 
 export default {
     name: "AdminSet",
@@ -399,11 +389,6 @@ export default {
             },
             originalForm: {},
             questions: [],
-            snackbar: {
-                show: false,
-                message: "",
-                color: "error",
-            },
             pageSize: 40,
             dialog: false,
             currentQuestion: {
@@ -421,7 +406,7 @@ export default {
             scoreHeaders: [
                 { title: "题目编号", value: "id" },
                 { title: "设定分数", value: "score" },
-                { title: "操作", value: "actions"},
+                { title: "操作", value: "actions" },
             ],
         };
     },
@@ -437,6 +422,7 @@ export default {
     },
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
+        ...mapActions('snackbar', ['showSnackbar']),
         goBack() {
             this.$router.push("/admin/exam");
         },
@@ -452,18 +438,18 @@ export default {
                         currentPage: 1,
                         type: "单项选择题",
                         questions: [
-                            {id: 12, score: 1},
-                            {id: 13, score: 1},
-                            {id: 14, score: 10},
+                            { id: 12, score: 1 },
+                            { id: 13, score: 1 },
+                            { id: 14, score: 10 },
                         ]
                     },
                     {
                         currentPage: 1,
                         type: "多项选择题",
                         questions: [
-                            {id: 121, score: 10},
-                            {id: 131, score: 10},
-                            {id: 141, score: 10},
+                            { id: 121, score: 10 },
+                            { id: 131, score: 10 },
+                            { id: 141, score: 10 },
                         ]
                     },
                 ],
@@ -498,13 +484,6 @@ export default {
             }, { total: 0 });
             return scores;
         },
-        showSnackbar(message, color = "error") {
-            this.snackbar = {
-                show: true,
-                message,
-                color,
-            };
-        },
         getExercises(subject) {
             // Simulate fetching questions based on subject
             // This should be replaced with actual API calls
@@ -536,12 +515,20 @@ export default {
             try {
                 const isValid = await this.$refs.formRef.validate();
                 if (!isValid.valid) {
-                    this.showSnackbar("请填写所有必填字段，并确保字段合法！");
+                    this.showSnackbar({
+                        message: '请填写所有必填字段，并确保字段合法！',
+                        color: 'error',
+                        timeout: 2000
+                    });
                 }
                 return isValid;
             } catch (error) {
                 console.error("表单验证出错：", error);
-                this.showSnackbar("表单验证出错");
+                this.showSnackbar({
+                    message: '表单验证出错',
+                    color: 'error',
+                    timeout: 2000
+                });
                 return false;
             }
         },
@@ -549,12 +536,20 @@ export default {
             try {
                 const isValid = await this.$refs.scoreFormRef.validate();
                 if (!isValid) {
-                    this.showSnackbar("请为所有题目设置有效分数！");
+                    this.showSnackbar({
+                        message: '请为所有题目设置有效分数！',
+                        color: 'error',
+                        timeout: 2000
+                    });
                 }
                 return isValid;
             } catch (error) {
                 console.error("分数表单验证出错：", error);
-                this.showSnackbar("分数表单验证出错");
+                this.showSnackbar({
+                    message: '分数表单验证出错',
+                    color: 'error',
+                    timeout: 2000
+                });
                 return false;
             }
         },
@@ -564,24 +559,32 @@ export default {
                 if (newTab === 2) {
                     const isValid = await this.validateForm();
                     if (!isValid.valid) {
-                        this.showSnackbar(
-                            "基本信息未填写或有误，请及时修改"
-                        );
+                        this.showSnackbar({
+                            message: '基本信息未填写或有误，请及时修改',
+                            color: 'error',
+                            timeout: 2000
+                        });
                         this.tempTab = oldTab; // 还原到当前页
                         return;
                     }
                 } else if (newTab === 3) {
                     const isValid = await this.validateForm();
                     if (!isValid.valid) {
-                        this.showSnackbar(
-                            "基本信息未填写或有误，请及时修改"
-                        );
+                        this.showSnackbar({
+                            message: '基本信息未填写或有误，请及时修改',
+                            color: 'error',
+                            timeout: 2000
+                        });
                         this.tempTab = oldTab;
                         this.tab = oldTab;
                         return;
                     }
                     if (this.form.questions.length === 0) {
-                        this.showSnackbar("模拟测试内容不能为空");
+                        this.showSnackbar({
+                            message: '模拟测试内容不能为空',
+                            color: 'error',
+                            timeout: 2000
+                        });
                         this.tempTab = 2;
                         this.tab = 2;
                         return;
@@ -590,15 +593,21 @@ export default {
                     const isValid = await this.validateForm();
                     console.log(isValid);
                     if (!isValid.valid) {
-                        this.showSnackbar(
-                            "基本信息未填写或有误，请及时修改"
-                        );
+                        this.showSnackbar({
+                            message: '基本信息未填写或有误，请及时修改',
+                            color: 'error',
+                            timeout: 2000
+                        });
                         this.tempTab = oldTab;
                         this.tab = oldTab;
                         return;
                     }
                     if (this.form.questions.length === 0) {
-                        this.showSnackbar("模拟测试内容不能为空");
+                        this.showSnackbar({
+                            message: '模拟测试内容不能为空',
+                            color: 'error',
+                            timeout: 2000
+                        });
                         this.tempTab = 2;
                         this.tab = 2;
                         return;
@@ -606,7 +615,11 @@ export default {
                     const scoreValid = await this.validateScoreForm();
                     console.log(scoreValid);
                     if (!scoreValid) {
-                        this.showSnackbar("请为所有题目设置有效分数");
+                        this.showSnackbar({
+                            message: '请为所有题目设置有效分数',
+                            color: 'error',
+                            timeout: 2000
+                        });
                         this.tempTab = 3;
                         this.tab = 3;
                         return;
@@ -622,21 +635,33 @@ export default {
             const isValidScores = await this.validateScoreForm();
 
             if (!isValidForm.valid) {
-                this.showSnackbar("基本信息未填写或有误，请及时修改");
+                this.showSnackbar({
+                    message: '基本信息未填写或有误，请及时修改',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tempTab = 1;
                 this.tab = 1;
                 return;
             }
 
             if (this.form.questions.length === 0) {
-                this.showSnackbar("模拟测试内容不能为空");
+                this.showSnackbar({
+                    message: '模拟测试内容不能为空',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tempTab = 2;
                 this.tab = 2;
                 return;
             }
 
             if (!isValidScores) {
-                this.showSnackbar("请为所有题目设置有效分数");
+                this.showSnackbar({
+                    message: '请为所有题目设置有效分数',
+                    color: 'error',
+                    timeout: 2000
+                });
                 this.tempTab = 3;
                 this.tab = 3;
                 return;
@@ -645,10 +670,19 @@ export default {
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
                 console.log(this.form);
+                this.showSnackbar({
+                    message: '编辑考试成功',
+                    color: 'success',
+                    timeout: 2000
+                });
                 this.goBack();
             } catch (error) {
                 console.error("表单提交出错：", error);
-                this.showSnackbar("表单提交失败");
+                this.showSnackbar({
+                    message: '表单提交失败',
+                    color: 'error',
+                    timeout: 2000
+                });
             }
         },
         viewQuestion(type, id) {
@@ -670,12 +704,17 @@ export default {
                         id: id,
                         score: 10, // Default score
                     });
-                    this.showSnackbar(
-                        `已添加题目 - ${id} 到 ${type}`,
-                        "success"
-                    );
+                    this.showSnackbar({
+                        message: `已添加题目 - ${id} 到 ${type}`,
+                        color: 'success',
+                        timeout: 2000
+                    });
                 } else {
-                    this.showSnackbar(`题目 - ${id} 已添加`, "info");
+                    this.showSnackbar({
+                        message: `题目 - ${id} 已添加`,
+                        color: 'warning',
+                        timeout: 2000
+                    });
                 }
             } else {
                 // 类型不存在，添加新的类型和id
@@ -689,10 +728,11 @@ export default {
                     ],
                     currentPage: 1,
                 });
-                this.showSnackbar(
-                    `已添加题目 - ${id} 到 ${type}`,
-                    "success"
-                );
+                this.showSnackbar({
+                    message: `已添加题目 - ${id} 到 ${type}`,
+                    color: 'success',
+                    timeout: 2000
+                });
             }
             this.sortQuestions();
         },
@@ -710,10 +750,11 @@ export default {
                         questionIndex,
                         1
                     );
-                    this.showSnackbar(
-                        `已从 ${type} 移除题目 - ${id} `,
-                        "success"
-                    );
+                    this.showSnackbar({
+                        message: `已从 ${type} 移除题目 - ${id} `,
+                        color: 'success',
+                        timeout: 2000
+                    });
                     // 如果该类型下没有题目了，移除整个类型
                     if (
                         this.form.questions[typeIndex].questions.length ===

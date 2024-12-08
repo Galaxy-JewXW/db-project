@@ -37,16 +37,6 @@
     </v-row>
   </div>
 
-  <!-- Snackbar -->
-  <v-snackbar v-model="snackbarOpen" :timeout="snackbarTimeout" :color="snackbarColor" min-width="25%">
-    <div style="font-size: 16px">{{ snackbarMessage }}</div>
-    <template #actions>
-      <v-btn icon @click="snackbarOpen = false">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </template>
-  </v-snackbar>
-
   <v-dialog v-model="returnDialogOpen" max-width="400px">
     <v-card>
       <v-card-title>
@@ -104,7 +94,7 @@
 
 <script>
 import axios from 'axios';
-import { mapMutations } from "vuex"; // 引入 mapMutations
+import { mapMutations, mapActions } from "vuex"; // 引入 mapMutations
 
 export default {
   name: "NewNotification",
@@ -116,10 +106,6 @@ export default {
       rules: {
         required: (value) => !!value || "该字段为必填项",
       },
-      snackbarOpen: false,
-      snackbarMessage: "",
-      snackbarColor: "error",
-      snackbarTimeout: 1000,
       // Dialog 控制
       confirmDialogOpen: false,  // 确认发布的对话框
       clearDialogOpen: false,    // 确认清除的对话框
@@ -133,7 +119,7 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
-
+    ...mapActions('snackbar', ['showSnackbar']),
     // 返回确认弹窗
     confirmReturn() {
       if (this.title || this.text) {
@@ -150,9 +136,11 @@ export default {
         this.confirmDialogOpen = true;  // 显示确认发布的对话框
       } else {
         // 如果表单有错误，显示错误提示 Snackbar
-        this.snackbarMessage = "标题和内容为必填项";
-        this.snackbarColor = "error";
-        this.snackbarOpen = true;
+        this.showSnackbar({
+          message: '标题和内容为必填项',
+          color: 'error',
+          timeout: 2000
+        });
       }
     },
 
@@ -182,9 +170,11 @@ export default {
       }
 
       // 显示成功的 Snackbar
-      this.snackbarMessage = "提交成功";
-      this.snackbarColor = "success";
-      this.snackbarOpen = true;
+      this.showSnackbar({
+        message: '公告发布成功',
+        color: 'success',
+        timeout: 2000
+      });
 
       this.returnBack();
       this.confirmDialogOpen = false; // 关闭确认发布的对话框
