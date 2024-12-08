@@ -564,7 +564,7 @@ Donec ac odio sit amet nisi feugiat dignissim. Proin ac erat nec mauris pretium 
 }
 
 .info-card {
-    max-height: 60%;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
