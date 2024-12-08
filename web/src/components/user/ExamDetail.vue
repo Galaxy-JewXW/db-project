@@ -172,7 +172,7 @@
                     counter
                     multiple
                     show-size
-                    accept=".jpg,.png"
+                    accept=".jpg,.png,.jpeg"
                   >
                     <template v-slot:selection="{ fileNames }">
                       <template v-for="fileName in fileNames" :key="fileName">
@@ -467,7 +467,7 @@ export default {
             id: problemSetId,
             name: "2023-24数分上期中",
             subject: "工科数学分析（上）",
-            starttime: "2024-11-25 21:00:00",
+            starttime: "2024-12-08T19:00:00",
             duration: 140,
           };
           const title = "模拟测试详情 - " + this.problemSetData.name;
@@ -648,6 +648,16 @@ export default {
       if (!this.files.length) {
         console.log("没有选择文件");
         return;
+      }
+      const acceptedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+      for (const file of this.files) {
+        if (!acceptedTypes.includes(file.type)) {
+          this.snackbarMessage = "提交文件类型仅限.jpg，.png，.jpeg格式";
+          this.snackbarColor = "error";
+          this.snackbarOpen = true;
+          this.files = []
+          return;
+        }
       }
 
       // 创建一个 FormData 对象
