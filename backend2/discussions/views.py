@@ -177,7 +177,7 @@ class CreateReply(APIView):
             reply.notify_publisher()
 
             # 通知订阅者帖子更新
-            update_content = f"新回复by{user.name}：{content[:50]}..."  # 节选回复内容
+            update_content = f"新回复by{user.name}：{content[:50]}"  # 节选回复内容
             discussion.notify_subscribers(update_content)
 
             return Response({"success": True, "reply_id": reply.id}, status=HTTP_200_OK)
@@ -217,7 +217,7 @@ class EditDiscussion(APIView):
             discussion.save()
 
             # 通知订阅者帖子更新
-            update_content = f"帖子内容更新: {content[:50]}..."
+            update_content = f"帖子内容更新: {content[:50]}"
             discussion.notify_subscribers(update_content)
 
             return Response({"success": True, "message": "Discussion updated successfully."}, status=HTTP_200_OK)
@@ -262,7 +262,7 @@ class EditReply(APIView):
             discussion.save()
 
             # 通知订阅者帖子更新
-            update_content = f"回复内容更新: {content[:50]}..."
+            update_content = f"回复内容更新: {content[:50]}"
             discussion.notify_subscribers(update_content)
 
             return Response({"success": True, "message": "Reply updated successfully."}, status=HTTP_200_OK)
@@ -300,7 +300,7 @@ class GetAllDiscussions(APIView):
                 "id": discussion.id,
                 "title": discussion.title,
                 "publisher": discussion.publisher.name,
-                "avatar": discussion.avatar,
+                "avatar":  User.objects.get(student_id=discussion.publisher.student_id).avatar,
                 "publishTime": discussion.publish_time,
                 "lastUpdated": discussion.last_updated,
                 "tag": discussion.tag,
@@ -373,7 +373,7 @@ class GetDiscussionById(APIView):
                     "id": reply.id,
                     "publisher": reply.publisher.name,
                     "publisherId": reply.publisher.student_id,
-                    "avatar": reply.avatar,
+                    "avatar": User.objects.get(student_id=reply.publisher.student_id).avatar,
                     "publishTime": reply.publish_time,
                     "lastUpdated": reply.last_updated,
                     "like_count": reply.likes.count(),
@@ -386,7 +386,7 @@ class GetDiscussionById(APIView):
                 "title": discussion.title,
                 "publisher": discussion.publisher.name,
                 "publisherId": discussion.publisher.student_id,
-                "avatar": discussion.avatar,
+                "avatar": User.objects.get(student_id=discussion.publisher.student_id).avatar,
                 "publishTime": discussion.publish_time,
                 "lastUpdated": discussion.last_updated,
                 "tag": discussion.tag,

@@ -55,7 +55,7 @@ class Reply(models.Model):
         Message.objects.create(
             sender=self.publisher,  # 回复者
             receiver=self.discussion.publisher,  # 收帖人是主帖发布者
-            content=f"您发布的帖子《{self.discussion.title}》收到新回复: {self.content[:50]}...",
+            content=f"您发布的帖子《{self.discussion.title}》收到新回复: {self.content[:50]}",
             is_read=False,
         )
 
