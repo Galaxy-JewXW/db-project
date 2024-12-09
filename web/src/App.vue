@@ -21,23 +21,113 @@
     <!-- 顶部标题栏 -->
     <v-app-bar app class="pl-0">
       <v-app-bar-title>{{ appTitle }}</v-app-bar-title>
-      <v-spacer></v-spacer>
-      <v-menu v-if="canChangeRole">
-        <template v-slot:activator="{ props }">
-          <v-btn :prepend-icon="icons[currentRole]" variant="text" v-bind="props">切换角色</v-btn>
-        </template>
-        <v-list>
-          <v-list-item v-for="(item, index) in items" :key="index" :value="index" @click="selectRole(item.title)">
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-
-      <div class="info-display ml-2">
-        <span class="date-part">{{ datePart }}</span>
-        <span class="weekday">{{ weekday }}</span>
-        <span class="time-part">{{ timePart }}</span>
-      </div>
+      <template v-slot:append>
+        <v-menu v-if="!isLoginRoute" :close-on-content-click="false">
+          <template v-slot:activator="{ props }">
+            <v-btn icon="mdi-bell" v-bind="props"></v-btn>
+          </template>
+          <v-card style="min-width: 400px;">
+            <v-card-title>
+              <v-row class="fill-height pt-2 pb-2" align="center" justify="space-between">
+                <span class="pl-2">系统通知</span>
+                <v-btn icon variant="text" @click="markAllAsRead">
+                  <v-icon>mdi-check-all</v-icon>
+                </v-btn>
+              </v-row>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-tabs v-model="tab" color="primary" density="compact" grow>
+              <v-tab value="unread">未读消息</v-tab>
+              <v-tab value="read">已读消息</v-tab>
+            </v-tabs>
+            <v-card-text class="pa-0">
+              <v-tabs-window v-model="tab">
+                <v-tabs-window-item value="unread">
+                  <div v-if="unreadmessages.length > 0">
+                    <v-list lines="two" class="pa-0">
+                      <v-list-item v-for="notice in paginatedUnreadMessages" :key="notice.id"
+                        @click="openMessageDialog(notice)">
+                        <v-list-item-title class="font-weight-medium">
+                          <v-row align="center">
+                            <v-col cols="auto">
+                              {{ notice.sender }}
+                            </v-col>
+                            <v-col cols="auto" class="text-body-2">
+                              {{ formatDate(notice.sendTime) }}
+                            </v-col>
+                          </v-row>
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ getMessagePreview(notice.content) }}
+                        </v-list-item-subtitle>
+                        <template v-slot:append>
+                          <v-btn icon variant="text" @click.stop="markAsRead(notice)">
+                            <v-icon>mdi-check</v-icon>
+                          </v-btn>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                    <!-- 未读消息分页 -->
+                    <v-pagination v-if="totalPagesUnread > 1" v-model="currentPageUnread" :length="totalPagesUnread"
+                      total-visible="5" class="mt-2"></v-pagination>
+                  </div>
+                  <div class="no-results" v-else>
+                    暂无未读消息
+                  </div>
+                </v-tabs-window-item>
+                <v-tabs-window-item value="read">
+                  <div v-if="readmessages.length > 0">
+                    <v-list lines="two" class="pa-0">
+                      <v-list-item v-for="notice in paginatedReadMessages" :key="notice.id"
+                        @click="openMessageDialog(notice)">
+                        <v-list-item-title class="font-weight-medium">
+                          <v-row align="center">
+                            <v-col cols="auto">
+                              {{ notice.sender }}
+                            </v-col>
+                            <v-col cols="auto" class="text-body-2">
+                              {{ formatDate(notice.sendTime) }}
+                            </v-col>
+                          </v-row>
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          {{ getMessagePreview(notice.content) }}
+                        </v-list-item-subtitle>
+                        <template v-slot:append>
+                          <v-btn icon variant="text" @click.stop="markAsUnread(notice)">
+                            <v-icon>mdi-close</v-icon>
+                          </v-btn>
+                        </template>
+                      </v-list-item>
+                    </v-list>
+                    <!-- 已读消息分页 -->
+                    <v-pagination v-if="totalPagesRead > 1" v-model="currentPageRead" :length="totalPagesRead"
+                      total-visible="5" class="mt-2"></v-pagination>
+                  </div>
+                  <div class="no-results" v-else>
+                    暂无已读消息
+                  </div>
+                </v-tabs-window-item>
+              </v-tabs-window>
+            </v-card-text>
+          </v-card>
+        </v-menu>
+        <v-menu v-if="canChangeRole">
+          <template v-slot:activator="{ props }">
+            <v-btn :prepend-icon="icons[currentRole]" variant="text" v-bind="props">切换角色</v-btn>
+          </template>
+          <v-list>
+            <v-list-item v-for="(item, index) in items" :key="index" :value="index" @click="selectRole(item.title)">
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+        <div class="info-display ml-2">
+          <span class="date-part">{{ datePart }}</span>
+          <span class="weekday">{{ weekday }}</span>
+          <span class="time-part">{{ timePart }}</span>
+        </div>
+      </template>
     </v-app-bar>
 
     <!-- 主要内容区域 -->
@@ -51,7 +141,8 @@
       </v-container>
     </v-main>
 
-    <v-snackbar v-model="snackbar.visible" :timeout="snackbar.timeout" :color="snackbar.color" min-width="25%" style="z-index: 100000;">
+    <v-snackbar v-model="snackbar.visible" :timeout="snackbar.timeout" :color="snackbar.color" min-width="25%"
+      style="z-index: 100000;">
       <div style="font-size: 16px">{{ snackbar.message }}</div>
       <template #actions>
         <v-btn icon @click="hideSnackbar">
@@ -59,12 +150,29 @@
         </v-btn>
       </template>
     </v-snackbar>
+
+    <v-dialog v-model="messageDialogVisible" max-width="60%">
+      <v-card>
+        <v-card-title class="dialog-title">{{ selectedMessage.sender }}</v-card-title>
+        <v-card-subtitle class="dialog-subtitle">
+          {{ formatDate(selectedMessage.sendTime) }}
+        </v-card-subtitle>
+        <v-card-text>
+          <v-md-preview :text="selectedMessage.content"></v-md-preview>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" text @click="closeMessageDialog">关闭</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
 import store from '@/store';
+import axios from "axios";
 
 export default {
   name: "App",
@@ -81,6 +189,15 @@ export default {
         '学生': 'mdi-account-school', '辅导师': 'mdi-cast-education'
       },
       currentRole: '学生',
+      allmessages: [],
+      readmessages: [],
+      unreadmessages: [],
+      tab: null,
+      messageDialogVisible: false,
+      selectedMessage: null,
+      itemsPerPage: 5, // 每页显示5个通知
+      currentPageUnread: 1, // 未读消息的当前页
+      currentPageRead: 1, // 已读消息的当前页
     };
   },
   computed: {
@@ -140,12 +257,31 @@ export default {
         ? `${this.user.entry_year}级 ${this.user.college}`
         : "请登录";
     },
+    paginatedUnreadMessages() {
+      const start = (this.currentPageUnread - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.unreadmessages.slice(start, end);
+    },
+    paginatedReadMessages() {
+      const start = (this.currentPageRead - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.readmessages.slice(start, end);
+    },
+    totalPagesUnread() {
+      return Math.ceil(this.unreadmessages.length / this.itemsPerPage);
+    },
+    totalPagesRead() {
+      return Math.ceil(this.readmessages.length / this.itemsPerPage);
+    },
   },
   created() {
     this.updateTime();
     this.timer = setInterval(this.updateTime, 1000);
     document.title = this.pageTitle || "标题";
     this.setRoleBasedOnRoute();
+    if (!this.isLoginRoute) {
+      this.fetchNotice();
+    }
   },
   beforeUnmount() {
     clearInterval(this.timer);
@@ -153,13 +289,16 @@ export default {
   watch: {
     $route(to, from) {
       this.setRoleBasedOnRoute();
+      if (!this.isLoginRoute) {
+        this.fetchNotice();
+      }
     },
     pageTitle(newTitle) {
       document.title = newTitle || "标题";
     },
   },
   methods: {
-    ...mapActions('snackbar', ['hideSnackbar']),
+    ...mapActions('snackbar', ['hideSnackbar', 'showSnackbar']),
     updateTime() {
       const now = new Date();
       const dateOptions = { year: "numeric", month: "2-digit", day: "2-digit" };
@@ -184,6 +323,10 @@ export default {
       } else {
         this.$router.push("/404");
       }
+      // After changing role, refetch notices to ensure correct message sorting
+      if (!this.isLoginRoute) {
+        this.fetchNotice();
+      }
     },
     setRoleBasedOnRoute() {
       // 根据路由中是否包含 "/admin" 来设置 currentRole
@@ -192,6 +335,111 @@ export default {
       } else {
         this.currentRole = '学生';
       }
+    },
+    formatDate(dateString) {
+      const options = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false, // 使用24小时制
+      };
+      const date = new Date(dateString);
+      return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
+    },
+    openMessageDialog(message) {
+      this.selectedMessage = message;
+      this.messageDialogVisible = true;
+    },
+    closeMessageDialog() {
+      this.messageDialogVisible = false;
+    },
+    getMessagePreview(content) {
+      const maxLength = 30;
+      if (content.length <= maxLength) {
+        return content;
+      }
+      return content.substring(0, maxLength) + "...";
+    },
+    async markAsRead(notice) {
+      notice.read = true;
+      this.unreadmessages = this.unreadmessages.filter(item => item.id !== notice.id);
+      this.readmessages.push(notice);
+      this.sortMessages(this.readmessages);
+      this.showSnackbar({
+        message: `已将“${notice.sender}”设置为已读`,
+        color: 'success',
+        timeout: 2000
+      });
+    },
+    async markAsUnread(notice) {
+      notice.read = false;
+      this.readmessages = this.readmessages.filter(item => item.id !== notice.id);
+      this.unreadmessages.push(notice);
+      this.sortMessages(this.unreadmessages);
+      this.showSnackbar({
+        message: `已将“${notice.sender}”设置为未读`,
+        color: 'warning',
+        timeout: 2000
+      });
+    },
+    async markAllAsRead() {
+      this.unreadmessages.forEach(notice => {
+        notice.read = true;
+        this.readmessages.push(notice);
+      });
+      this.unreadmessages = [];
+      this.sortMessages(this.readmessages);
+      this.showSnackbar({
+        message: '已将所有通知设置为已读',
+        color: 'success',
+        timeout: 2000
+      });
+    },
+    async fetchNotice() {
+      const requestData = {
+        user_id: store.getters.getUserId
+      };
+      try {
+        const response = await axios.post('http://127.0.0.1:8000/api/board/', requestData, {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        const messages_data = response.data.data.messages;
+        console.log(messages_data);
+        this.readmessages = [];
+        this.unreadmessages = [];
+        this.allmessages = [];
+        messages_data.forEach((m) => {
+          const message = {
+            id: m.id,
+            sender: m.sender,
+            sendTime: m.sent_at,
+            content: m.content,
+            avatar: m.sender_avatar,
+            read: m.read || false,
+          };
+          if (m.read === false || m.read === undefined) {
+            this.unreadmessages.push(message);
+          } else {
+            this.readmessages.push(message);
+          }
+          this.allmessages.push(message);
+        });
+        // Sort both unread and read messages by sendTime descending
+        this.sortMessages(this.unreadmessages);
+        this.sortMessages(this.readmessages);
+        this.currentPageRead = 1;
+        this.currentPageUnread = 1;
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    },
+    sortMessages(messagesArray) {
+      messagesArray.sort((a, b) => new Date(b.sendTime) - new Date(a.sendTime));
     },
   },
 };
@@ -220,6 +468,17 @@ export default {
 
 .v-app-bar {
   z-index: 999;
+}
+
+.no-results {
+  font-size: 1rem;
+  color: #777;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 </style>
 

@@ -40,44 +40,6 @@
               </template>
             </v-list>
           </v-card>
-          <!-- 消息列表 -->
-          <v-card class="mb-4" outlined style="
-              flex: 1;
-              overflow-y: auto;
-              display: flex;
-              flex-direction: column;
-            ">
-            <v-card-title class="headline text-h5 sticky-title font-weight-bold">
-              消息列表
-            </v-card-title>
-            <v-divider></v-divider>
-            <v-list lines="two" style="flex: 1" class="no-scrollbar">
-              <template v-for="(group, index) in groupedMessages" :key="index">
-                <v-list-subheader>
-                  {{ group.label }}
-                </v-list-subheader>
-                <v-divider></v-divider>
-                <v-list-item v-for="message in group.messages" :key="message.id" :prepend-avatar="message.avatar"
-                  @click="openMessageDialog(message)" ripple>
-                  <template v-slot:title>
-                    <div>
-                      <span class="font-weight-bold message-sender">
-                        {{ message.sender }}
-                      </span>
-                      <span class="message-time">
-                        &nbsp;{{ formatDate(message.sendTime) }}
-                      </span>
-                    </div>
-                  </template>
-                  <template v-slot:subtitle>
-                    <div class="message-content">
-                      {{ getMessagePreview(message.content) }}
-                    </div>
-                  </template>
-                </v-list-item>
-              </template>
-            </v-list>
-          </v-card>
         </v-col>
         <!-- 右侧雷达图和推荐练习 -->
         <v-col cols="12" md="8" style="
@@ -172,25 +134,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- 消息详情对话框 -->
-    <v-dialog v-model="messageDialogVisible" max-width="60%">
-      <v-card>
-        <v-card-title class="dialog-title">消息</v-card-title>
-        <v-card-subtitle class="dialog-subtitle">
-          发件人：{{ selectedMessage.sender }} &nbsp; 发送时间：{{
-            formatDate(selectedMessage.sendTime)
-          }}
-        </v-card-subtitle>
-        <v-card-text>
-          <v-md-preview :text="selectedMessage.content"></v-md-preview>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="closeMessageDialog">关闭</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
@@ -256,9 +199,7 @@ export default {
         },
       ],
       dialogVisible: false,
-      messageDialogVisible: false,
       selectedNotice: {},
-      selectedMessage: {},
       radarData: [
         {
           subject: "工科数学分析（上）",
@@ -400,13 +341,6 @@ export default {
     },
     closeDialog() {
       this.dialogVisible = false;
-    },
-    openMessageDialog(message) {
-      this.selectedMessage = message;
-      this.messageDialogVisible = true;
-    },
-    closeMessageDialog() {
-      this.messageDialogVisible = false;
     },
     getTimeGroup(date) {
       const today = new Date();
