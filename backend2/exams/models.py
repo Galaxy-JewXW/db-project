@@ -31,7 +31,6 @@ class Exam(models.Model):
             self.end_time = self.start_time + timedelta(minutes=self.duration)
 
 
-
 # Exam 做题记录
 class ExamRecord(models.Model):
     id = models.AutoField(primary_key=True)  # 主键
@@ -40,6 +39,7 @@ class ExamRecord(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="exam_records")  # 学生
     submitted_answer = models.TextField(blank=True, null=True)  # 学生提交的答案
     is_correct = models.BooleanField(null=True, blank=True)  # 是否答对（老师批改）
+    is_checked = models.BooleanField(default=False)
 
     submitted_at = models.DateTimeField(auto_now=True)  # 提交时间
 
