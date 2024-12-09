@@ -21,7 +21,7 @@ class GetHomeView(APIView):
             user_id = request.data.get('user_id')  # 获取当前用户
             user = User.objects.get(student_id=user_id)
             # 获取最新公告（最多3条）
-            broadcasts = Broadcast.objects.all().order_by('-sent_at')[:3]
+            broadcasts = Broadcast.objects.all().order_by('-sent_at')
             broadcast_data = [
                 {
                     "id": b.id,
@@ -34,7 +34,7 @@ class GetHomeView(APIView):
             ]
 
             # 获取最新未读消息（最多3条）
-            messages = Message.objects.filter(receiver=user, is_read=False).order_by('-sent_at')[:3]
+            messages = Message.objects.filter(receiver=user, is_read=False).order_by('-sent_at')
             message_data = [
                 {
                     "id": m.id,
