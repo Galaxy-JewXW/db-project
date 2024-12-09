@@ -29,7 +29,11 @@
                                 </div>
                             </v-card-text>
                             <v-card-actions>
-                                <v-btn class="enter-button" @click="enterExam(exam)">进入批改</v-btn>
+                                <v-btn v-if="!(exam.ready && exam.disclosed)" color="primary"
+                                    @click="enterExam(exam)">进入批改</v-btn>
+                                <v-btn v-if="exam.ready && !exam.disclosed" color="red"
+                                    @click="confirm(exam)">公布成绩</v-btn>
+                                <v-btn v-else-if="exam.ready && exam.disclosed" disabled>成绩已公布</v-btn>
                             </v-card-actions>
                         </v-card>
                     </v-col>
@@ -44,10 +48,27 @@
             <div v-else class="no-results">暂无批改任务</div>
         </div>
     </v-container>
+    <v-dialog v-model="confirmDialogOpen" max-width="50%">
+        <v-card>
+            <v-card-title>
+                <v-icon color="primary">mdi-alert-circle-outline</v-icon>
+                <span class="headline ml-2">公布后无法修改成绩</span>
+            </v-card-title>
+            <v-card-text>确定公布测试 {{ this.toDiscloseExam.name }} 的成绩吗？</v-card-text>
+            <v-card-actions>
+                <v-btn color="red" variant="text" @click="discloseExam">
+                    确定
+                </v-btn>
+                <v-btn variant="plain" @click="confirmDialogOpen = false">
+                    取消
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapMutations, mapActions } from "vuex";
 
 export default {
     name: "ExamList",
@@ -61,6 +82,8 @@ export default {
                     subject: "工科数学分析（上）",
                     starttime: "2024-11-13 19:00:00",
                     duration: 120,
+                    ready: true,
+                    disclosed: false,
                 },
                 {
                     id: 11,
@@ -69,6 +92,8 @@ export default {
                     subject: "工科数学分析（上）",
                     starttime: "2024-11-13 19:00:00",
                     duration: 120,
+                    ready: false,
+                    disclosed: false,
                 },
                 {
                     id: 2,
@@ -77,6 +102,8 @@ export default {
                     subject: "工科物理",
                     starttime: "2024-11-15 09:00:00",
                     duration: 90,
+                    ready: true,
+                    disclosed: true,
                 },
                 {
                     id: 3,
@@ -85,11 +112,15 @@ export default {
                     subject: "化学基础",
                     starttime: "2024-11-20 13:00:00",
                     duration: 60,
+                    ready: false,
+                    disclosed: false,
                 },
                 // ... more exams
             ],
             currentPage: 1,
             itemsPerPage: 8, // Number of exams per page
+            confirmDialogOpen: false,
+            toDiscloseExam: null,
         };
     },
     computed: {
@@ -113,7 +144,7 @@ export default {
     methods: {
         // 映射 Vuex 的 mutation
         ...mapMutations(["setAppTitle", "setPageTitle"]),
-
+        ...mapActions('snackbar', ['showSnackbar']),
         formatDate(dateString) {
             const options = {
                 year: 'numeric',
@@ -130,6 +161,20 @@ export default {
         enterExam(exam) {
             // 导航到目标路由
             this.$router.push(`/admin/judge/${exam.id}`);
+        },
+        confirm(exam) {
+            this.toDiscloseExam = exam;
+            this.confirmDialogOpen = true;
+        },
+        discloseExam() {
+            this.confirmDialogOpen = false;
+            this.toDiscloseExam.disclosed = true;
+            
+            this.showSnackbar({
+                message: `已公布“${this.toDiscloseExam.name}”的成绩`,
+                color: 'success',
+                timeout: 3000
+            });
         },
         onPageChange(page) {
             this.currentPage = page;
@@ -235,10 +280,6 @@ export default {
     justify-content: center;
     align-items: center;
     height: 40%;
-}
-
-.enter-button {
-    color: #1867c0 !important;
 }
 
 .total-count {
