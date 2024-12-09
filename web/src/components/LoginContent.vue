@@ -214,6 +214,11 @@ export default {
     const title = "登录";
     this.setAppTitle(title);
     this.setPageTitle(title);
+    this.showSnackbar({
+      message: '你必须先登录，才能访问本系统内容',
+      color: 'warning',
+      timeout: 2000
+    });
   },
   watch: {
     studentNumberReg(val) {
