@@ -7,7 +7,7 @@
     </div>
 
     <!-- 登录表单 -->
-    <v-form ref="loginForm" v-model="isLoginValid" @submit.prevent="submitLogin">
+    <v-form ref="loginForm" v-model="isLoginValid" @submit.prevent="submitLogin" @keyup.enter="submitLogin">
       <v-row>
         <!-- 学工号输入字段 -->
         <v-col cols="12" class="field-spacing">
@@ -249,6 +249,14 @@ export default {
     },
     // 提交登录表单
     submitLogin() {
+      if (!this.isLoginValid) {
+        this.showSnackbar({
+          message: "账户名或密码错误",
+          color: 'error',
+          timeout: 2000
+        });
+        return;
+      }
       if (this.$refs.loginForm.validate()) {
         const loginData = {
           studentNumber: this.studentNumber.value,
