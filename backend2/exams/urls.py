@@ -39,4 +39,6 @@ urlpatterns = [
     path('publish_exam_results', views.PublishExamResults.as_view(), name='publish_exam_results'),
     # 学生获取考试信息是否公开
     path('get_exam_publish_status', views.GetExamPublishStatus.as_view(), name='get_exam_publish_status'),
+    # 老师获取当前考试批改状态
+    path('get_exam_questions_teacher', views.GetExamQuestionsTeacher.as_view(), name='get_exam_questions_teacher'),
 ]
