@@ -187,34 +187,10 @@ export default {
       emitId: null,
       text: '',
       mainDiscussion: {
-        id: 2,
-        title: "我是奶龙s",
-        publisher: "李四",
-        publisherId: 22373498,
-        avatar: "https://randomuser.me/api/portraits/women/41.jpg",
-        publishTime: "2024-09-25T15:30:00",
-        lastUpdated: "2024-11-15T15:30:00",
-        tag: "离散数学（信息类）",
-        content: `
-  # Markdown 测试文档
-  ...
-  `,
-        isLiked: false,
-        like_count: 0,
-        sub_count: 0,
       },
       isSubscribed: false,
       followDiscussion: [
         {
-          id: 3,
-          publisher: "李四2",
-          publisherId: 22373300,
-          avatar: "https://randomuser.me/api/portraits/women/10.jpg",
-          publishTime: "2024-09-25T15:30:00",
-          lastUpdated: "2024-11-15T15:30:00",
-          content: "内容1",
-          isLiked: false,
-          like_count: 0,
         },
       ],
     };

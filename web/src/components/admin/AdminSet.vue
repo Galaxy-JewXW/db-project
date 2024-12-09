@@ -13,57 +13,46 @@
     <v-container fluid class="problemset-container">
         <!-- Filter Section -->
         <div class="filter-container">
-            <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选题库" subtitle="通过名称搜索、选择科目或选择时间范围进行筛选"
-                prepend-icon="mdi-filter">
-                <v-row no-gutters>
-                    <v-col cols="12" sm="3">
-                        <v-row align="center" justify="start">
-                            <v-col cols="12" sm="12" md="12" class="pa-2">
-                                <v-text-field v-model="filterName" label="题库名称" placeholder="输入题库名称" clearable
-                                    class="pa-0" full-width></v-text-field>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                    <v-col cols="12" sm="9">
-                        <v-row class="pl-12">
-                            <!-- Subject Filter -->
-                            <v-col cols="12" class="filter-section pa-0">
-                                <div class="filter-group">
-                                    <span class="filter-label">按科目筛选:</span>
-                                    <v-chip v-for="subject in subjects" :key="subject" class="ma-2" color="primary"
-                                        variant="outlined" :class="{ 'selected-chip': selectedSubject === subject }"
-                                        @click="toggleSubject(subject)">
-                                        {{ subject }}
-                                        <v-icon v-if="selectedSubject === subject" class="ml-2" small>
-                                            mdi-check
-                                        </v-icon>
-                                    </v-chip>
-                                </div>
-                            </v-col>
+            <v-card class="filter-card" flat elevation="0">
+                <v-card-text class="py-2">
+                    <v-row>
+                        <!-- Subject Filter -->
+                        <v-col cols="12" class="filter-section" style="padding-bottom: 0px;">
+                            <div class="filter-group">
+                                <span class="filter-label">按科目筛选:</span>
+                                <v-chip v-for="subject in subjects" :key="subject" class="ma-2" color="primary"
+                                    variant="outlined" :class="{ 'selected-chip': selectedSubject === subject }"
+                                    @click="toggleSubject(subject)">
+                                    {{ subject }}
+                                    <v-icon v-if="selectedSubject === subject" class="ml-2" small>
+                                        mdi-check
+                                    </v-icon>
+                                </v-chip>
+                            </div>
+                        </v-col>
 
-                            <!-- Time Filter -->
-                            <v-col cols="12" class="filter-section pa-0">
-                                <div class="filter-group">
-                                    <span class="filter-label">按时间筛选:</span>
-                                    <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary"
-                                        variant="outlined" :class="{
-                                            'selected-chip': selectedTimeRange === range.value,
-                                        }" @click="toggleTimeRange(range.value)">
-                                        {{ range.text }}
-                                        <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
-                                            mdi-check
-                                        </v-icon>
-                                    </v-chip>
-                                </div>
-                            </v-col>
-                        </v-row>
-                    </v-col>
-                </v-row>
+                        <!-- Time Filter -->
+                        <v-col cols="12" class="filter-section" style="padding-top: 0px;">
+                            <div class="filter-group">
+                                <span class="filter-label">按时间筛选:</span>
+                                <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary"
+                                    variant="outlined" :class="{
+                                        'selected-chip': selectedTimeRange === range.value,
+                                    }" @click="toggleTimeRange(range.value)">
+                                    {{ range.text }}
+                                    <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
+                                        mdi-check
+                                    </v-icon>
+                                </v-chip>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-card-text>
             </v-card>
         </div>
 
         <!-- Total Count -->
-        <div class="total-count pl-2">
+        <div class="total-count">
             共 {{ filteredProblemSets.length }} 个满足条件的题库
         </div>
 
@@ -136,7 +125,7 @@
 
 <script>
 import { mapMutations } from "vuex";
-
+import axios from "axios";
 export default {
     name: "ProblemSet",
     data() {
@@ -171,13 +160,13 @@ export default {
             confirmDialogOpen: false,
             toDeleteId: null,
             toDeleteName: '',
-            filterName: "",
         };
     },
     mounted() {
         const title = "题库管理";
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.getAll();
     },
     computed: {
         filteredProblemSets() {
@@ -221,21 +210,36 @@ export default {
                 }
             }
 
-            // 按名称筛选
-            const filterName = (this.filterName || "").toLowerCase().trim();
-            filtered = filtered.filter((ps) => {
-                const psName = ps.name || "";
-                const matchesName = psName.toLowerCase().includes(filterName);
-                return matchesName
-            });
-
             return filtered;
         },
     },
     methods: {
         // 映射 Vuex 的 mutation
         ...mapMutations(['setAppTitle', 'setPageTitle']),
+        async getAll() {
+            try {
+                const userId = this.$store.getters.getUserId;
 
+                const requestData = {
+                    user_id: userId,
+                };
+
+                const response = await axios.post('http://127.0.0.1:8000/api/questions/get_all_question_banks/', requestData, {
+                    headers: {
+                        'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+                    }
+                });
+                if (response.data.success) {
+                    this.problemSets = response.data.question_banks;
+                    console.log('请求成功:', response.data);
+                } else {
+                    console.log('请求失败');
+                }
+            } catch (error) {
+                // 请求失败时处理错误
+                console.error('请求失败:', error);
+            }
+        },
         formatDate(dateString) {
             const options = {
                 year: 'numeric',
@@ -380,7 +384,9 @@ export default {
 }
 
 .total-count {
+    margin-left: 16px;
     font-weight: bold;
+    margin-bottom: 8px;
 }
 
 @media (min-width: 960px) {

@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -55,7 +56,7 @@ class GetAllReadMessages(APIView):
         try:
             data = decode_request(request)
             user_id = data.get('user_id')
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
 
             # 获取用户作为收件人的已读消息
             read_messages = Message.objects.filter(receiver=user, is_read=True)
@@ -94,7 +95,7 @@ class MarkMessageAsRead(APIView):
             message_id = data.get('message_id')
 
             # 获取用户和消息
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             message = Message.objects.get(id=message_id)
 
             # 标记为已读
@@ -118,7 +119,7 @@ class MarkMessageAsUnread(APIView):
             message_id = data.get('message_id')
 
             # 获取用户和消息
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             message = Message.objects.get(id=message_id)
 
             # 检查是否是接收者
@@ -143,8 +144,9 @@ class MarkAllMessagesAsRead(APIView):
         try:
             data = decode_request(request)
             user_id = data.get('user_id')
-            user = User.objects.get(id=user_id)
-
+            print(user_id)
+            user = User.objects.get(student_id=user_id)
+            print(user)
             # 获取用户收到的所有未读消息
             unread_messages = Message.objects.filter(receiver=user, is_read=False)
 

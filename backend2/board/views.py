@@ -34,14 +34,15 @@ class GetHomeView(APIView):
             ]
 
             # 获取最新未读消息（最多3条）
-            messages = Message.objects.filter(receiver=user, is_read=False).order_by('-sent_at')
+            messages = Message.objects.filter(receiver=user).order_by('-sent_at')
             message_data = [
                 {
                     "id": m.id,
                     "sender": m.sender.name,
                     "sender_avatar": m.sender_avatar,
                     "sent_at": m.sent_at,
-                    "content": m.content
+                    "content": m.content,
+                    "is_read": m.is_read
                 } for m in messages
             ]
 

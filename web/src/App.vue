@@ -171,7 +171,7 @@
 <script>
 import { mapState, mapGetters, mapActions } from "vuex";
 import store from '@/store';
-import axios from "axios";
+import axios from 'axios';
 
 export default {
   name: "App",
@@ -367,6 +367,17 @@ export default {
       this.unreadmessages = this.unreadmessages.filter(item => item.id !== notice.id);
       this.readmessages.push(notice);
       this.sortMessages(this.readmessages);
+      const userId = this.$store.getters.getUserId;
+      const requestData = {
+        user_id: userId,
+        message_id: notice.id
+      };
+      let url = 'http://127.0.0.1:8000/api/message/read_message/';
+      const response = await axios.post(url, requestData, {
+        headers: {
+          'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+        }
+      });
       this.showSnackbar({
         message: `已将“${notice.sender}”设置为已读`,
         color: 'success',
@@ -378,6 +389,17 @@ export default {
       this.readmessages = this.readmessages.filter(item => item.id !== notice.id);
       this.unreadmessages.push(notice);
       this.sortMessages(this.unreadmessages);
+      const userId = this.$store.getters.getUserId;
+      const requestData = {
+        user_id: userId,
+        message_id: notice.id
+      };
+      let url = 'http://127.0.0.1:8000/api/message/unread_message/';
+      const response = await axios.post(url, requestData, {
+        headers: {
+          'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+        }
+      });
       this.showSnackbar({
         message: `已将“${notice.sender}”设置为未读`,
         color: 'warning',
@@ -388,6 +410,16 @@ export default {
       this.unreadmessages.forEach(notice => {
         notice.read = true;
         this.readmessages.push(notice);
+      });
+      const userId = this.$store.getters.getUserId;
+      const requestData = {
+        user_id: userId,
+      };
+      let url = 'http://127.0.0.1:8000/api/message/read_all_message/';
+      const response = await axios.post(url, requestData, {
+        headers: {
+          'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+        }
       });
       this.unreadmessages = [];
       this.sortMessages(this.readmessages);
@@ -419,9 +451,9 @@ export default {
             sendTime: m.sent_at,
             content: m.content,
             avatar: m.sender_avatar,
-            read: m.read || false,
+            read: m.is_read || false,
           };
-          if (m.read === false || m.read === undefined) {
+          if (m.is_read === false || m.is_read === undefined) {
             this.unreadmessages.push(message);
           } else {
             this.readmessages.push(message);
