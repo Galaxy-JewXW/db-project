@@ -19,10 +19,10 @@ class CreateExam(APIView):
             title = data.get('title')
             description = data.get('description')
             start_time = data.get('start_time')
-            end_time = data.get('end_time')
+            duration = data.get('duration')
             question_ids = data.get('questions')
 
-            if not title or not start_time or not end_time:
+            if not title or not start_time or not duration:
                 return Response({"error": "Missing required fields."}, status=HTTP_400_BAD_REQUEST)
 
             # 创建考试
@@ -30,7 +30,7 @@ class CreateExam(APIView):
                 title=title,
                 description=description,
                 start_time=start_time,
-                end_time=end_time,
+                duration=duration,
                 created_by=user
             )
 
@@ -55,8 +55,12 @@ class EnrollExam(APIView):
             user = User.objects.get(id=user_id)
             exam = Exam.objects.get(id=exam_id)
 
-            # 添加学生到考试
-            exam.students.add(user)
+            # 添加学生到考试 或 取消报名
+            if user in exam.students.all():
+                exam.students.remove(user)
+            else:
+                exam.students.add(user)
+
             return Response({"success": True, "message": "Enrolled successfully."}, status=HTTP_200_OK)
 
         except User.DoesNotExist:
@@ -87,6 +91,14 @@ class SubmitAnswer(APIView):
                 exam=exam, question=question, student=user,
                 defaults={'submitted_answer': submitted_answer}
             )
+
+            if question.is_true_false() or question.is_single_choice() or question.is_multiple_choice():
+                if submitted_answer == question.answer:
+                    record.is_correct = True
+                else:
+                    record.is_correct = False
+
+                record.save()
 
             return Response({
                 "success": True,
@@ -159,15 +171,13 @@ class ViewStudentRecordsById(APIView):
             exam = Exam.objects.get(id=exam_id)
             student = User.objects.get(id=student_id)
 
-            if user.user_role != 1:  # 检查是否为老师
-                return Response({"error": "Only teachers can view records."}, status=HTTP_400_BAD_REQUEST)
-
             # 获取学生的所有记录
             records = ExamRecord.objects.filter(exam=exam, student=student)
             records_data = []
             for record in records:
                 records_data.append({
                     "question_id": record.question.id,
+                    "question_answer": record.question.answer,
                     "submitted_answer": record.submitted_answer,
                     "is_correct": record.is_correct
                 })
@@ -220,8 +230,7 @@ class GetAllExams(APIView):
                     "title": exam.title,
                     "description": exam.description,
                     "start_time": exam.start_time,
-                    "end_time": exam.end_time,
-                    "duration": exam.duration or exam.calculate_duration(),
+                    "duration": exam.duration,
                     "created_by": exam.created_by.name,
                     "student_count": exam.students.count(),
                     "question_count": exam.questions.count(),
@@ -382,4 +391,218 @@ class GetExamStudents(APIView):
             return Response({
                 "success": False,
                 "error": f"Missing required field: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
+
+
+class GetExamQuestionOfStudents(APIView):
+    """
+    获取某一考试内指定题目所有学生的作答情况。
+    """
+
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            user_id = data.get("user_id")
+            question_id = data.get("question_id")
+            exam_id = data.get("exam_id")
+
+            # 验证用户和权限
+            user = User.objects.get(id=user_id)
+            if user.user_role != 1:  # 检查用户是否为老师
+                return Response({
+                    "success": False,
+                    "error": "权限不足",
+                    "message": "只有老师可以查看学生作答情况。"
+                }, status=HTTP_400_BAD_REQUEST)
+
+            # 获取考试和题目
+            exam = Exam.objects.get(id=exam_id)
+            question = exam.questions.get(id=question_id)  # 确保题目属于该考试
+
+            # 获取参与该考试的所有学生
+            students = exam.students.all().order_by("student_id")
+
+            # 获取学生作答情况
+            students_data = []
+            for student in students:
+                try:
+                    # 查找学生的作答记录
+                    record = ExamRecord.objects.get(exam=exam, question=question, student=student)
+                    students_data.append({
+                        "student_id": student.student_id,
+                        "name": student.name,
+                        "submitted_answer": record.submitted_answer,
+                        "is_correct": record.is_correct,
+                        "submitted_at": record.submitted_at
+                    })
+                except ExamRecord.DoesNotExist:
+                    # 如果没有作答记录
+                    students_data.append({
+                        "student_id": student.student_id,
+                        "name": student.name,
+                        "submitted_answer": None,
+                        "is_correct": None,
+                        "submitted_at": None
+                    })
+
+            return Response({
+                "success": True,
+                "exam_id": exam.id,
+                "question_id": question.id,
+                "question_answer": question.answer,
+                "students": students_data
+            }, status=HTTP_200_OK)
+
+        except Exam.DoesNotExist:
+            return Response({"error": "Exam not found."}, status=HTTP_404_NOT_FOUND)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found in the specified exam."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"Missing required field: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
+
+
+class EditExam(APIView):
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            user_id = data.get('user_id')
+            user = User.objects.get(id=user_id)
+
+            if user.user_role != 1:  # 检查是否为老师
+                return Response({"error": "Only teachers can create exams."}, status=HTTP_400_BAD_REQUEST)
+
+            title = data.get('title')
+            description = data.get('description')
+            start_time = data.get('start_time')
+            duration = data.get('duration')
+            question_ids = data.get('questions')
+
+            if not title or not start_time or not duration:
+                return Response({"error": "Missing required fields."}, status=HTTP_400_BAD_REQUEST)
+
+            # 创建考试
+            exam = Exam.objects.create(
+                title=title,
+                description=description,
+                start_time=start_time,
+                duration=duration,
+                created_by=user
+            )
+
+            # 关联题目
+            if question_ids:
+                questions = Question.objects.filter(id__in=question_ids)
+                exam.questions.add(*questions)
+
+            return Response({"success": True, "exam_id": exam.id}, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+
+class ViewQuestionResult(APIView):
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            user_id = data.get('user_id')
+            exam_id = data.get('exam_id')
+            question_id = data.get('question_id')
+
+            user = User.objects.get(id=user_id)
+            exam = Exam.objects.get(id=exam_id)
+            question = Question.objects.get(id=question_id)
+
+            # 确保学生已报名考试
+            if user not in exam.students.all():
+                return Response({"error": "You are not enrolled in this exam."}, status=HTTP_400_BAD_REQUEST)
+
+            question_data = {
+                "id": question.id,
+                "type": question.type,
+                "content": question.content,
+                "subject": question.subject,
+                "added_at": question.added_at,
+                "difficulty": question.difficulty,
+                "answer": question.answer,
+                "tags": question.tags,
+                "added_by": question.added_by.name,
+                "option_count": question.option_count,  # 新增选项数量
+            }
+
+            try:
+                exam_record = ExamRecord.objects.get(exam=exam, question=question, student=user)
+                has_submitted = exam_record.has_submitted()
+                answer_now = exam_record.submitted_answer
+                is_correct = exam_record.is_correct
+            except ExamRecord.DoesNotExist:
+                answer_now = ""
+                is_correct = False
+
+            return Response({
+                "success": True,
+                "question_data": question_data,
+                "is_correct": is_correct,  # 确认学生是否提交了答案
+                "answer_now": answer_now
+            }, status=HTTP_200_OK)
+
+        except (User.DoesNotExist, Exam.DoesNotExist, Question.DoesNotExist):
+            return Response({"error": "Invalid exam, user, or question."}, status=HTTP_404_NOT_FOUND)
+
+
+class DeleteExam(APIView):
+    """
+    删除指定考试的视图函数。
+    只有管理员或考试的创建者可以删除考试。
+    """
+
+    def post(self, request):
+        try:
+            # 获取请求数据
+            data = decode_request(request)
+            user_id = data.get("user_id")  # 当前请求用户
+            exam_id = data.get("exam_id")  # 要删除的考试ID
+
+            # 验证用户身份
+            user = User.objects.get(id=user_id)
+            exam = Exam.objects.get(id=exam_id)
+
+            # 检查权限：管理员或考试创建者
+            if user.user_role != 1 and exam.created_by != user:
+                return Response({
+                    "success": False,
+                    "error": "权限不足",
+                    "message": "只有管理员或考试创建者可以删除考试。"
+                }, status=HTTP_400_BAD_REQUEST)
+
+            # 删除考试
+            exam.delete()
+            return Response({
+                "success": True,
+                "message": f"考试 {exam_id} 已成功删除。"
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "用户未找到。"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except Exam.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "考试未找到。"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"缺少必要字段: {str(e)}"
             }, status=HTTP_400_BAD_REQUEST)
