@@ -26,16 +26,17 @@ class Discussion(models.Model):
     subscribers = models.ManyToManyField(User, related_name="subscribed_discussions", blank=True)  # 订阅用户
     likes = models.ManyToManyField(User, related_name="liked_discussions", blank=True)  # 点赞的用户
 
-    def notify_subscribers(self, update_content):
+    def notify_subscribers(self, update_content, not_send):
         """通知订阅者更新"""
         for subscriber in self.subscribers.all():
-            Message.objects.create(
-                sender=User.objects.get(id=1),  # 系统消息
-                sender_avatar=User.objects.get(id=1).avatar,
-                receiver=subscriber,
-                content=f"您关注的帖子《{self.title}》更新了: \n {update_content[:50]}",
-                is_read=False,
-            )
+            if subscriber != not_send:
+                Message.objects.create(
+                    sender=User.objects.get(id=1),  # 系统消息
+                    sender_avatar=User.objects.get(id=1).avatar,
+                    receiver=subscriber,
+                    content=f"您关注的帖子《{self.title}》更新了: \n {update_content[:50]}",
+                    is_read=False,
+                )
 
     def __str__(self):
         return f"{self.title} - {self.publisher.name}"

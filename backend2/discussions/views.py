@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
 
+
 @method_decorator(csrf_exempt, name='dispatch')
 class CreateDiscussion(APIView):
     def post(self, request):
@@ -71,6 +72,7 @@ class LikePost(APIView):
         except Discussion.DoesNotExist:
             return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
 
+
 class MarkDiscussion(APIView):
     def post(self, request):
         data = decode_request(request)
@@ -79,10 +81,10 @@ class MarkDiscussion(APIView):
         discussion_id = data.get('dis_id')
         try:
             discussion = Discussion.objects.get(id=discussion_id)
-            
+
             discussion.isMarked = not discussion.isMarked
             discussion.save()
-            return Response({"success": True},status=HTTP_200_OK)
+            return Response({"success": True}, status=HTTP_200_OK)
         except User.DoesNotExist:
             return Response({
                 'success': False,
@@ -91,7 +93,8 @@ class MarkDiscussion(APIView):
 
         except Discussion.DoesNotExist:
             return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
-        
+
+
 class LikeReply(APIView):
     def post(self, request):
         data = decode_request(request)
@@ -153,7 +156,7 @@ class CreateReply(APIView):
         user = User.objects.get(student_id=user_id)
         discussion_id = data.get("discussion_id")
         content = data.get("content")
-        
+
         if not content:
             return Response({"error": "Content is required."}, status=HTTP_400_BAD_REQUEST)
 
@@ -174,11 +177,11 @@ class CreateReply(APIView):
             discussion.save()
 
             # 通知主帖发布者有新回复
-            reply.notify_publisher()
-
+            if discussion.publisher != user:
+                reply.notify_publisher()
             # 通知订阅者帖子更新
             update_content = f"新回复by{user.name}：\n{content[:50]}"  # 节选回复内容
-            discussion.notify_subscribers(update_content)
+            discussion.notify_subscribers(update_content, user)
 
             return Response({"success": True, "reply_id": reply.id}, status=HTTP_200_OK)
 
@@ -218,7 +221,7 @@ class EditDiscussion(APIView):
 
             # 通知订阅者帖子更新
             update_content = f"帖子内容更新: {content[:50]}"
-            discussion.notify_subscribers(update_content)
+            discussion.notify_subscribers(update_content, user)
 
             return Response({"success": True, "message": "Discussion updated successfully."}, status=HTTP_200_OK)
 
@@ -256,14 +259,18 @@ class EditReply(APIView):
             reply.last_updated = now()  # 更新最后更新时间
             reply.save()
 
+
             # 更新主帖状态
             discussion = reply.discussion
             discussion.last_updated = now()  # 主帖最后更新时间同步更新
             discussion.save()
 
+            if discussion.publisher != user:
+                reply.notify_publisher()
+
             # 通知订阅者帖子更新
             update_content = f"回复内容更新: {content[:50]}"
-            discussion.notify_subscribers(update_content)
+            discussion.notify_subscribers(update_content, user)
 
             return Response({"success": True, "message": "Reply updated successfully."}, status=HTTP_200_OK)
 
@@ -300,7 +307,7 @@ class GetAllDiscussions(APIView):
                 "id": discussion.id,
                 "title": discussion.title,
                 "publisher": discussion.publisher.name,
-                "avatar":  User.objects.get(student_id=discussion.publisher.student_id).avatar,
+                "avatar": User.objects.get(student_id=discussion.publisher.student_id).avatar,
                 "publishTime": discussion.publish_time,
                 "lastUpdated": discussion.last_updated,
                 "tag": discussion.tag,
@@ -354,6 +361,7 @@ class GetDiscussionReplies(APIView):
 
         except Discussion.DoesNotExist:
             return Response({"error": "Discussion not found."}, status=HTTP_404_NOT_FOUND)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetDiscussionById(APIView):
@@ -409,11 +417,14 @@ class GetDiscussionById(APIView):
 
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteDiscussion(APIView):
     """
     删除指定 ID 的讨论帖，仅允许管理员或讨论帖的发布者删除。
     """
+
     def post(self, request):
         try:
             data = decode_request(request)
@@ -443,6 +454,7 @@ class DeleteDiscussion(APIView):
 
         except KeyError as e:
             return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class DeleteReply(APIView):
