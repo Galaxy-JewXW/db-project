@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex"; // 引入 mapMutations
+import { mapMutations, mapActions } from "vuex"; // 引入 mapMutations
 import store from "@/store";
 import axios from 'axios';
 
@@ -82,7 +82,7 @@ export default {
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]), // 映射 Vuex 的 mutations
-
+    ...mapActions('snackbar', ['showSnackbar']),
     returnForum() {
       this.$router.push(`/forum`);
     },
@@ -107,11 +107,11 @@ export default {
           });
         } catch (error) {
           if (error.response && error.response.status === 400) {
-            this.$toast.error('标题和内容不能为空！');
+            console.log('标题和内容不能为空！');
           } else if (error.response && error.response.status === 404) {
-            this.$toast.error('用户不存在！');
+            console.log('用户不存在！');
           } else {
-            this.$toast.error('创建讨论失败，请稍后重试。');
+            console.log('创建讨论失败，请稍后重试。');
           }
           console.error('提交失败:', error);
         }
