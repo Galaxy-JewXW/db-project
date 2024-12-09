@@ -177,7 +177,7 @@ class CreateReply(APIView):
             reply.notify_publisher()
 
             # 通知订阅者帖子更新
-            update_content = f"新回复by{user.name}：{content[:50]}"  # 节选回复内容
+            update_content = f"新回复by{user.name}：\n{content[:50]}"  # 节选回复内容
             discussion.notify_subscribers(update_content)
 
             return Response({"success": True, "reply_id": reply.id}, status=HTTP_200_OK)
