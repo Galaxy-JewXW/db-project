@@ -12,9 +12,10 @@ class Exam(models.Model):
     description = models.TextField(blank=True, null=True)  # 考试描述
     created_at = models.DateTimeField(auto_now_add=True)  # 创建时间
     start_time = models.DateTimeField()  # 考试开始时间
-    duration = models.IntegerField()  # 考试持续时间（分钟）
+    duration = models.IntegerField(null=False, default=60)  # 考试持续时间（分钟）
     end_time = models.DateTimeField(null=True, blank=True)  # 考试结束时间
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_exams")  # 创建者（老师）
+    is_published = models.BooleanField(default=False)
 
     students = models.ManyToManyField(User, related_name="enrolled_exams", blank=True)  # 报名考试的学生
     questions = models.ManyToManyField(Question, related_name="exams")  # 考试中的题目集合

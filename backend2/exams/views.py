@@ -606,3 +606,87 @@ class DeleteExam(APIView):
                 "success": False,
                 "error": f"缺少必要字段: {str(e)}"
             }, status=HTTP_400_BAD_REQUEST)
+
+
+class PublishExamResults(APIView):
+    """
+    老师公开考试结果的视图函数。
+    只有老师可以将考试结果设为公开。
+    """
+
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            user_id = data.get("user_id")
+            exam_id = data.get("exam_id")
+
+            # 获取用户和考试信息
+            user = User.objects.get(id=user_id)
+            exam = Exam.objects.get(id=exam_id)
+
+            # 检查权限：只有老师可以公开考试结果
+            if user.user_role != 1:
+                return Response({
+                    "success": False,
+                    "error": "权限不足",
+                    "message": "只有老师可以公开考试结果。"
+                }, status=HTTP_400_BAD_REQUEST)
+
+            # 更新考试的公开状态
+            exam.is_published = not exam.is_published
+            exam.save()
+
+            return Response({
+                "success": True,
+                "message": f"考试 {exam_id} 的结果已公开。"
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "用户未找到。"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except Exam.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "考试未找到。"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"缺少必要字段: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
+
+
+class GetExamPublishStatus(APIView):
+    """
+    获取当前考试的公开状态。
+    """
+
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            exam_id = data.get("exam_id")
+
+            # 获取考试信息
+            exam = Exam.objects.get(id=exam_id)
+
+            return Response({
+                "success": True,
+                "exam_id": exam.id,
+                "is_published": exam.is_published
+            }, status=HTTP_200_OK)
+
+        except Exam.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "考试未找到。"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"缺少必要字段: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)

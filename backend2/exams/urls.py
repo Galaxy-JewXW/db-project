@@ -32,8 +32,11 @@ urlpatterns = [
     # 删除考试
     path('delete_exam', views.DeleteExam.as_view(), name='delete_exam'),
     # 获取某道题目所有学生的作答情况
-    path('get_exam_questions_students', views.GetExamQuestionOfStudents, name='get_exam_questions_students'),
+    path('get_exam_questions_students', views.GetExamQuestionOfStudents.as_view(), name='get_exam_questions_students'),
     # 学生查看某一题目批改情况
     path('view_question_result', views.ViewQuestionResult.as_view(), name='view_question_result'),
-
+    # 老师更改考试结果公开状态
+    path('publish_exam_results', views.PublishExamResults.as_view(), name='publish_exam_results'),
+    # 学生获取考试信息是否公开
+    path('get_exam_publish_status', views.GetExamPublishStatus.as_view(), name='get_exam_publish_status'),
 ]

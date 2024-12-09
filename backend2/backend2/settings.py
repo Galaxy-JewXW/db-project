@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'images',
     'message',
     'questions',
+    'exams',
     'board',
     'discussions',
     'broadcast',
