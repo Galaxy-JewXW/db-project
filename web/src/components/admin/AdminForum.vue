@@ -6,7 +6,7 @@
                 <v-card-text class="py-2">
                     <v-row>
                         <!-- 标签筛选 -->
-                        <v-col cols="12" class="filter-section" style="padding-bottom: 0px">
+                        <v-col cols="12" class="filter-section pa-0">
                             <div class="filter-group">
                                 <span class="filter-label">按标签筛选:</span>
                                 <v-chip v-for="tag in subjects" :key="tag" class="ma-2" color="primary"
@@ -21,7 +21,7 @@
                         </v-col>
 
                         <!-- 时间筛选 -->
-                        <v-col cols="12" class="filter-section" style="padding-top: 0px">
+                        <v-col cols="12" class="filter-section pa-0">
                             <div class="filter-group">
                                 <span class="filter-label">按时间筛选:</span>
                                 <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary"
@@ -35,13 +35,20 @@
                                 </v-chip>
                             </div>
                         </v-col>
+                        <v-col cols="12" class="filter-section pa-0">
+                            <v-row>
+                                <v-col cols="auto">
+                                    <v-checkbox label="只查看精华帖" density="compact" v-model="onlyMarked"></v-checkbox>
+                                </v-col>
+                            </v-row>
+                        </v-col>
                     </v-row>
                 </v-card-text>
             </v-card>
         </div>
 
         <!-- 总数显示 -->
-        <div class="total-count">
+        <div class="total-count pl-2">
             共 {{ filteredDiscussions.length }} 个满足条件的讨论贴
         </div>
 
@@ -69,7 +76,7 @@
                                         {{ discussion.tag }}
                                     </v-chip>
                                     <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label>
-                                        加精
+                                        精华
                                     </v-chip>
                                     {{
                                         discussion.summary.length > 60
@@ -145,6 +152,7 @@ export default {
             selectedTag: null,
             selectedTimeRange: null,
             selectedDiscussion: {},
+            onlyMarked: false,
         };
     },
     mounted() {
@@ -156,6 +164,10 @@ export default {
     computed: {
         filteredDiscussions() {
             let filtered = this.discussions;
+
+            if (this.onlyMarked) {
+                filtered = filtered.filter((d) => d.isMarked);
+            }
 
             // 按标签筛选
             if (this.selectedTag) {
@@ -362,9 +374,7 @@ export default {
 }
 
 .total-count {
-    margin-left: 16px;
     font-weight: bold;
-    margin-bottom: 8px;
 }
 
 @media (min-width: 960px) {

@@ -22,11 +22,11 @@
     <v-app-bar app class="pl-0">
       <v-app-bar-title>{{ appTitle }}</v-app-bar-title>
       <template v-slot:append>
-        <v-menu v-if="!isLoginRoute" :close-on-content-click="false">
+        <v-menu v-if="!isLoginRoute" :close-on-content-click="false" location="bottum" open-on-hover>
           <template v-slot:activator="{ props }">
             <v-btn icon="mdi-bell" v-bind="props"></v-btn>
           </template>
-          <v-card style="min-width: 400px;">
+          <v-card style="min-width: 475px; max-width: 500px;">
             <v-card-title>
               <v-row class="fill-height pt-2 pb-2" align="center" justify="space-between">
                 <span class="pl-2">系统通知</span>
@@ -44,6 +44,9 @@
               <v-tabs-window v-model="tab">
                 <v-tabs-window-item value="unread">
                   <div v-if="unreadmessages.length > 0">
+                    <!-- 未读消息分页 -->
+                    <v-pagination v-if="totalPagesUnread > 1" v-model="currentPageUnread" :length="totalPagesUnread"
+                      total-visible="5" class="mt-2"></v-pagination>
                     <v-list lines="two" class="pa-0">
                       <v-list-item v-for="notice in paginatedUnreadMessages" :key="notice.id"
                         @click="openMessageDialog(notice)">
@@ -67,9 +70,6 @@
                         </template>
                       </v-list-item>
                     </v-list>
-                    <!-- 未读消息分页 -->
-                    <v-pagination v-if="totalPagesUnread > 1" v-model="currentPageUnread" :length="totalPagesUnread"
-                      total-visible="5" class="mt-2"></v-pagination>
                   </div>
                   <div class="no-results" v-else>
                     暂无未读消息
@@ -77,6 +77,8 @@
                 </v-tabs-window-item>
                 <v-tabs-window-item value="read">
                   <div v-if="readmessages.length > 0">
+                    <v-pagination v-if="totalPagesRead > 1" v-model="currentPageRead" :length="totalPagesRead"
+                      total-visible="5" class="mt-2"></v-pagination>
                     <v-list lines="two" class="pa-0">
                       <v-list-item v-for="notice in paginatedReadMessages" :key="notice.id"
                         @click="openMessageDialog(notice)">
@@ -100,9 +102,6 @@
                         </template>
                       </v-list-item>
                     </v-list>
-                    <!-- 已读消息分页 -->
-                    <v-pagination v-if="totalPagesRead > 1" v-model="currentPageRead" :length="totalPagesRead"
-                      total-visible="5" class="mt-2"></v-pagination>
                   </div>
                   <div class="no-results" v-else>
                     暂无已读消息
@@ -357,7 +356,7 @@ export default {
       this.messageDialogVisible = false;
     },
     getMessagePreview(content) {
-      const maxLength = 30;
+      const maxLength = 26;
       if (content.length <= maxLength) {
         return content;
       }

@@ -22,7 +22,7 @@
               <v-card-text class="py-2">
                 <v-row>
                   <!-- Subject Filter -->
-                  <v-col cols="12" class="filter-section" style="padding-bottom: 0px">
+                  <v-col cols="12" class="filter-section pa-0">
                     <div class="filter-group">
                       <span class="filter-label">按科目筛选:</span>
                       <v-chip v-for="subject in subjects" :key="subject" class="ma-2" color="primary" variant="outlined"
@@ -38,7 +38,7 @@
                   </v-col>
 
                   <!-- Time Filter -->
-                  <v-col cols="12" class="filter-section" style="padding-top: 0px">
+                  <v-col cols="12" class="filter-section pa-0">
                     <div class="filter-group">
                       <span class="filter-label">按时间筛选:</span>
                       <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary"
