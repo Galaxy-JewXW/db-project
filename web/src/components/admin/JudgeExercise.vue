@@ -22,18 +22,18 @@
                     </v-window>
                 </v-col>
 
-                <!-- 右侧栏：评分和标准答案 -->
+                <!-- 右侧栏：正误标记和标准答案 -->
                 <v-col cols="12" md="4">
                     <v-card>
                         <v-card-title>
-                            评分 (总分: {{ totalScore }})
+                            判定正误
                         </v-card-title>
                         <v-card-text>
-                            <v-form ref="scoreForm" @submit.prevent="saveScore">
-                                <v-text-field v-model.number="selectedScore" label="分数" :rules="scoreRules"
-                                    type="number" min="1" :max="maxScore" required variant="outlined"></v-text-field>
-                                <v-btn color="primary" @click="saveScore">
-                                    保存分数
+                            <v-form ref="correctnessForm" @submit.prevent="saveCorrectness">
+                                <v-switch v-model="isCorrectSelected" :label="isCorrectSelected ? '回答正确' : '回答错误'"
+                                    hide-details="auto"></v-switch>
+                                <v-btn color="primary" @click="saveCorrectness">
+                                    保存结果
                                 </v-btn>
                                 <v-btn variant="plain" @click="goBack">
                                     返回总览页面
@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import { mapMutations, mapActions } from 'vuex'; // 引入 mapMutations
+import { mapMutations, mapActions } from 'vuex';
 
 export default {
     name: 'GradingPage',
@@ -74,33 +74,14 @@ export default {
             currentWindow: 0, // 当前选择的窗口索引
             stdanswer: '',
             answers: [],
-            selectedScore: 1, // 默认分数
-            totalScore: 10, // 题目的总分
+            isCorrectSelected: false,
         };
     },
-    computed: {
-        maxScore() {
-            return this.totalScore - 1;
-        },
-        scoreRules() {
-            return [
-                v => (v !== null && v !== undefined && v !== '') || '分数不能为空',
-                v => Number.isInteger(v) || '分数必须是整数',
-                v => (v > 0) || '分数必须大于 0',
-                v => (v <= this.totalScore) || `分数不可大于总分 ${this.totalScore}`,
-            ];
-        },
-    },
     watch: {
-        // 监听窗口变化以更新 selectedScore
         currentWindow(newVal) {
             const selectedAnswer = this.answers[newVal];
             if (selectedAnswer) {
-                // 确保分数符合规则
-                this.selectedScore =
-                    selectedAnswer.score >= 1 && selectedAnswer.score <= this.maxScore
-                        ? selectedAnswer.score
-                        : 1;
+                this.isCorrectSelected = selectedAnswer.isCorrect;
             }
         },
     },
@@ -113,72 +94,44 @@ export default {
         this.fetchAnswers(this.examId, this.exerciseId);
     },
     methods: {
-        ...mapMutations(['setAppTitle', 'setPageTitle']), // 映射 Vuex 的 mutations
+        ...mapMutations(['setAppTitle', 'setPageTitle']),
         ...mapActions('snackbar', ['showSnackbar']),
         goBack() {
             this.$router.push(`/admin/judge/${this.examId}`);
         },
         fetchAnswers(examId, exerciseId) {
-            // 模拟从 API 获取数据
             // 在这里应替换为实际的 API 调用以获取数据
             this.stdanswer = `$x * y$`;
-            this.totalScore = 10; // 示例总分，实际数据请替换
+            // 示例数据，使用 isCorrect 字段表示正误
             this.answers = [
                 {
                     student: 22373001,
                     answer: 'x + y',
-                    score: 5,
+                    isCorrect: false,
                 },
                 {
                     student: 22373002,
                     answer: 'x * y',
-                    score: 7,
+                    isCorrect: true,
                 },
                 {
                     student: 22373003,
                     answer: `$y * x - 2$`,
-                    score: 3,
+                    isCorrect: false,
                 },
             ];
-            // 初始化 selectedScore 为第一个学生的分数或默认值 1
             if (this.answers.length > 0) {
-                const initialScore =
-                    this.answers[0].score >= 1 && this.answers[0].score <= this.maxScore
-                        ? this.answers[0].score
-                        : 1;
-                this.selectedScore = initialScore;
+                this.isCorrectSelected = this.answers[0].isCorrect;
             }
         },
-        saveScore() {
+        saveCorrectness() {
             const selectedAnswer = this.answers[this.currentWindow];
             if (selectedAnswer) {
-                // 使用表单验证
-                const isValid = this.$refs.scoreForm.validate();
-                if (!isValid) {
-                    return;
-                }
-
-                const score = Number(this.selectedScore);
-                // 再次确保分数合法性
-                if (
-                    !Number.isInteger(score) ||
-                    score < 1 ||
-                    score >= this.totalScore
-                ) {
-                    // 验证失败，不保存
-                    return;
-                }
-
-                // 更新本地状态中的分数
-                selectedAnswer.score = score;
-
-                // 这里可以提交 Vuex mutation 或调用 API 将分数保存到服务器
-                console.log(
-                    `已保存学生 ${selectedAnswer.student} 的分数: ${score}`
-                );
-
+                selectedAnswer.isCorrect = this.isCorrectSelected;
+                // 这里可调用 API 保存数据
+                console.log(`已保存学生 ${selectedAnswer.student} 的判定结果: ${this.isCorrectSelected ? '正确' : '错误'}`);
                 this.showSnackbar({
-                    message: '分数已提交',
+                    message: '结果已提交',
                     color: 'success',
                     timeout: 1500
                 });
