@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.db import models
 from users.models import User
 from questions.models import Question
@@ -10,8 +12,8 @@ class Exam(models.Model):
     description = models.TextField(blank=True, null=True)  # 考试描述
     created_at = models.DateTimeField(auto_now_add=True)  # 创建时间
     start_time = models.DateTimeField()  # 考试开始时间
-    duration = models.IntegerField(null=True, blank=True)  # 考试持续时间（分钟）
-    end_time = models.DateTimeField()  # 考试结束时间
+    duration = models.IntegerField()  # 考试持续时间（分钟）
+    end_time = models.DateTimeField(null=True, blank=True)  # 考试结束时间
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_exams")  # 创建者（老师）
 
     students = models.ManyToManyField(User, related_name="enrolled_exams", blank=True)  # 报名考试的学生
@@ -20,14 +22,13 @@ class Exam(models.Model):
     def __str__(self):
         return self.title
 
-    def calculate_duration(self):
+    def calculate_end_time(self):
         """
         如果没有显式设置持续时间，则通过 start_time 和 end_time 动态计算
         """
-        if self.start_time and self.end_time:
-            delta = self.end_time - self.start_time
-            return delta.total_seconds() // 60  # 持续时间以分钟为单位
-        return None
+        if self.start_time and self.duration:
+            self.end_time = self.start_time + timedelta(minutes=self.duration)
+
 
 
 # Exam 做题记录

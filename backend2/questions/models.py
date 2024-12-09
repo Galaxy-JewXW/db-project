@@ -54,12 +54,21 @@ class Question(models.Model):
     added_at = models.DateField()  # 添加时间
     source = models.CharField(max_length=100, blank=True, null=True)  # 题目来源
     tags = models.JSONField()  # JSON 格式
-    
+
     difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES)  # 难度
     answer = models.TextField(blank=True, null=True)  # 答案内容
     added_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="added_questions")  # 创建者
     # question_banks = models.ManyToManyField(QuestionBank, related_name="questions")  # 题库关系
     option_count = models.IntegerField(default=0)  # 选项数量，默认 0
+
+    def is_single_choice(self):
+        return self.type == "单项选择题"
+
+    def is_multiple_choice(self):
+        return self.type == "多项选择题"
+
+    def is_true_false(self):
+        return self.type == "判断题"
 
     def get_user_status(self, user):
         """
