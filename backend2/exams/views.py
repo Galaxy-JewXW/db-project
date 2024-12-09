@@ -98,6 +98,54 @@ class SubmitAnswer(APIView):
             return Response({"error": "Invalid exam, user, or question."}, status=HTTP_404_NOT_FOUND)
 
 
+class GetExamQuestionById(APIView):
+    def post(self, request):
+        try:
+            data = decode_request(request)
+            user_id = data.get('user_id')
+            exam_id = data.get('exam_id')
+            question_id = data.get('question_id')
+
+            user = User.objects.get(id=user_id)
+            exam = Exam.objects.get(id=exam_id)
+            question = Question.objects.get(id=question_id)
+
+            # 确保学生已报名考试
+            if user not in exam.students.all():
+                return Response({"error": "You are not enrolled in this exam."}, status=HTTP_400_BAD_REQUEST)
+
+            question_data = {
+                "id": question.id,
+                "type": question.type,
+                "content": question.content,
+                "subject": question.subject,
+                "added_at": question.added_at,
+                "difficulty": question.difficulty,
+                "answer": question.answer,
+                "tags": question.tags,
+                "added_by": question.added_by.name,
+                "option_count": question.option_count,  # 新增选项数量
+            }
+
+            try:
+                exam_record = ExamRecord.objects.get(exam=exam, question=question, student=user)
+                has_submitted = exam_record.has_submitted()
+                answer_now = exam_record.submitted_answer
+            except ExamRecord.DoesNotExist:
+                answer_now = ""
+                has_submitted = False
+
+            return Response({
+                "success": True,
+                "question_data": question_data,
+                "has_submitted": has_submitted,  # 确认学生是否提交了答案
+                "answer_now": answer_now
+            }, status=HTTP_200_OK)
+
+        except (User.DoesNotExist, Exam.DoesNotExist, Question.DoesNotExist):
+            return Response({"error": "Invalid exam, user, or question."}, status=HTTP_404_NOT_FOUND)
+
+
 class ViewStudentRecordsById(APIView):
     def post(self, request):
         try:

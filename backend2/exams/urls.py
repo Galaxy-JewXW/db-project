@@ -25,4 +25,6 @@ urlpatterns = [
 
     # 获取某一考试内所有参与学生的作答情况
     path('get_exam_students', views.GetExamStudents.as_view(), name='get_exam_students'),
+    # 获取考试内当前学生查看某题的信息，包含题目信息和学生的已有作答
+    path('get_exam_student_questions', views.GetExamQuestionById.as_view(), name='get_exam_student_questions'),
 ]
