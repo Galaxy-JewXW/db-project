@@ -91,6 +91,7 @@ class SubmitAnswer(APIView):
             return Response({
                 "success": True,
                 "record_id": record.id,
+                "answer_now": record.submitted_answer,
                 "has_submitted": record.has_submitted()  # 确认学生是否提交了答案
             }, status=HTTP_200_OK)
 
