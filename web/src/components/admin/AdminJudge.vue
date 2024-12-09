@@ -1,5 +1,28 @@
 <!-- components/ExamList.vue -->
 <template>
+    <v-banner sticky icon="mdi-plus" lines="one">
+        <template v-slot:text>
+            <div class="text-subtitle-1">作为辅导师，你可对模拟测试进行批改，或公布已完成批改的测试成绩。</div>
+        </template>
+    </v-banner>
+
+    <!-- 筛选条件区域 -->
+    <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选模拟测试" subtitle="通过名称搜索或选择科目进行筛选" prepend-icon="mdi-filter">
+        <v-row align="center" justify="start" no-gutters>
+            <v-col cols="12" sm="6" md="4" class="pa-2">
+                <v-text-field v-model="filterName" label="考试名称" placeholder="输入考试名称" clearable
+                    @input="resetPages"></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" md="4" class="pa-2">
+                <v-select v-model="filterSubject" :items="subjectOptions" label="科目" placeholder="选择科目" clearable
+                    @change="resetPages"></v-select>
+            </v-col>
+            <v-col cols="12" sm="6" md="4" class="pa-2">
+                <v-select v-model="filterStatus" :items="statusOptions" label="状态" placeholder="选择测试状态" clearable
+                    @change="resetPages"></v-select>
+            </v-col>
+        </v-row>
+    </v-card>
     <v-container fluid class="problemset-container">
         <div class="scroll-container">
             <template v-if="paginatedExams.length > 0">
@@ -117,10 +140,16 @@ export default {
                 },
                 // ... more exams
             ],
+            filterName: "",
+            filterSubject: "",
             currentPage: 1,
             itemsPerPage: 8, // Number of exams per page
             confirmDialogOpen: false,
             toDiscloseExam: null,
+            filterStatus: '全部',
+            statusOptions: [
+                '全部', '待批改', '已批改完成', '已公布成绩'
+            ]
         };
     },
     computed: {
@@ -130,10 +159,46 @@ export default {
         paginatedExams() {
             const start = (this.currentPage - 1) * this.itemsPerPage;
             const end = start + this.itemsPerPage;
-            return this.exams.slice(start, end);
+            return this.filteredExams.slice(start, end);
         },
         combinedExams() {
             return [...this.ongoingExams, ...this.comingExams];
+        },
+        allSubjects() {
+            const subjects = [
+                ...this.exams.map(exam => exam.subject),
+            ];
+            return Array.from(new Set(subjects)).sort();
+        },
+        subjectOptions() {
+            return this.allSubjects;
+        },
+        filteredExams() {
+            const filterName = (this.filterName || "").toLowerCase().trim();
+            const filterSubject = this.filterSubject || "";
+
+            let filtered = this.exams.filter(exam => {
+                const examName = exam.name || "";
+                const matchesName = examName.toLowerCase().includes(filterName);
+                const matchesSubject = filterSubject ? exam.subject === filterSubject : true;
+                return matchesName && matchesSubject;
+            });
+
+            if (this.filterStatus === '待批改') {
+                filtered = filtered.filter(exam => {
+                    return !exam.ready;
+                });
+            } else if (this.filterStatus === '已批改完成') {
+                filtered = filtered.filter(exam => {
+                    return exam.ready && !exam.disclosed;
+                });
+            } else if (this.filterStatus === '已公布成绩') {
+                filtered = filtered.filter(exam => {
+                    return exam.ready && exam.disclosed;
+                });
+            }
+
+            return filtered;
         },
     },
     mounted() {
@@ -158,6 +223,9 @@ export default {
             const date = new Date(dateString);
             return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
         },
+        resetPages() {
+            this.currentPage = 1;
+        },
         enterExam(exam) {
             // 导航到目标路由
             this.$router.push(`/admin/judge/${exam.id}`);
@@ -169,7 +237,7 @@ export default {
         discloseExam() {
             this.confirmDialogOpen = false;
             this.toDiscloseExam.disclosed = true;
-            
+
             this.showSnackbar({
                 message: `已公布“${this.toDiscloseExam.name}”的成绩`,
                 color: 'success',
