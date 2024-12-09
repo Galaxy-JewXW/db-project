@@ -431,15 +431,11 @@ class GetQuestionsByQuestionBank(APIView):
             question_bank_id = request.data['question_bank_id']
             question_bank = QuestionBank.objects.get(id=question_bank_id)
 
-            # 获取该题库内所有的题目
-            questions = question_bank.questions.all()
-
+            questions = Question.objects.filter(question_banks=question_bank)
             # 构造返回的数据
             # 初始化返回数据
             questions_data = []
             question_ids_list = []
-            
-            questions = question_bank.questions.filter(type=question_type)
 
             for question in questions:
                 user_status = question.get_user_status(user)  # 调用方法获取 user_status
@@ -450,7 +446,7 @@ class GetQuestionsByQuestionBank(APIView):
             # 遍历题目类型并按类型获取题目 ID
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = question_bank.questions.filter(type=question_type).order_by("id")
-
+                print([question.id for question in questions])
                 if questions.exists():
                     questions_data.append({
                         "type": type_label,
@@ -480,11 +476,13 @@ class GetQuestionById(APIView):
         try:
             # 获取指定题目
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             question_id = request.data['question_id']
             question = Question.objects.get(id=question_id)
-
-            # 构造返回的数据
+            print(user)
+            print(question)
+            print(question.subject)
+            # 构造返回的数据    
             question_data = {
                 "id": question.id,
                 "type": question.type,
@@ -494,6 +492,8 @@ class GetQuestionById(APIView):
                 "difficulty": question.difficulty,
                 "answer": question.answer,
                 "tags": question.tags,
+                "added_at" : question.added_at,
+                "source" : question.source,
                 "added_by": question.added_by.name,
                 "option_count": question.option_count,  # 新增选项数量
                 "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态

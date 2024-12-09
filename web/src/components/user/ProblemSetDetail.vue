@@ -4,12 +4,7 @@
 
     <!-- Chip row: contains all fields as Chips in the same row -->
     <div class="chips-row">
-      <v-chip
-        v-for="(chip, index) in chips"
-        :key="index"
-        :color="chip.color"
-        class="ma-1 chip-item"
-      >
+      <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
         <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
         {{ chip.label }}: {{ chip.value }}
       </v-chip>
@@ -21,10 +16,7 @@
     <!-- Scrollable container for questions -->
     <div class="questions-container">
       <v-expansion-panels>
-        <v-expansion-panel
-          v-for="(group, index) in questions"
-          :key="index"
-        >
+        <v-expansion-panel v-for="(group, index) in questions" :key="index">
           <v-expansion-panel-title>
             <template v-slot:default="{ expanded }">
               <v-row no-gutters>
@@ -44,26 +36,18 @@
           <v-expansion-panel-text>
             <v-row no-gutters>
               <div class="question-squares">
-                <v-btn
-                  v-for="questionId in getPaginatedIds(group)"
-                  :key="questionId"
-                  class="question-square text-none"
-                  :color="finishedQuestions.includes(questionId) ? 'green' : 'blue-darken-4'"
-                  rounded="0"
-                  @click="goToQuestionDetail(questionId)"
-                >
+                <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId" class="question-square text-none"
+                  :color="finishedQuestions.includes(questionId) ? 'green' : 'blue-darken-4'" rounded="0"
+                  @click="goToQuestionDetail(questionId)">
                   <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
                 </v-btn>
               </div>
             </v-row>
             <!-- 添加分页控件 -->
             <v-row justify="center" class="mt-2">
-              <v-pagination
-                v-model="group.currentPage"
-                :total-visible="7"
+              <v-pagination v-model="group.currentPage" :total-visible="7"
                 :length="Math.ceil(group.ids.length / pageSize)"
-                @input="handlePageChange(group, $event)"
-              ></v-pagination>
+                @input="handlePageChange(group, $event)"></v-pagination>
             </v-row>
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -79,7 +63,8 @@
 
 <script>
 import { mapMutations } from 'vuex';
-
+import axios from 'axios';
+import store from "@/store";
 export default {
   name: "ProblemSetDetail",
   data() {
@@ -136,13 +121,8 @@ export default {
   mounted() {
     const id = this.$route.params.id;
     // TODO: 这里是调试逻辑，以后记得删除
-    if (id == 1) {
-      this.fetchProblemSetData(id); // 获取题库数据
-    } else {
-      console.log(id);
-      console.error("题库ID缺失，无法加载题库数据");
-      this.$router.push(`/404`);
-    }
+    this.fetchProblemSetData(id); // 获取题库数据
+
   },
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle", "setProblemType"]),
@@ -183,28 +163,32 @@ export default {
       this.error = null;
 
       try {
-        // 模拟从后端获取数据
-        setTimeout(() => {
-          const questions = [
-            {
-              type: "单项选择题",
-              ids: [...Array(10000).keys()].map((i) => i + 1), // 生成 50 道单项选择题
-              currentPage: 1, // 当前页
-            },
-            {
-              type: "填空题",
-              ids: [101, 102, 103], // 填空题
-              currentPage: 1,
-            },
-            {
-              type: "解答题",
-              ids: [201, 202], // 解答题
-              currentPage: 1,
-            },
-          ];
-          this.questions = questions; // 更新组件本地的题目列表数据
+        // 发送 POST 请求到后端获取数据
+        const response = await axios.post('http://127.0.0.1:8000/api/questions/get_questions_by_questionbank/', {
+          user_id: this.$store.getters.getUserId,
+          question_bank_id: problemSetId
+        });
+
+        // 检查后端返回的响应
+        if (response.data.success) {
+          const data = response.data;
+
+          // 将后端返回的题目信息映射到前端的 `questions` 结构
+          const questions = data.questions.map((question) => {
+            return {
+              type: question.type, // 保留题型
+              ids: question.ids.map((id) => (id)),
+              currentPage: question.currentPage, // 保留当前页信息
+            };
+          });
+
+          // 更新组件的题目数据
+          this.questions = questions;
           this.loading = false;
-        }, 1000); // 模拟延迟
+          this.finishedQuestions = data.finish_question;
+        } else {
+          throw new Error("获取题目数据失败");
+        }
       } catch (e) {
         console.error("获取题目数据失败", e);
         this.error = "获取题目数据失败";

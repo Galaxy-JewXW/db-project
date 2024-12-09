@@ -36,7 +36,7 @@ urlpatterns = [
     path('get_questions_by_questionbank/', views.GetQuestionsByQuestionBank.as_view(), name='get_questions_by_questionbank'),
 
     # 获取某一特定 id 的 Question 详细信息
-    path('get_question_by_id', views.GetQuestionById.as_view(), name='get_question_by_id'),
+    path('get_question_by_id/', views.GetQuestionById.as_view(), name='get_question_by_id'),
 
     # 删除某一特定 id 的题目
     path('delete_question', views.DeleteQuestion.as_view(), name='delete_question'),
