@@ -37,6 +37,10 @@ export default createStore({
       console.log(state.user);
       localStorage.setItem("user", JSON.stringify(state.user));
     },
+    modifyUserAvatar(state, avatar_url) {
+      state.user.urls = avatar_url;
+      localStorage.setItem("user", JSON.stringify(state.user));
+    },
     cleanUserId(state) {
       state.userId = null;
       state.user = null;

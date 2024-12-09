@@ -13,7 +13,7 @@
           <!-- 左侧：头像和上传按钮 -->
           <v-col cols="12" md="4" class="text-center">
             <v-avatar size="120">
-              <img :src="userAvatar" alt="用户头像" />
+              <img :src="userAvatar" class="avatar-img" alt="用户头像" />
             </v-avatar>
             <v-divider class="my-6"></v-divider>
             <v-btn color="primary" prepend-icon="mdi-lead-pencil" @click="uploadAvatar">上传新头像</v-btn>
@@ -157,7 +157,7 @@
 </template>
 
 <script>
-import { mapMutations, mapState } from "vuex"; // 引入 mapMutations
+import { mapMutations, mapState, mapActions } from "vuex"; // 引入 mapMutations
 import store from "@/store";
 import axios from 'axios';
 
@@ -298,7 +298,8 @@ export default {
     },
   },
   methods: {
-    ...mapMutations(["setAppTitle", "setPageTitle", "modifyUserInfo"]),
+    ...mapMutations(["setAppTitle", "setPageTitle", "modifyUserInfo", "modifyUserAvatar"]),
+    ...mapActions('snackbar', ['showSnackbar']),
     // 生成从当前年份向前 10 年的入学年份列表
     getEntryYears() {
       const currentYear = new Date().getFullYear();
@@ -365,7 +366,7 @@ export default {
             const formData = new FormData();
             formData.append("avatar", file);
             formData.append("title", file.name); // 可以将文件名作为标题
-            formData.append("userId",this.$store.getters.getUserId);
+            formData.append("userId", this.$store.getters.getUserId);
             // 发送 POST 请求到后端
             try {
               const response = await fetch("http://127.0.0.1:8000/api/images/upload-avatar/", {
@@ -377,11 +378,27 @@ export default {
               if (response.ok) {
                 // 显示图床 URL
                 console.log("头像上传成功！图床链接：", result.url);
+                this.showSnackbar({
+                  message: '头像上传成功',
+                  color: 'success',
+                  timeout: 2000
+                });
+                this.modifyUserAvatar(result.url);
               } else {
                 // 显示错误消息
+                this.showSnackbar({
+                  message: '头像上传失败',
+                  color: 'error',
+                  timeout: 2000
+                });
                 console.error("上传失败：", result.message || "发生了错误");
               }
             } catch (error) {
+              this.showSnackbar({
+                message: '头像上传失败',
+                color: 'error',
+                timeout: 2000
+              });
               console.error("上传时发生错误：", error.message);
             }
           };
@@ -447,5 +464,11 @@ export default {
 .no-scrollbar::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
