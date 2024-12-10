@@ -149,7 +149,7 @@ export default {
             subject: mockProblemData.subject,
             addedAt: mockProblemData.addedAt,
             source: mockProblemData.source,
-            tags: mockProblemData.tags.tags.join(","),
+            tags: mockProblemData.tags.join(","),
             difficulty: mockProblemData.difficulty,
             addedAt: mockProblemData.added_at,
           };

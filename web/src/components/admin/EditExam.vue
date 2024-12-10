@@ -704,7 +704,7 @@ export default {
                     this.currentQuestion.content = question_data.content;
                     this.currentQuestion.subject = question_data.subject;
                     this.currentQuestion.source = question_data.source;
-                    this.currentQuestion.tags = question_data.tags.tags.join(", "); // 假设 tags 是数组，需要转换为字符串
+                    this.currentQuestion.tags = question_data.tags.join(", "); // 假设 tags 是数组，需要转换为字符串
                     this.currentQuestion.difficulty = question_data.difficulty;
                     this.currentQuestion.answer = question_data.answer;
                 } else {

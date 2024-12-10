@@ -365,7 +365,7 @@ export default {
             // 检查后端返回的响应
             if (response.data.success) {
                 const data = response.data.question;
-
+                console.log(data.tags);
                 // 将后端返回的题目信息映射到前端的 `questions` 结构
                 const mockProblemData = {
                     id: data.id,
@@ -373,7 +373,7 @@ export default {
                     content: data.content,
                     subject: data.subject,
                     source: data.source,
-                    tags: data.tags.tags.join(", "),
+                    tags: data.tags.join(", "),
                     difficulty: data.difficulty,
                     answer: data.answer,
                     optionsCount: data.option_count,
@@ -466,7 +466,11 @@ export default {
 
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
-                console.log(this.form);
+                const response = await axios.post('http://127.0.0.1:8000/api/questions/edit_question/', {
+                    user_id: this.$store.getters.getUserId,
+                    question_id: this.$route.params.id,
+                    data: this.form
+                });
                 this.showSnackbar({
                     message: '编辑题目成功',
                     color: 'success',

@@ -446,7 +446,6 @@ class GetQuestionBanksBySubject(APIView):
 class GetQuestionsByQuestionBank(APIView):
     def post(self, request):
         try:
-            # 获取指定题库
             user_id = request.data['user_id']
             user = User.objects.get(student_id=user_id)
             question_bank_id = request.data['question_bank_id']
@@ -591,12 +590,11 @@ class GetQuestionBankById(APIView):
 
     def post(self, request):
         try:
-            # 获取请求数据
+            # 获取请求数
             user_id = request.data['user_id']
             question_bank_id = request.data['question_bank_id']
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.get(id=question_bank_id)
-
             # 获取该题库中的所有题目
             questions_data = []
 
@@ -621,6 +619,7 @@ class GetQuestionBankById(APIView):
             # 构造返回的题库数据
             question_bank_data = {
                 "id": question_bank.id,
+                "name": question_bank.name,
                 "subject": question_bank.subject,
                 "estimated_time": question_bank.estimated_time,
                 "created_at": question_bank.created_at,
@@ -716,22 +715,25 @@ class EditQuestion(APIView):
             question_id = request.data['question_id']
             question_data = request.data['data']
 
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             question = Question.objects.get(id=question_id)
 
-            if user.user_role != 1:  # 权限检查
+            if user.user_role < 1:  # 权限检查
                 return Response({"error": "Only admins or teachers can edit questions."}, status=HTTP_400_BAD_REQUEST)
 
             # 更新字段
-            question.type = question_data['type']
+            question.type = question_data['questionType']
             question.content = question_data['content']
             question.subject = question_data['subject']
-            question.added_at = question_data['added_at']
+            # question.added_at = question_data['added_at'] maybe add update
             question.source = question_data.get('source', None)
-            question.tags = question_data.get('tags', [])
+            raw_tags = question_data['tags']
+            # print([tag.strip() for tag in raw_tags.split(',') if tag.strip()])
+            question.tags = [tag.strip() for tag in raw_tags.split(',') if tag.strip()]   
+            # question.tags = question_data.get('tags', [])
             question.difficulty = question_data['difficulty']
             question.answer = question_data.get('answer', None)
-            question.option_count = question_data.get('option_count', 0)  # 默认选项数量为 0
+            question.option_count = question_data.get('optionsCount', 0)  # 默认选项数量为 0
 
             question.save()
 

@@ -41,11 +41,11 @@ urlpatterns = [
     # 删除某一特定 id 的题目
     path('delete_question', views.DeleteQuestion.as_view(), name='delete_question'),
 
-    path('get_questionbank', views.GetQuestionBankById.as_view(), name='get_questionbank'),
+    path('get_questionbank/', views.GetQuestionBankById.as_view(), name='get_questionbank'),
 
     path('delete_questionbank', views.DeleteQuestionBank.as_view(), name='delete_questionbank'),
 
-    path('edit_question', views.EditQuestion.as_view(), name='edit_question'),
+    path('edit_question/', views.EditQuestion.as_view(), name='edit_question'),
 
     path('edit_question_in_bank', views.EditQuestionInBank.as_view(), name='edit_question_in_bank'),
 

@@ -63,7 +63,7 @@
 
 <script>
 import { mapMutations } from 'vuex';
-import axios from 'axios';
+import axios from "axios";
 import store from "@/store";
 export default {
   name: "ProblemSetDetail",
@@ -134,22 +134,25 @@ export default {
 
       try {
         // 模拟从后端获取题库数据
-        setTimeout(() => {
-          this.problemSetData = {
-            id: problemSetId,
-            name: "2023-24数分上期中",
-            createdAt: "2024-09-02",
-            subject: "工科数学分析（上）",
-            createdBy: "fysszlr",
-            estimatedTime: 120, // 120 分钟
-            description: "2023-2024第一学期数分期中的真题，配套答案。",
-          };
-          const title = '题库详情 - ' + this.problemSetData.name;
-          this.setAppTitle(title);
-          this.setPageTitle(title);
-          this.fetchQuestionsById(problemSetId); // 获取题目列表
-          this.loading = false;
-        }, 1000); // 模拟网络延迟
+        const response = await axios.post('http://127.0.0.1:8000/api/questions/get_questionbank/', {
+          user_id: this.$store.getters.getUserId,
+          question_bank_id: this.$route.params.id
+        });
+        const data=response.data.question_bank;
+        this.problemSetData = {
+          id: data.id,
+          name: data.name,
+          createdAt: data.created_at,
+          subject: data.subject,
+          createdBy: data.creator,
+          estimatedTime: data.estimated_time, // 120 分钟
+          description: data.description,
+        };
+        const title = '题库详情 - ' + this.problemSetData.name;
+        this.setAppTitle(title);
+        this.setPageTitle(title);
+        this.fetchQuestionsById(problemSetId); // 获取题目列表
+        this.loading = false;
       } catch (e) {
         console.error("获取题库数据失败", e);
         this.error = "获取题库数据失败";
