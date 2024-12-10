@@ -17,6 +17,7 @@ class CreateExam(APIView):
                 return Response({"error": "Only teachers can create exams."}, status=HTTP_400_BAD_REQUEST)
 
             title = data.get('title')
+            subject = data.get('subject')
             description = data.get('description')
             start_time = data.get('start_time')
             duration = data.get('duration')
@@ -28,6 +29,7 @@ class CreateExam(APIView):
             # 创建考试
             exam = Exam.objects.create(
                 title=title,
+                subject=subject,
                 description=description,
                 start_time=start_time,
                 duration=duration,
@@ -576,6 +578,7 @@ class EditExam(APIView):
                 return Response({"error": "Only teachers can create exams."}, status=HTTP_400_BAD_REQUEST)
 
             title = data.get('title')
+            subject = data.get('subject')
             description = data.get('description')
             start_time = data.get('start_time')
             duration = data.get('duration')
@@ -587,6 +590,7 @@ class EditExam(APIView):
             # 创建考试
             exam = Exam.objects.create(
                 title=title,
+                subject=subject,
                 description=description,
                 start_time=start_time,
                 duration=duration,

@@ -7,8 +7,18 @@ from questions.models import Question
 
 # Exam 模型
 class Exam(models.Model):
+
+    SUBJECT_CHOICES = [
+        ("工科数学分析（上）", "工科数学分析（上）"),
+        ("工科数学分析（下）", "工科数学分析（下）"),
+        ("工科高等代数", "工科高等代数"),
+        ("离散数学（信息类）", "离散数学（信息类）"),
+        ("基础物理学A", "基础物理学A"),
+    ]
+
     id = models.AutoField(primary_key=True)  # 主键
     title = models.CharField(max_length=255)  # 考试标题
+    subject = models.CharField(max_length=100, choices=SUBJECT_CHOICES, default="工科数学分析（上）")  # 所属科目，限制为可选科目
     description = models.TextField(blank=True, null=True)  # 考试描述
     created_at = models.DateTimeField(auto_now_add=True)  # 创建时间
     start_time = models.DateTimeField()  # 考试开始时间
