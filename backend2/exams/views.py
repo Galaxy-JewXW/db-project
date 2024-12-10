@@ -99,7 +99,7 @@ class SubmitAnswer(APIView):
                     record.is_correct = True
                 else:
                     record.is_correct = False
-
+                record.is_checked = True
                 record.save()
 
             return Response({
