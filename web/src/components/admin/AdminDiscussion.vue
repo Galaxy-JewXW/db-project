@@ -1,9 +1,9 @@
 <template>
   <v-container v-if="loading" class="scroll-container">
     <v-skeleton-loader
-      class="mx-auto border main-card"
+      class="mx-auto main-card"
       max-width="100%"
-      type="card-avatar, actions"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
     ></v-skeleton-loader>
   </v-container>
   <div v-else class="scroll-container">

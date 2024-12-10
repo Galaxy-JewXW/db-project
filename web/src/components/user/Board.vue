@@ -1,21 +1,38 @@
 <template>
-  <div>
+  <div v-if="loading">
+    <v-skeleton-loader
+      class="mx-auto main-card"
+      max-width="100%"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
+    ></v-skeleton-loader>
+  </div>
+  <div v-else>
     <v-container>
       <v-row>
         <!-- 左侧公告列表和消息 -->
-        <v-col cols="12" md="4" style="
+        <v-col
+          cols="12"
+          md="4"
+          style="
             display: flex;
             flex-direction: column;
             height: calc(100vh - 85px);
-          ">
+          "
+        >
           <!-- 公告列表 -->
-          <v-card class="mb-4" outlined style="
+          <v-card
+            class="mb-4"
+            outlined
+            style="
               flex: 1;
               overflow-y: auto;
               display: flex;
               flex-direction: column;
-            ">
-            <v-card-title class="headline text-h5 sticky-title font-weight-bold">
+            "
+          >
+            <v-card-title
+              class="headline text-h5 sticky-title font-weight-bold"
+            >
               公告列表
             </v-card-title>
             <v-divider></v-divider>
@@ -25,15 +42,22 @@
                   {{ group.label }}
                 </v-list-subheader>
                 <v-divider></v-divider>
-                <v-list-item v-for="notice in group.notices" :key="notice.id" @click="openDialog(notice)" ripple
-                  class="notice-item">
+                <v-list-item
+                  v-for="notice in group.notices"
+                  :key="notice.id"
+                  @click="openDialog(notice)"
+                  ripple
+                  class="notice-item"
+                >
                   <v-list-item-title class="font-weight-medium notice-title">
                     {{ notice.title }}
                   </v-list-item-title>
                   <v-list-item-subtitle class="notice-subtitle">
                     <span class="notice-publisher">{{ notice.publisher }}</span>
                     |
-                    <span class="notice-time">{{ formatDate(notice.releaseTime) }}</span>
+                    <span class="notice-time">{{
+                      formatDate(notice.releaseTime)
+                    }}</span>
                   </v-list-item-subtitle>
                 </v-list-item>
                 <v-divider v-if="group.notices.length > 1"></v-divider>
@@ -42,18 +66,26 @@
           </v-card>
         </v-col>
         <!-- 右侧雷达图和推荐练习 -->
-        <v-col cols="12" md="8" style="
+        <v-col
+          cols="12"
+          md="8"
+          style="
             display: flex;
             flex-direction: column;
             height: calc(100vh - 85px);
-          ">
+          "
+        >
           <!-- 当前进度 -->
-          <v-card class="mb-4 no-scrollbar" outlined style="
+          <v-card
+            class="mb-4 no-scrollbar"
+            outlined
+            style="
               flex: 0 0 auto;
               display: flex;
               flex-direction: column;
               overflow-y: auto;
-            ">
+            "
+          >
             <div class="sticky-title">
               <v-card-title class="headline text-h5 font-weight-bold">
                 当前进度
@@ -61,24 +93,33 @@
               <v-divider></v-divider>
             </div>
             <!-- 进度雷达图 -->
-            <div style="
+            <div
+              style="
                 display: flex;
                 flex-direction: row;
                 align-items: flex-start;
                 padding: 16px;
-              ">
+              "
+            >
               <v-col cols="12" md="6">
                 <div id="chart1"></div>
               </v-col>
               <v-col cols="12" md="6">
-                <div v-for="(item, index) in radarData" :key="index" style="margin-bottom: 12px">
+                <div
+                  v-for="(item, index) in radarData"
+                  :key="index"
+                  style="margin-bottom: 12px"
+                >
                   <div class="right-content-title">
                     {{ item.subject }}
                   </div>
                   <div>
                     <span class="large-number">{{ item.doneQuestions }}</span> /
                     <span class="medium-number">{{ item.totalQuestions }}</span>
-                    - <span class="font-weight-bold text-h6">{{ calculatePercentage(item) }}%</span>
+                    -
+                    <span class="font-weight-bold text-h6"
+                      >{{ calculatePercentage(item) }}%</span
+                    >
                   </div>
                 </div>
               </v-col>
@@ -86,12 +127,16 @@
           </v-card>
 
           <!-- 推荐练习 -->
-          <v-card class="mb-4 no-scrollbar" outlined style="
+          <v-card
+            class="mb-4 no-scrollbar"
+            outlined
+            style="
               flex: 1;
               overflow-y: auto;
               display: flex;
               flex-direction: column;
-            ">
+            "
+          >
             <div class="sticky-title">
               <v-card-title class="headline text-h5 font-weight-bold">
                 推荐练习
@@ -101,8 +146,14 @@
             <!-- 推荐练习内容 -->
             <div style="flex: 1; padding: 16px">
               <div class="recommended-exercises">
-                <v-btn v-for="exercise in recommendedExercises" :key="exercise" class="exercise-button text-none"
-                  :style="{ backgroundColor: '#0D47A1', color: 'white' }" rounded="0" @click="goToExercise(exercise)">
+                <v-btn
+                  v-for="exercise in recommendedExercises"
+                  :key="exercise"
+                  class="exercise-button text-none"
+                  :style="{ backgroundColor: '#0D47A1', color: 'white' }"
+                  rounded="0"
+                  @click="goToExercise(exercise)"
+                >
                   <v-responsive class="text-truncate">{{
                     exercise
                   }}</v-responsive>
@@ -138,12 +189,12 @@
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 import { mapMutations } from "vuex";
 import store from "@/store";
-import ApexCharts from 'apexcharts';
+import ApexCharts from "apexcharts";
 const requestData = {
-  user_id: store.getters.getUserId // 假设你已经知道用户的ID，替换为实际值
+  user_id: store.getters.getUserId, // 假设你已经知道用户的ID，替换为实际值
 };
 export default {
   name: "ForumContent",
@@ -229,6 +280,7 @@ export default {
       ],
       // 推荐练习数组
       recommendedExercises: [1, 2, 3, 4, 5, 6, 7],
+      loading: true,
     };
   },
   computed: {
@@ -286,11 +338,15 @@ export default {
   methods: {
     async fetchHomeData() {
       try {
-        const response = await axios.post('http://127.0.0.1:8000/api/board/', requestData, {
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await axios.post(
+          "http://127.0.0.1:8000/api/board/",
+          requestData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
         console.log(response);
 
         const backendNotices = response.data.data.notices;
@@ -328,10 +384,13 @@ export default {
 
         this.radarData = parseProgressData(progress);
 
-        // 数据获取完成后初始化图表
-        this.initApexChart();
+        // 设置 loading 为 false 后，使用 $nextTick 确保 DOM 已更新
+        this.loading = false;
+        this.$nextTick(() => {
+          this.initApexChart();
+        });
       } catch (error) {
-        console.error('Error fetching messages:', error);
+        console.error("Error fetching messages:", error);
       }
     },
     ...mapMutations(["setAppTitle", "setPageTitle"]),
@@ -364,7 +423,10 @@ export default {
       return content.substring(0, maxLength) + "...";
     },
     calculatePercentage(item) {
-      const ratio = item.totalQuestions === 0 ? 0 : (item.doneQuestions / item.totalQuestions) * 100;
+      const ratio =
+        item.totalQuestions === 0
+          ? 0
+          : (item.doneQuestions / item.totalQuestions) * 100;
       return ratio.toFixed(2);
     },
     goToExercise(exerciseId) {
@@ -373,12 +435,12 @@ export default {
     },
     formatDate(dateString) {
       const options = {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
         hour12: false, // 使用24小时制
       };
       const date = new Date(dateString);
@@ -386,17 +448,29 @@ export default {
     },
     initApexChart() {
       // 当 radarData 准备好后再计算并初始化图表
-      const seriesData = this.radarData.map(item => {
-        const ratio = item.totalQuestions === 0 ? 0 : (item.doneQuestions / item.totalQuestions) * 100;
+      const seriesData = this.radarData.map((item) => {
+        const ratio =
+          item.totalQuestions === 0
+            ? 0
+            : (item.doneQuestions / item.totalQuestions) * 100;
         return ratio.toFixed(2);
       });
 
-      const labelsData = this.radarData.map(item => item.subject);
+      const labelsData = this.radarData.map((item) => item.subject);
 
       // 计算总的完成比例
-      const totalDone = this.radarData.reduce((sum, item) => sum + item.doneQuestions, 0);
-      const totalQuestions = this.radarData.reduce((sum, item) => sum + item.totalQuestions, 0);
-      const totalRatio = totalQuestions === 0 ? 0 : ((totalDone / totalQuestions) * 100).toFixed(2);
+      const totalDone = this.radarData.reduce(
+        (sum, item) => sum + item.doneQuestions,
+        0
+      );
+      const totalQuestions = this.radarData.reduce(
+        (sum, item) => sum + item.totalQuestions,
+        0
+      );
+      const totalRatio =
+        totalQuestions === 0
+          ? 0
+          : ((totalDone / totalQuestions) * 100).toFixed(2);
 
       var options1 = {
         chart: {
@@ -410,22 +484,23 @@ export default {
             dataLabels: {
               total: {
                 show: true,
-                label: '总进度',
+                label: "总进度",
                 formatter: function () {
-                  return totalRatio + '%';
-                }
-              }
-            }
-          }
-        }
+                  return totalRatio + "%";
+                },
+              },
+            },
+          },
+        },
       };
       // 每次重新初始化图表前，确保销毁旧图表，以防叠加
       const chartContainer = document.querySelector("#chart1");
-      chartContainer.innerHTML = '';
+      chartContainer.innerHTML = "";
       new ApexCharts(chartContainer, options1).render();
-    }
+    },
   },
   mounted() {
+    this.loading = true;
     const title = "主页";
     this.setAppTitle(title);
     this.setPageTitle(title);
