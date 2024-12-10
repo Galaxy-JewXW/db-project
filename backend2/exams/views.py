@@ -573,8 +573,10 @@ class EditExam(APIView):
             data = decode_request(request)
             user_id = data.get('user_id')
             user = User.objects.get(id=user_id)
+            exam_id = data.get('exam_id')
+            exam = Exam.objects.get(id=exam_id)
 
-            if user.user_role != 1:  # 检查是否为老师
+            if user.user_role != 1 and exam.creator != user:  # 检查是否为老师
                 return Response({"error": "Only teachers can create exams."}, status=HTTP_400_BAD_REQUEST)
 
             title = data.get('title')
@@ -587,26 +589,28 @@ class EditExam(APIView):
             if not title or not start_time or not duration:
                 return Response({"error": "Missing required fields."}, status=HTTP_400_BAD_REQUEST)
 
-            # 创建考试
-            exam = Exam.objects.create(
-                title=title,
-                subject=subject,
-                description=description,
-                start_time=start_time,
-                duration=duration,
-                created_by=user
-            )
+            exam.title = title
+            exam.subject = subject
+            exam.description = description
+            exam.start_time = start_time
+            exam.duration = duration
 
             # 关联题目
             if question_ids:
                 questions = Question.objects.filter(id__in=question_ids)
-                exam.questions.add(*questions)
+                exam.questions.set(questions)
+
+            exam.save()
 
             return Response({"success": True, "exam_id": exam.id}, status=HTTP_200_OK)
 
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
 
+        except Exam.DoesNotExist:
+            return Response({"error": "Exam not found"}, status=HTTP_404_NOT_FOUND)
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found"}, status=HTTP_404_NOT_FOUND)
 
 class ViewExamQuestionsResults(APIView):
     """

@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from users.models import User
+from utils.views import decode_request
 from .models import Question, QuestionBank, UserQuestionRecord, QuestionDiscussion, QuestionComment
 from rest_framework.permissions import IsAuthenticated
 
@@ -492,8 +493,8 @@ class GetQuestionById(APIView):
                 "difficulty": question.difficulty,
                 "answer": question.answer,
                 "tags": question.tags,
-                "added_at" : question.added_at,
-                "source" : question.source,
+                "added_at": question.added_at,
+                "source": question.source,
                 "added_by": question.added_by.name,
                 "option_count": question.option_count,  # 新增选项数量
                 "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
@@ -905,3 +906,64 @@ class RemoveQuestionFromBank(APIView):
 
         except KeyError as e:
             return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
+
+
+class EditQuestionBank(APIView):
+    def post(self, request):
+        try:
+            # 获取请求中的数据
+            data = decode_request(request)
+            user_id = data.get('user_id')
+            question_bank_id = data.get('question_bank_id')
+            subject = data.get('subject')
+            estimated_time = data.get('estimated_time')
+            description = data.get('description')
+            questions = data.get('questions')
+
+            # 验证用户身份
+            user = User.objects.get(student_id=user_id)
+            question_bank = QuestionBank.objects.get(id=question_bank_id)
+
+            # 权限检查：只有管理员或题库创建者才能编辑
+            if user.user_role != 1 and question_bank.creator != user:
+                return Response({
+                    "success": False,
+                    "error": "Permission denied. Only admins or the creator can edit the QuestionBank."
+                }, status=HTTP_400_BAD_REQUEST)
+
+            question_bank.subject = subject
+
+            question_bank.estimated_time = estimated_time
+
+            question_bank.description = description
+
+            # 更新题目关联
+            new_questions = Question.objects.filter(id__in=questions)
+            question_bank.questions.set(new_questions)  # 重置题目关联
+
+            # 更新题目数量
+            question_bank.question_count = question_bank.questions.count()
+            question_bank.save()
+
+            return Response({
+                "success": True,
+                "message": f"QuestionBank {question_bank_id} updated successfully.",
+            }, status=HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'User not found'
+            }, status=HTTP_404_NOT_FOUND)
+
+        except QuestionBank.DoesNotExist:
+            return Response({
+                "success": False,
+                "error": "QuestionBank not found"
+            }, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"Missing required field: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
