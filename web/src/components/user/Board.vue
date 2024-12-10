@@ -193,9 +193,7 @@ import axios from "axios";
 import { mapMutations } from "vuex";
 import store from "@/store";
 import ApexCharts from "apexcharts";
-const requestData = {
-  user_id: store.getters.getUserId, // 假设你已经知道用户的ID，替换为实际值
-};
+
 export default {
   name: "ForumContent",
   data() {
@@ -338,6 +336,9 @@ export default {
   methods: {
     async fetchHomeData() {
       try {
+        const requestData = {
+          user_id: store.getters.getUserId, // 假设你已经知道用户的ID，替换为实际值
+        };
         const response = await axios.post(
           "http://127.0.0.1:8000/api/board/",
           requestData,
