@@ -233,6 +233,8 @@ class GetAllExams(APIView):
                     "start_time": exam.start_time,
                     "duration": exam.duration,
                     "created_by": exam.created_by.name,
+                    "is_checked": exam.is_checked,
+                    "is_published": exam.is_published,
                     "student_count": exam.students.count(),
                     "question_count": exam.questions.count(),
                 })
@@ -311,9 +313,16 @@ class GetExamQuestionsTeacher(APIView):
                     "questions": type_questions  # 题目列表及提交状态
                 })
 
+            if total_checked_questions == total_questions:
+                exam.is_checked = True
+
+            exam.save()
+
             return Response({
                 "success": True,
                 "exam_id": exam.id,
+                "is_checked": exam.is_checked,
+                "is_published": exam.is_published,
                 "total_questions": total_questions,  # 总题目数
                 "total_checked_questions": total_checked_questions,  # 学生已提交题目数
                 "questions": questions_data  # 按类型的题目数据
