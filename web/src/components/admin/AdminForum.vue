@@ -111,31 +111,7 @@ export default {
     name: "DiscussionArea",
     data() {
         return {
-            discussions: [
-                {
-                    id: 1,
-                    title: "关于工科数学分析的疑问",
-                    publisher: "张三",
-                    isMarked: false,
-                    avatar: "https://randomuser.me/api/portraits/women/85.jpg",
-                    publishTime: "2024-10-01",
-                    lastUpdated: "2024-11-16T04:23:45",
-                    tag: "工科数学分析（上）",
-                    summary:
-                        "在学习工科数学分析时，对积分部分有些疑问，特别是多重积分的应用。",
-                },
-                {
-                    id: 2,
-                    title: "离散数学在计算机科学中的应用",
-                    publisher: "李四",
-                    isMarked: true,
-                    avatar: "https://randomuser.me/api/portraits/women/70.jpg",
-                    publishTime: "2024-09-25",
-                    lastUpdated: "2024-11-15T15:30:00",
-                    tag: "离散数学（信息类）",
-                    summary: "探讨离散数学在算法设计和数据结构中的实际应用。",
-                },
-            ],
+            discussions: [],
             subjects: [
                 "工科数学分析（上）",
                 "工科数学分析（下）",

@@ -1,5 +1,12 @@
 <template>
-  <div class="scroll-container">
+  <v-container v-if="loading" class="scroll-container">
+    <v-skeleton-loader
+      class="mx-auto border main-card"
+      max-width="100%"
+      type="card-avatar, actions"
+    ></v-skeleton-loader>
+  </v-container>
+  <div v-else class="scroll-container">
     <!-- 主讨论卡片和评论卡片作为一个整体 -->
     <v-card class="mx-auto main-card" max-width="85%">
       <!-- 主讨论部分 -->
@@ -314,10 +321,12 @@ export default {
       isMarked: false,
       followDiscussion: [{}, {}],
       toDeleteContent: {},
+      loading: true,
     };
   },
-  mounted() {
-    const title = `讨论 - ${this.mainDiscussion.title}`;
+  created() {
+    this.loading = true;
+    const title = `讨论`;
     this.setAppTitle(title);
     this.setPageTitle(title);
     this.currentUserId = store.getters.getUserId;
@@ -403,6 +412,8 @@ export default {
           this.setAppTitle(title);
           this.setPageTitle(title);
           console.log("请求成功:", response.data);
+          this.currentUserId = store.getters.getUserId;
+          this.loading = false;
         } else {
           console.log("请求失败");
         }

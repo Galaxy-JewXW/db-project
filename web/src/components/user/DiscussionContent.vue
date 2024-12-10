@@ -348,6 +348,8 @@ export default {
           this.setPageTitle(title);
           // 处理后端响应
           console.log("请求成功:", response.data);
+          this.currentUserId = store.getters.getUserId;
+          this.loading = false;
         } else {
           console.log("请求失败");
         }
@@ -355,11 +357,6 @@ export default {
         // 请求失败时处理错误
         console.error("请求失败:", error);
       }
-      const title = `讨论 - ${this.mainDiscussion.title}`;
-      this.setAppTitle(title);
-      this.setPageTitle(title);
-      this.currentUserId = store.getters.getUserId;
-      this.loading = false;
     },
     formatDate(dateString) {
       const options = {
