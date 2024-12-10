@@ -1,5 +1,12 @@
 <template>
-  <div class="scroll-container">
+  <v-container v-if="loading" class="scroll-container">
+    <v-skeleton-loader
+      class="mx-auto border main-card"
+      max-width="100%"
+      type="card-avatar, actions"
+    ></v-skeleton-loader>
+  </v-container>
+  <div v-else class="scroll-container">
     <!-- 主讨论卡片和评论卡片作为一个整体 -->
     <v-card class="mx-auto main-card" max-width="85%">
       <!-- 主讨论部分 -->
@@ -291,11 +298,14 @@ export default {
       mainDiscussion: {},
       isSubscribed: false,
       followDiscussion: [{}],
-      toDeleteContent: "",
+      toDeleteContent: {},
+      // 加载动画
+      loading: true,
     };
   },
-  mounted() {
-    const title = `讨论 - ${this.mainDiscussion.title}`;
+  created() {
+    const title = `讨论`;
+    this.loading = true;
     this.setAppTitle(title);
     this.setPageTitle(title);
     this.currentUserId = store.getters.getUserId;
@@ -345,6 +355,11 @@ export default {
         // 请求失败时处理错误
         console.error("请求失败:", error);
       }
+      const title = `讨论 - ${this.mainDiscussion.title}`;
+      this.setAppTitle(title);
+      this.setPageTitle(title);
+      this.currentUserId = store.getters.getUserId;
+      this.loading = false;
     },
     formatDate(dateString) {
       const options = {
