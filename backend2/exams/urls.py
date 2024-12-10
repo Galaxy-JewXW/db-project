@@ -33,6 +33,8 @@ urlpatterns = [
     path('delete_exam', views.DeleteExam.as_view(), name='delete_exam'),
     # 获取某道题目所有学生的作答情况
     path('get_exam_questions_students', views.GetExamQuestionOfStudents.as_view(), name='get_exam_questions_students'),
+    # 学生查看考试批改状况视图
+    path('view_exam_questions_result', views.ViewExamQuestionsResults.as_view(), name='view_exam_questions_result'),
     # 学生查看某一题目批改情况
     path('view_question_result', views.ViewQuestionResult.as_view(), name='view_question_result'),
     # 老师更改考试结果公开状态

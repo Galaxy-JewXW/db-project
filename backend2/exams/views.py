@@ -608,6 +608,90 @@ class EditExam(APIView):
             return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
 
 
+class ViewExamQuestionsResults(APIView):
+    """
+    获取一个 Exam 内的所有题目，按题目类型分类并返回：
+    - 题目 ID 列表
+    - 每种类型的总题目数
+    - 学生已提交该类型题目的数量
+    - 整体题目总数和学生已提交题目总数
+    """
+
+    def post(self, request):
+        try:
+            # 解码请求数据
+            data = decode_request(request)
+            user_id = data.get("user_id")
+            user = User.objects.get(id=user_id)
+            exam_id = data.get("exam_id")
+            exam = Exam.objects.get(id=exam_id)
+
+            # 初始化返回数据
+            questions_data = []
+            total_questions = exam.questions.count()  # 总题目数
+            total_correct_questions = 0  # 已提交题目总数
+
+            # 遍历题目类型并按类型获取题目数据
+            for question_type, type_label in Question.TYPE_CHOICES:
+                questions = exam.questions.filter(type=question_type).order_by("id")
+                type_total = questions.count()  # 当前类型的总题目数
+                type_correct = 0  # 当前类型的已提交题目数
+
+                # 获取当前类型题目数据
+                type_questions = []
+                for question in questions:
+                    # 查询 ExamRecord 判断是否提交
+                    try:
+                        exam_record = ExamRecord.objects.get(exam=exam, question=question, student=user)
+                        has_submitted = exam_record.has_submitted()
+                        answer_now = exam_record.submitted_answer
+                        is_correct = exam_record.is_correct
+                    except ExamRecord.DoesNotExist:
+                        answer_now = ""
+                        is_correct = False
+
+                    # 统计已提交题目数量
+                    if is_correct:
+                        type_correct += 1
+
+                    # 添加题目数据
+                    type_questions.append({
+                        "id": question.id,
+                        "correct": is_correct,
+                    })
+
+                # 累计总提交题目数
+                total_correct_questions += type_correct
+
+                # 按类型添加到结果
+                questions_data.append({
+                    "type": type_label,
+                    "total": type_total,  # 当前类型的总题目数
+                    "correct": type_correct,  # 当前类型的已提交题目数
+                    "questions": type_questions  # 题目列表及提交状态
+                })
+
+            return Response({
+                "success": True,
+                "exam_id": exam.id,
+                "total_questions": total_questions,  # 总题目数
+                "total_correct_questions": total_correct_questions,  # 学生已提交题目数
+                "questions": questions_data  # 按类型的题目数据
+            }, status=HTTP_200_OK)
+
+        except Exam.DoesNotExist:
+            return Response({"error": "Exam not found."}, status=HTTP_404_NOT_FOUND)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)
+
+        except KeyError as e:
+            return Response({
+                "success": False,
+                "error": f"Missing required field: {str(e)}"
+            }, status=HTTP_400_BAD_REQUEST)
+
+
 class ViewQuestionResult(APIView):
     def post(self, request):
         try:
