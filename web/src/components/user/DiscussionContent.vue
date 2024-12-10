@@ -19,7 +19,9 @@
           </v-row>
         </template>
         <template v-slot:append>
-          <v-icon v-if="mainDiscussion.isLiked" color="#ee3f4d">mdi-thumb-up</v-icon>
+          <v-icon v-if="mainDiscussion.isLiked" color="#ee3f4d"
+            >mdi-thumb-up</v-icon
+          >
           <v-icon v-if="isSubscribed" color="#fbc02d">mdi-bell</v-icon>
         </template>
       </v-card-item>
@@ -38,45 +40,81 @@
       <v-divider></v-divider>
       <v-row no-gutters>
         <v-col cols="auto">
-          <v-btn rounded="0" @click="toggleLike('main')" class="like-btn"
-            :variant="mainDiscussion.isLiked ? 'tonal' : 'text'" color="#ee3f4d">
-            <v-icon>{{ mainDiscussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline" }}</v-icon>
+          <v-btn
+            rounded="0"
+            @click="toggleLike('main')"
+            class="like-btn"
+            :variant="mainDiscussion.isLiked ? 'tonal' : 'text'"
+            color="#ee3f4d"
+          >
+            <v-icon>{{
+              mainDiscussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline"
+            }}</v-icon>
             &nbsp;{{ mainDiscussion.like_count }}
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn rounded="0" @click="toggleSubscription" class="subscribe-btn"
-            :variant="isSubscribed ? 'tonal' : 'text'" :color="'#fbc02d'">
-            <v-icon>{{ isSubscribed ? "mdi-bell-off" : "mdi-bell-outline" }}</v-icon>
+          <v-btn
+            rounded="0"
+            @click="toggleSubscription"
+            class="subscribe-btn"
+            :variant="isSubscribed ? 'tonal' : 'text'"
+            :color="'#fbc02d'"
+          >
+            <v-icon>{{
+              isSubscribed ? "mdi-bell-off" : "mdi-bell-outline"
+            }}</v-icon>
             &nbsp;{{ mainDiscussion.sub_count }}
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn rounded="0" variant="text" :color="'#574266'"
-            @click="commentDiscussion(mainDiscussion.id, true, true)">
+          <v-btn
+            rounded="0"
+            variant="text"
+            :color="'#574266'"
+            @click="commentDiscussion(mainDiscussion.id, true, true)"
+          >
             <v-icon left>mdi-comment-outline</v-icon>
             评论
           </v-btn>
         </v-col>
-        <v-col v-if="mainDiscussion.publisherId == currentUserId" cols="auto"
-          @click="editDiscussion(mainDiscussion.id, mainDiscussion.content, true, false)">
+        <v-col
+          v-if="mainDiscussion.publisherId == currentUserId"
+          cols="auto"
+          @click="
+            editDiscussion(
+              mainDiscussion.id,
+              mainDiscussion.content,
+              true,
+              false
+            )
+          "
+        >
           <v-btn rounded="0" variant="text" :color="'#1867c0'">
             <v-icon left>mdi-pencil</v-icon>
             编辑
           </v-btn>
         </v-col>
         <v-col v-if="mainDiscussion.publisherId == currentUserId" cols="auto">
-          <v-btn rounded="0" variant="text" :color="'red'" @click="deleted(1, true)">
+          <v-btn
+            rounded="0"
+            variant="text"
+            :color="'red'"
+            @click="confirmDelete(1, true)"
+          >
             <v-icon left>mdi-trash-can-outline</v-icon>
             删除
           </v-btn>
         </v-col>
       </v-row>
-
     </v-card>
 
     <div v-for="discussion in followDiscussion" :key="discussion.id">
-      <v-card class="mx-auto follow-card" max-width="85%" style="margin-bottom: 20px;">
+      <v-card
+        class="mx-auto follow-card"
+        max-width="85%"
+        style="margin-bottom: 20px"
+      >
         <v-card-item :prepend-avatar="discussion.avatar">
           <template v-slot:title class="text-h6 font-weight-regular">
             <v-row align="center" no-gutters>
@@ -93,7 +131,9 @@
             </v-row>
           </template>
           <template v-slot:append>
-            <v-icon v-if="discussion.isLiked" color="#ee3f4d">mdi-thumb-up</v-icon>
+            <v-icon v-if="discussion.isLiked" color="#ee3f4d"
+              >mdi-thumb-up</v-icon
+            >
           </template>
         </v-card-item>
         <v-divider></v-divider>
@@ -110,27 +150,50 @@
         <v-divider></v-divider>
         <v-row no-gutters>
           <v-col cols="auto">
-            <v-btn rounded="0" @click="toggleLike(discussion.id)" class="like-btn"
-              :variant="discussion.isLiked ? 'tonal' : 'text'" :color="'#ee3f4d'">
-              <v-icon>{{ discussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline" }}</v-icon>
+            <v-btn
+              rounded="0"
+              @click="toggleLike(discussion.id)"
+              class="like-btn"
+              :variant="discussion.isLiked ? 'tonal' : 'text'"
+              :color="'#ee3f4d'"
+            >
+              <v-icon>{{
+                discussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline"
+              }}</v-icon>
               &nbsp;{{ discussion.like_count }}
             </v-btn>
           </v-col>
           <v-col cols="auto">
-            <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(discussion.id, false, true)">
+            <v-btn
+              rounded="0"
+              variant="text"
+              :color="'#574266'"
+              @click="commentDiscussion(discussion.id, false, true)"
+            >
               <v-icon left>mdi-comment-outline</v-icon>
               评论
             </v-btn>
           </v-col>
           <v-col v-if="discussion.publisherId == currentUserId" cols="auto">
-            <v-btn rounded="0" variant="text" :color="'#1867c0'"
-              @click="editDiscussion(discussion.id, discussion.content, false, false)">
+            <v-btn
+              rounded="0"
+              variant="text"
+              :color="'#1867c0'"
+              @click="
+                editDiscussion(discussion.id, discussion.content, false, false)
+              "
+            >
               <v-icon left>mdi-pencil</v-icon>
               编辑
             </v-btn>
           </v-col>
           <v-col v-if="discussion.publisherId == currentUserId" cols="auto">
-            <v-btn rounded="0" variant="text" :color="'red'" @click="deleted(discussion.id, false)">
+            <v-btn
+              rounded="0"
+              variant="text"
+              :color="'red'"
+              @click="confirmDelete(discussion.id, false)"
+            >
               <v-icon left>mdi-trash-can-outline</v-icon>
               删除
             </v-btn>
@@ -146,9 +209,13 @@
 
   <v-dialog v-model="editDialog" height="45%" width="60%">
     <v-card title="编辑">
-      <v-md-editor v-model="text" height="325px" width="20%"
+      <v-md-editor
+        v-model="text"
+        height="325px"
+        width="20%"
         left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
-        right-toolbar="preview toc sync-scroll"></v-md-editor>
+        right-toolbar="preview toc sync-scroll"
+      ></v-md-editor>
       <v-spacer></v-spacer>
       <v-card-actions>
         <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
@@ -158,19 +225,53 @@
 
   <v-dialog v-model="commentDialog" height="45%" width="60%">
     <v-card title="评论">
-      <v-md-editor v-model="text" height="325px" width="20%"
+      <v-md-editor
+        v-model="text"
+        height="325px"
+        width="20%"
         left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
-        right-toolbar="preview toc sync-scroll"></v-md-editor>
+        right-toolbar="preview toc sync-scroll"
+      ></v-md-editor>
       <v-spacer></v-spacer>
       <v-card-actions>
         <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog v-model="confirmDialog" max-width="400px">
+    <v-card>
+      <v-card-title>
+        <v-icon color="primary">mdi-alert-circle-outline</v-icon>
+        <span class="headline ml-2">操作不可逆</span>
+      </v-card-title>
+      <v-card-text
+        >确定删除{{ this.toDeleteContent.content }}吗？
+        <div v-if="this.toDeleteContent.isMainDiscussion">
+          注意：删除讨论贴后，所有的评论也会被删除。
+        </div>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn
+          color="red"
+          variant="text"
+          @click="
+            deleted(
+              this.toDeleteContent.id,
+              this.toDeleteContent.isMainDiscussion
+            )
+          "
+        >
+          确定
+        </v-btn>
+        <v-btn variant="plain" @click="confirmDialog = false"> 取消 </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script>
-import axios from 'axios';
+import axios from "axios";
 import { mapMutations, mapActions } from "vuex";
 import { mapState } from "vuex/dist/vuex.cjs.js";
 import store from "@/store";
@@ -182,17 +283,15 @@ export default {
       currentUserId: null,
       editDialog: false,
       commentDialog: false,
+      confirmDialog: false,
       isMainDiscussion: false,
       isComment: false,
       emitId: null,
-      text: '',
-      mainDiscussion: {
-      },
+      text: "",
+      mainDiscussion: {},
       isSubscribed: false,
-      followDiscussion: [
-        {
-        },
-      ],
+      followDiscussion: [{}],
+      toDeleteContent: "",
     };
   },
   mounted() {
@@ -205,25 +304,29 @@ export default {
   methods: {
     ...mapMutations(["setAppTitle", "setPageTitle"]),
     ...mapState(["userId"]),
-    ...mapActions('snackbar', ['showSnackbar']),
+    ...mapActions("snackbar", ["showSnackbar"]),
     async sendDataToBackend() {
       try {
         // 获取 user_id 和 dis_id
         const userId = this.$store.getters.getUserId; // 假设你使用 Vuex 获取 user_id
-        const disId = this.$route.params.id;         // 从路由获取 dis_id
+        const disId = this.$route.params.id; // 从路由获取 dis_id
 
         // 打包请求数据
         const requestData = {
           user_id: userId,
-          dis_id: disId
+          dis_id: disId,
         };
 
         // 发送 POST 请求到后端 API，并指定请求头为 application/json
-        const response = await axios.post('http://127.0.0.1:8000/api/discussions/get_discussion/', requestData, {
-          headers: {
-            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+        const response = await axios.post(
+          "http://127.0.0.1:8000/api/discussions/get_discussion/",
+          requestData,
+          {
+            headers: {
+              "Content-Type": "application/json", // 指定请求体的格式为 JSON
+            },
           }
-        });
+        );
         if (response.data.success) {
           console.log(response.data);
           this.mainDiscussion = response.data.discussion;
@@ -234,23 +337,23 @@ export default {
           this.setAppTitle(title);
           this.setPageTitle(title);
           // 处理后端响应
-          console.log('请求成功:', response.data);
+          console.log("请求成功:", response.data);
         } else {
-          console.log('请求失败');
+          console.log("请求失败");
         }
       } catch (error) {
         // 请求失败时处理错误
-        console.error('请求失败:', error);
+        console.error("请求失败:", error);
       }
     },
     formatDate(dateString) {
       const options = {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
         hour12: false, // 使用24小时制
       };
       const date = new Date(dateString);
@@ -272,19 +375,18 @@ export default {
 
         const requestData = {
           user_id: userId,
-          dis_id: disId
+          dis_id: disId,
         };
-        let url = 'http://127.0.0.1:8000/api/discussions/subscribe_discussion/';
+        let url = "http://127.0.0.1:8000/api/discussions/subscribe_discussion/";
         // 发送 POST 请求到后端 API，并指定请求头为 application/json
         const response = await axios.post(url, requestData, {
           headers: {
-            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
-          }
+            "Content-Type": "application/json", // 指定请求体的格式为 JSON
+          },
         });
-        console.log('请求成功:', response.data);
-
+        console.log("请求成功:", response.data);
       } catch (error) {
-        console.error('请求失败:', error);
+        console.error("请求失败:", error);
       }
     },
     async toggleLike(discussionId) {
@@ -311,7 +413,7 @@ export default {
         } else {
           // 如果ID未找到，抛出警告
           console.warn(`未找到对应的讨论或评论，ID: ${discussionId}`);
-          return;  // 退出方法，防止继续执行后面的请求
+          return; // 退出方法，防止继续执行后面的请求
         }
       }
 
@@ -323,28 +425,27 @@ export default {
         // 打包请求数据
         const requestData = {
           user_id: userId,
-          dis_id: discussionId == "main" ? disId : discussionId
+          dis_id: discussionId == "main" ? disId : discussionId,
         };
-        let url = '';
+        let url = "";
         // 根据discussionId决定URL
         if (discussionId === "main") {
-          url = 'http://127.0.0.1:8000/api/discussions/like_discussion/';
+          url = "http://127.0.0.1:8000/api/discussions/like_discussion/";
         } else {
-          url = 'http://127.0.0.1:8000/api/discussions/like_reply/';
+          url = "http://127.0.0.1:8000/api/discussions/like_reply/";
         }
         // 发送 POST 请求到后端 API，并指定请求头为 application/json
         const response = await axios.post(url, requestData, {
           headers: {
-            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
-          }
+            "Content-Type": "application/json", // 指定请求体的格式为 JSON
+          },
         });
 
         // 处理后端响应
-        console.log('请求成功:', response.data);
-
+        console.log("请求成功:", response.data);
       } catch (error) {
         // 请求失败时处理错误
-        console.error('请求失败:', error);
+        console.error("请求失败:", error);
       }
     },
     editDiscussion(id, content, isMainDiscussion, isComment) {
@@ -356,30 +457,40 @@ export default {
     },
     commentDiscussion(id, isMainDiscussion, isComment) {
       this.commentDialog = true;
-      this.text = '';
+      this.text = "";
       this.emitId = id;
       this.isMainDiscussion = isMainDiscussion;
       this.isComment = isComment;
+    },
+    confirmDelete(id, isMainDiscussion) {
+      this.confirmDialog = true;
+      const data = {
+        content: isMainDiscussion ? "讨论贴" : "评论",
+        id: id,
+        isMainDiscussion: isMainDiscussion,
+      };
+      console.log(data);
+      this.toDeleteContent = data;
     },
     async deleted(id, isMainDiscussion) {
       console.log(id);
       const requestData = {
         user_id: this.$store.getters.getUserId,
-        discussion_id: (!isMainDiscussion) ? id : this.$route.params.id,
+        discussion_id: !isMainDiscussion ? id : this.$route.params.id,
       };
-      let url = '';
+      let url = "";
       // 根据 isComment 和 isMaindiscussion 决定 url 的值
       if (isMainDiscussion) {
-        url = 'http://127.0.0.1:8000/api/discussions/delete_discussion/';
+        url = "http://127.0.0.1:8000/api/discussions/delete_discussion/";
       } else {
-        url = 'http://127.0.0.1:8000/api/discussions/delete_reply/';
+        url = "http://127.0.0.1:8000/api/discussions/delete_reply/";
       }
       try {
         const response = await axios.post(url, requestData, {
           headers: {
-            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+            "Content-Type": "application/json", // 指定请求体的格式为 JSON
             // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
-          }
+          },
         });
         console.log(response.status);
         // 处理响应
@@ -388,36 +499,39 @@ export default {
           else this.sendDataToBackend();
         }
       } catch (error) {
-        console.error('发送通知时出错:', error);
+        console.error("发送通知时出错:", error);
       }
     },
     async emitEdit() {
       const requestData = {
         user_id: this.$store.getters.getUserId,
-        discussion_id: (!this.isComment || this.isMainDiscussion) ? this.emitId : this.$route.params.id,
+        discussion_id:
+          !this.isComment || this.isMainDiscussion
+            ? this.emitId
+            : this.$route.params.id,
         content: this.text,
       };
 
-      let url = '';
-      let message = '';
+      let url = "";
+      let message = "";
       // 根据 isComment 和 isMaindiscussion 决定 url 的值
       if (this.isComment) {
-        url = 'http://127.0.0.1:8000/api/discussions/create_reply/';
-        message = '回复发送';
+        url = "http://127.0.0.1:8000/api/discussions/create_reply/";
+        message = "回复发送";
       } else if (this.isMainDiscussion) {
-        url = 'http://127.0.0.1:8000/api/discussions/edit_discussion/';
-        message = '修改讨论贴';
+        url = "http://127.0.0.1:8000/api/discussions/edit_discussion/";
+        message = "修改讨论贴";
       } else {
-        url = 'http://127.0.0.1:8000/api/discussions/edit_reply/';
-        message = '修改回复';
+        url = "http://127.0.0.1:8000/api/discussions/edit_reply/";
+        message = "修改回复";
       }
       try {
         // 发送 POST 请求
         const response = await axios.post(url, requestData, {
           headers: {
-            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+            "Content-Type": "application/json", // 指定请求体的格式为 JSON
             // 'Authorization': 'Bearer <token>'  // 如果需要身份验证 token
-          }
+          },
         });
         console.log(response.status);
         // 处理响应
@@ -425,19 +539,19 @@ export default {
           console.log(11);
           this.showSnackbar({
             message: message + "成功",
-            color: 'success',
-            timeout: 2000
+            color: "success",
+            timeout: 2000,
           });
           console.log("df");
 
           this.sendDataToBackend();
         }
       } catch (error) {
-        console.error('发送通知时出错:', error);
+        console.error("发送通知时出错:", error);
         this.showSnackbar({
           message: message + "时出错",
-          color: 'error',
-          timeout: 2000
+          color: "error",
+          timeout: 2000,
         });
       }
       console.log(this.emitId);
@@ -445,7 +559,7 @@ export default {
 
       this.commentDialog = false;
       this.editDialog = false;
-    }
+    },
   },
 };
 </script>
