@@ -3,7 +3,7 @@
   <v-container fluid class="problemset-container">
     <!-- Button to open Past Exams Dialog -->
     <v-btn class="align-self-start" color="primary" @click="showPastExamsDialog = true">
-      查看过往测试
+      查看考试成绩
     </v-btn>
 
     <!-- Past Exams Dialog -->
@@ -13,7 +13,7 @@
           <v-btn icon dark @click="showPastExamsDialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
-          <v-toolbar-title>已结束的测试列表</v-toolbar-title>
+          <v-toolbar-title>已公布成绩的测试列表</v-toolbar-title>
         </v-toolbar>
         <v-card-text>
           <!-- Filter Section -->
@@ -84,7 +84,7 @@
                     </div>
                   </v-card-text>
                   <v-card-actions>
-                    <v-btn class="enter-button" text @click.stop="this.$router.push(`/exam/${exam.id}`)">
+                    <v-btn class="enter-button" text @click.stop="this.$router.push(`/result/${exam.id}`)">
                       查看
                     </v-btn>
                   </v-card-actions>

@@ -206,6 +206,17 @@ const customRoutes = [
     },
   },
   {
+    path: "/result/:id",
+    name: "ExamResult",
+    component: () => import("@/components/user/PastExam.vue"),
+    props: true,
+    meta: {
+      appTitle: "测试成绩详情",
+      pageTitle: "测试成绩详情",
+      requiresAuth: true,
+    },
+  },
+  {
     path: "/exam/:id",
     name: "ExamDetail",
     component: () => import("@/components/user/ExamDetail.vue"),
