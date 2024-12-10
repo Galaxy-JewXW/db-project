@@ -5,10 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from users.models import User
-from utils.views import decode_request
 from .models import Question, QuestionBank, UserQuestionRecord, QuestionDiscussion, QuestionComment
 from rest_framework.permissions import IsAuthenticated
-
+from utils.views import decode_request
 
 # 用户上传 Question
 class UploadQuestion(APIView):
@@ -306,7 +305,15 @@ class GetAllQuestions(APIView):
             user_id = request.data['user_id']
             user = User.objects.get(student_id=user_id)
             questions = Question.objects.all()
-
+            qs_data = []
+            for question_subject, type_label in Question.SUBJECT_CHOICES:
+                questions1 = questions.filter(subject=question_subject).order_by("id")
+                if questions1.exists():
+                    qs_data.append({
+                        "subject": question_subject,
+                        "ids": [question.id for question in questions1],
+                        "currentPage": 1
+                    })
             # 构造返回的数据
             questions_data = []
             for question in questions:
@@ -326,7 +333,8 @@ class GetAllQuestions(APIView):
 
             return Response({
                 "success": True,
-                "questions": questions_data
+                "questions": questions_data,
+                "qsdata": qs_data
             }, status=HTTP_200_OK)
 
         except User.DoesNotExist:
@@ -341,20 +349,31 @@ class GetQuestionsBySubject(APIView):
     def post(self, request):
         try:
             # 获取某一科目的所有题目
-            user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            user_id = request.data['user_id'] 
+            print(user_id)
+            user = User.objects.get(student_id=user_id)
             subject = request.data['subject']
-            questions = Question.objects.filter(subject=subject)
-
+            questionall = Question.objects.filter(subject=subject)
+            print(user)
+            print(subject)
             # 如果没有找到该科目的题目
-            if not questions:
-                return Response({
-                    "error": "No questions found for the given subject."
-                }, status=HTTP_404_NOT_FOUND)
-
+            # if not questionall:
+                # return Response({
+                    # "error": "No questions found for the given subject."
+                # }, status=HTTP_404_NOT_FOUND)
+            qsdata = []
             # 构造返回的数据
+            for question_type, type_label in Question.TYPE_CHOICES:
+                questions = questionall.filter(type=question_type).order_by("id")
+                if questions.exists():
+                    qsdata.append({
+                        "type": type_label,
+                        "ids": [question.id for question in questions],
+                        "currentPage": 1
+                    })
+            print(qsdata)
             questions_data = []
-            for question in questions:
+            for question in questionall:
                 questions_data.append({
                     "id": question.id,
                     "type": question.type,
@@ -371,7 +390,8 @@ class GetQuestionsBySubject(APIView):
 
             return Response({
                 "success": True,
-                "questions": questions_data
+                "questions": questions_data,
+                "qsdata": qsdata
             }, status=HTTP_200_OK)
 
         except User.DoesNotExist:
@@ -430,6 +450,7 @@ class GetQuestionsByQuestionBank(APIView):
             user_id = request.data['user_id']
             user = User.objects.get(student_id=user_id)
             question_bank_id = request.data['question_bank_id']
+            print(question_bank_id)
             question_bank = QuestionBank.objects.get(id=question_bank_id)
 
             questions = Question.objects.filter(question_banks=question_bank)
@@ -447,7 +468,6 @@ class GetQuestionsByQuestionBank(APIView):
             # 遍历题目类型并按类型获取题目 ID
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = question_bank.questions.filter(type=question_type).order_by("id")
-                print([question.id for question in questions])
                 if questions.exists():
                     questions_data.append({
                         "type": type_label,
@@ -458,7 +478,11 @@ class GetQuestionsByQuestionBank(APIView):
             return Response({
                 "success": True,
                 "questions": questions_data,
-                "finish_question": question_ids_list
+                "finish_question": question_ids_list,
+                "name" : question_bank.name,
+                "subject": question_bank.subject,
+                "duration": question_bank.estimated_time,
+                "description": question_bank.description
             }, status=HTTP_200_OK)
 
         except User.DoesNotExist:
@@ -480,9 +504,6 @@ class GetQuestionById(APIView):
             user = User.objects.get(student_id=user_id)
             question_id = request.data['question_id']
             question = Question.objects.get(id=question_id)
-            print(user)
-            print(question)
-            print(question.subject)
             # 构造返回的数据    
             question_data = {
                 "id": question.id,
@@ -493,8 +514,8 @@ class GetQuestionById(APIView):
                 "difficulty": question.difficulty,
                 "answer": question.answer,
                 "tags": question.tags,
-                "added_at": question.added_at,
-                "source": question.source,
+                "added_at" : question.added_at,
+                "source" : question.source,
                 "added_by": question.added_by.name,
                 "option_count": question.option_count,  # 新增选项数量
                 "user_status": question.get_user_status(user)  # 获取用户对该题目的做题状态
@@ -786,7 +807,7 @@ class AddQuestionToBank(APIView):
             question_bank_id = request.data['question_bank_id']
             question_id = request.data['question_id']
 
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.get(id=question_bank_id)
             question = Question.objects.get(id=question_id)
 
@@ -873,7 +894,7 @@ class RemoveQuestionFromBank(APIView):
             question_bank_id = request.data['question_bank_id']
             question_id = request.data['question_id']
 
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.get(id=question_bank_id)
             question = Question.objects.get(id=question_id)
 
@@ -906,7 +927,6 @@ class RemoveQuestionFromBank(APIView):
 
         except KeyError as e:
             return Response({"error": f"Missing required field: {str(e)}"}, status=HTTP_400_BAD_REQUEST)
-
 
 class EditQuestionBank(APIView):
     def post(self, request):

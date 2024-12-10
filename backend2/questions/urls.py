@@ -24,10 +24,10 @@ urlpatterns = [
     path('get_all_question_banks/', views.GetAllQuestionBanks.as_view(), name='get_all_question_banks'),
 
     # 获取所有 Question
-    path('get_all_questions', views.GetAllQuestions.as_view(), name='get_all_questions'),
+    path('get_all_questions/', views.GetAllQuestions.as_view(), name='get_all_questions'),
 
     # 获取某一科目的所有 Question
-    path('get_questions_by_subject', views.GetQuestionsBySubject.as_view(), name='get_questions_by_subject'),
+    path('get_questions_by_subject/', views.GetQuestionsBySubject.as_view(), name='get_questions_by_subject'),
 
     # 获取某一科目的所有 QuestionBank
     path('get_question_banks_by_subject/', views.GetQuestionBanksBySubject.as_view(), name='get_question_banks_by_subject'),
@@ -49,9 +49,9 @@ urlpatterns = [
 
     path('edit_question_in_bank', views.EditQuestionInBank.as_view(), name='edit_question_in_bank'),
 
-    path('add_question_to_bank', views.AddQuestionToBank.as_view(), name='add_question_to_bank'),
+    path('add_question_to_bank/', views.AddQuestionToBank.as_view(), name='add_question_to_bank'),
 
     path('create_question_in_bank', views.CreateQuestionInBank.as_view(), name='create_question_in_bank'),
 
-    path('remove_question_from_bank', views.RemoveQuestionFromBank.as_view(), name='remove_question_from_bank'),
+    path('remove_question_from_bank/', views.RemoveQuestionFromBank.as_view(), name='remove_question_from_bank'),
 ]

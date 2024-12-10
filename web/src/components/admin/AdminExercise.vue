@@ -14,7 +14,8 @@
         </v-banner>
 
         <!-- 筛选条件区域 -->
-        <v-card class="pl-2 pr-2 pb- 2" variant="text" title="筛选题目" subtitle="输入题目ID或学科以查找题目，点击题目可进行查看/编辑/删除操作。" prepend-icon="mdi-filter">
+        <v-card class="pl-2 pr-2 pb- 2" variant="text" title="筛选题目" subtitle="输入题目ID或学科以查找题目，点击题目可进行查看/编辑/删除操作。"
+            prepend-icon="mdi-filter">
             <v-row align="center" justify="start" no-gutters>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
                     <v-text-field v-model="filterId" label="题目 ID" placeholder="输入题目 ID" clearable></v-text-field>
@@ -76,7 +77,7 @@
 
 <script>
 import { mapMutations } from 'vuex';
-
+import axios from 'axios';
 export default {
     name: 'AdminExercise',
     data() {
@@ -130,9 +131,42 @@ export default {
         const title = '题目管理';
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.getAll();
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
+        async getAll() {
+            console.log("there");
+            try {
+                // 发送 POST 请求到后端获取数据
+                const response = await axios.post('http://127.0.0.1:8000/api/questions/get_all_questions/', {
+                    user_id: this.$store.getters.getUserId,
+                });
+
+                // 检查后端返回的响应
+                if (response.data.success) {
+                    const data = response.data;
+
+                    // 将后端返回的题目信息映射到前端的 `questions` 结构
+                    const questions = data.qsdata.map((question) => {
+                        return {
+                            subject: question.subject, // 保留题型
+                            ids: question.ids.map((id) => (id)),
+                            currentPage: question.currentPage, // 保留当前页信息
+                        };
+                    });
+
+                    // 更新组件的题目数据
+                    this.exercises = questions;
+                } else {
+                    throw new Error("获取题目数据失败");
+                }
+            } catch (e) {
+                console.error("获取题目数据失败", e);
+                this.error = "获取题目数据失败";
+                this.loading = false;
+            }
+        },
         createExercise() {
             this.$router.push("/admin/exercise/new");
         },

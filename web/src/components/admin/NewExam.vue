@@ -358,7 +358,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from 'axios';
 export default {
     name: "AdminSet",
     data() {
@@ -645,8 +645,35 @@ export default {
                 });
             }
         },
-        viewQuestion(type, id) {
+        async viewQuestion(type, id) {
             this.dialog = true;
+            try {
+                // 发送 POST 请求到后端获取数据
+                const response = await axios.post('http://127.0.0.1:8000/api/questions/get_question_by_id/', {
+                    user_id: this.$store.getters.getUserId,
+                    question_id: id
+                });
+               
+                // 检查后端返回的响应
+                if (response.data.success) {
+                    const question_data = response.data.question;
+                    console.log(question_data.tags);
+                    // 将后端返回的题目信息映射到前端的 `questions` 结构
+                    this.currentQuestion.id = question_data.id;
+                    this.currentQuestion.questionType = question_data.type; // 映射 type 到 questionType
+                    this.currentQuestion.content = question_data.content;
+                    this.currentQuestion.subject = question_data.subject;
+                    this.currentQuestion.source = question_data.source;
+                    this.currentQuestion.tags = question_data.tags.tags.join(", "); // 假设 tags 是数组，需要转换为字符串
+                    this.currentQuestion.difficulty = question_data.difficulty;
+                    this.currentQuestion.answer = question_data.answer;
+                } else {
+                    throw new Error("获取题目数据失败");
+                }
+            } catch (e) {
+                console.error("获取题目数据失败", e);
+                this.error = "获取题目数据失败";
+            }
             console.log(`访问了 ${type} 的题目 - ${id}`);
         },
         addQuestion(type, id) {
