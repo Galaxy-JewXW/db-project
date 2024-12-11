@@ -1,6 +1,13 @@
 <!-- components/ExamList.vue -->
 <template>
-  <v-container fluid class="problemset-container">
+  <v-container v-if="loading" fluid>
+    <v-skeleton-loader
+      class="mx-auto main-card"
+      max-width="100%"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
+    ></v-skeleton-loader>
+  </v-container>
+  <v-container v-else fluid class="problemset-container">
     <!-- Button to open Past Exams Dialog -->
     <v-btn class="align-self-start" color="primary" @click="showPastExamsDialog = true">
       查看考试成绩
@@ -161,7 +168,7 @@
           </v-col>
         </v-row>
       </template>
-      <div v-else class="no-results">没有测试</div>
+      <div v-else class="no-results">没有可用的测试</div>
     </div>
   </v-container>
 </template>
@@ -175,62 +182,9 @@ export default {
     return {
       snackbarMessage: "",
       showPastExamsDialog: false,
-      ongoingExams: [
-        {
-          id: 1,
-          name: "2023-24数分上期中 a",
-          createdAt: "2024-09-02 19:00:00",
-          subject: "工科数学分析（上）",
-          starttime: "2024-11-13 19:00:00",
-          duration: 120,
-        },
-        {
-          id: 11,
-          name: "2023-24数分上期中",
-          createdAt: "2024-09-02 19:00:00",
-          subject: "工科数学分析（上）",
-          starttime: "2024-11-13 19:00:00",
-          duration: 120,
-        },
-      ],
-      pastExams: [
-        {
-          id: 3,
-          name: "2023-24数分上期末 a",
-          createdAt: "2024-01-15 19:00:00",
-          subject: "工科数学分析（上）",
-          starttime: "2024-01-15 09:00:00",
-          duration: 120,
-        },
-        {
-          id: 31,
-          name: "2023-24数分上期末",
-          createdAt: "2024-01-15 19:00:00",
-          subject: "工科数学分析（上）",
-          starttime: "2024-01-15 09:00:00",
-          duration: 120,
-        },
-        // ... 其他过往测试数据
-      ],
-      comingExams: [
-        {
-          id: 2,
-          name: "2023-24数分期末模拟测试 a",
-          createdAt: "2024-12-01 19:00:00",
-          subject: "工科数学分析（）",
-          starttime: "2024-12-15 09:00:00",
-          duration: 120,
-        },
-        {
-          id: 21,
-          name: "2023-24数分期末模拟测试",
-          createdAt: "2024-12-01 19:00:00",
-          subject: "工科数学分析（上）",
-          starttime: "2024-12-15 09:00:00",
-          duration: 120,
-        },
-        // ... 其他即将到来的测试数据
-      ],
+      ongoingExams: [],
+      pastExams: [],
+      comingExams: [],
       subjects: [
         "工科数学分析（上）",
         "工科数学分析（下）",
@@ -247,6 +201,7 @@ export default {
       selectedSubject: null, // 新增: 当前选择的科目
       selectedTimeRange: null, // 新增: 当前选择的时间范围
       enrolledExams: [2, 3],
+      loading: true,
     };
   },
   computed: {
@@ -297,7 +252,8 @@ export default {
       return filtered;
     },
   },
-  mounted() {
+  created() {
+    this.loading = true;
     const title = "模拟测试";
     this.setAppTitle(title);
     this.setPageTitle(title);
@@ -316,6 +272,7 @@ export default {
       this.comingExams = response.data.coming_exams;
       this.enrolledExams = response.data.enrolled_exams;
       console.log(this.enrolledExams);
+      this.loading = false;
     },
     formatDate(dateString) {
       const options = {
