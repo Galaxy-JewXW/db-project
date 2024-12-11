@@ -317,6 +317,7 @@
 <script>
 import { mapMutations, mapActions } from "vuex";
 import axios from "axios";
+import { duration } from "moment/moment";
 export default {
     name: "AdminSet",
     props: {
@@ -367,14 +368,14 @@ export default {
             ],
         };
     },
-    mounted() {
+    async mounted() {
         // 更新标题
         const title = "编辑模拟测试 - " + this.id;
         this.currentId = parseInt(this.id);
         console.log('接收到的 ID:', this.currentId);
         this.setAppTitle(title);
         this.setPageTitle(title);
-        this.fetchExam(this.currentId);
+        await this.fetchExam(this.currentId);
         this.getExercises(this.form.subject);
     },
     methods: {
@@ -398,6 +399,7 @@ export default {
                 questions: data.questions,
             };
             this.form = { ...mockProblemData };
+            console.log(this.form.subject);
             this.originalForm = { ...mockProblemData };
         },
         formatDate(dateString) {
@@ -427,9 +429,9 @@ export default {
             const ss = pad(date.getSeconds());
 
             if (includeSeconds) {
-            return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
+                return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
             } else {
-            return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+                return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
             }
         },
         calculateTotalScore() {
@@ -443,31 +445,15 @@ export default {
             }, { total: 0 });
             return scores;
         },
-        getExercises(subject) {
+        async getExercises(subject) {
             // Simulate fetching questions based on subject
             // This should be replaced with actual API calls
-            const questions = [
-                {
-                    type: "单项选择题",
-                    ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
-                    currentPage: 1,
-                },
-                {
-                    type: "填空题",
-                    ids: [101, 102, 103], // 填空题
-                    currentPage: 1,
-                },
-                {
-                    type: "判断题",
-                    ids: [1101, 1102, 1103], // 判断题
-                    currentPage: 1,
-                },
-                {
-                    type: "解答题",
-                    ids: [201, 202], // 解答题
-                    currentPage: 1,
-                },
-            ];
+            const response = await axios.post('http://127.0.0.1:8000/api/questions/get_questions_by_subject/', {
+                user_id: this.$store.getters.getUserId,
+                subject: subject,
+            });
+            const questions = response.data.qsdata;
+            console.log(questions);
             this.questions = [...questions];
         },
         async validateForm() {
@@ -535,7 +521,7 @@ export default {
         async handleSubmit() {
             // Validate all forms
             const isValidForm = await this.validateForm();
-
+            
             if (!isValidForm.valid) {
                 this.showSnackbar({
                     message: '基本信息未填写或有误，请及时修改',
@@ -546,7 +532,6 @@ export default {
                 this.tab = 1;
                 return;
             }
-
             if (this.form.questions.length === 0) {
                 this.showSnackbar({
                     message: '模拟测试内容不能为空',
@@ -560,6 +545,15 @@ export default {
 
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
+                const response = await axios.post('http://127.0.0.1:8000/api/exams/edit_exam/', {
+                    user_id: this.$store.getters.getUserId,
+                    exam_id: this.$route.params.id,
+                    title: this.form.name,
+                    subject: this.form.subject,
+                    start_time: this.form.startTime,
+                    duration: this.form.duration,
+                    questions: this.form.questions 
+                });
                 console.log(this.form);
                 this.showSnackbar({
                     message: '编辑考试成功',

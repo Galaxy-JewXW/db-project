@@ -387,13 +387,18 @@ export default {
             this.toDeleteExamName = name;
             this.confirmDialogOpen = true;
         },
-        deleteExam() {
+        async deleteExam() {
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/delete_exam/', {
+                user_id: this.$store.getters.getUserId,
+                exam_id: this.toDeleteExamId
+            });
             this.showSnackbar({
                 message: `已删除测试 ${this.toDeleteExamId} ${this.toDeleteExamName}`,
                 color: 'success',
                 timeout: 2000
             });
             this.confirmDialogOpen = false;
+            this.getAll();
         },
         resetPages() {
             this.ongoingPage = 1;

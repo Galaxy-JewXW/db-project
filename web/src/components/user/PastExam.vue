@@ -9,12 +9,7 @@
 
     <!-- 信息芯片 -->
     <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
-      <v-chip
-        v-for="(chip, index) in chips"
-        :key="index"
-        :color="chip.color"
-        class="ma-1 chip-item"
-      >
+      <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
         <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
         {{ chip.label }}: {{ chip.value }}
       </v-chip>
@@ -51,21 +46,13 @@
           <v-expansion-panel-text>
             <v-row no-gutters>
               <div class="question-squares">
-                <v-btn
-                  v-for="questionId in getPaginatedIds(group)"
-                  :key="questionId"
-                  :class="[
-                    'question-square',
-                    { finished: finishedQuestions.includes(questionId) },
-                  ]"
-                  :color="
-                    finishedQuestions.includes(questionId)
-                      ? 'green'
-                      : 'blue-darken-4'
-                  "
-                  rounded="0"
-                  @click="goToQuestionDetail(questionId)"
-                >
+                <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId" :class="[
+                  'question-square',
+                  { finished: finishedQuestions.includes(questionId) },
+                ]" :color="finishedQuestions.includes(questionId)
+                  ? 'green'
+                  : 'blue-darken-4'
+                  " rounded="0" @click="goToQuestionDetail(questionId)">
                   <v-responsive class="text-truncate">{{
                     questionId
                   }}</v-responsive>
@@ -74,12 +61,9 @@
             </v-row>
             <!-- 分页控件 -->
             <v-row justify="center" class="mt-2">
-              <v-pagination
-                v-model="group.currentPage"
-                :total-visible="7"
+              <v-pagination v-model="group.currentPage" :total-visible="7"
                 :length="Math.ceil(group.ids.length / pageSize)"
-                @input="handlePageChange(group, $event)"
-              ></v-pagination>
+                @input="handlePageChange(group, $event)"></v-pagination>
             </v-row>
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -109,10 +93,7 @@
 
             <v-col cols="4">
               <v-card class="pa-4" outlined>
-                <v-card-title
-                  style="padding-left: 0"
-                  class="text-h5 font-weight-regular"
-                >
+                <v-card-title style="padding-left: 0" class="text-h5 font-weight-regular">
                   标准答案
                 </v-card-title>
                 <v-card-text>
@@ -122,10 +103,7 @@
                 </v-card-text>
               </v-card>
               <v-card class="pa-4" outlined>
-                <v-card-title
-                  style="padding-left: 0"
-                  class="text-h5 font-weight-regular"
-                >
+                <v-card-title style="padding-left: 0" class="text-h5 font-weight-regular">
                   你的提交
                 </v-card-title>
                 <v-card-text>
@@ -144,6 +122,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
+import axios from "axios";
 
 export default {
   name: "ProblemSetDetail",
@@ -214,24 +193,24 @@ export default {
       this.loading = true;
       this.error = null;
       try {
-        // 模拟从后端获取模拟测试数据
-        setTimeout(() => {
-          this.examData = {
-            id: 1,
-            name: "2023-24数分上期中",
-            subject: "工科数学分析（上）",
-            starttime: "2024-12-08T19:00:00",
-            duration: 140,
-          };
-          const title = "模拟测试成绩详情 - " + this.examData.name;
-          this.finishedQuestions = [
-            301, 302, 303, 441, 442, 1001, 9801, 1912, 1917, 1920,
-          ];
-          this.setAppTitle(title);
-          this.setPageTitle(title);
-          this.fetchQuestionsById(examId); // 获取题目列表
-          this.loading = false;
-        }, 1000); // 模拟网络延迟
+        const response = await axios.post('http://127.0.0.1:8000/api/exams/view_exam_questions_result/', {
+          user_id: this.$store.getters.getUserId,
+          exam_id: this.$route.params.id,
+        });
+        const data = response.data;
+        this.examData = {
+          id: data.exam_id,
+          name: data.name,
+          subject: data.subject,
+          starttime: data.starttime,
+          duration: data.duration,
+        };
+        const title = "模拟测试成绩详情 - " + this.examData.name;
+        this.finishedQuestions = data.finished;
+        this.setAppTitle(title);
+        this.setPageTitle(title);
+        this.fetchQuestionsById(examId); // 获取题目列表
+        this.loading = false;
       } catch (e) {
         console.error("获取模拟测试数据失败", e);
         this.error = "获取模拟测试数据失败";
@@ -245,37 +224,13 @@ export default {
       this.error = null;
       try {
         // 模拟从后端获取数据
-        setTimeout(() => {
-          const questions = [
-            {
-              type: "单项选择题",
-              ids: [301, 302, 303, 304, 305],
-              currentPage: 1, // 当前页
-            },
-            {
-              type: "多项选择题",
-              ids: [441, 442, 443, 444, 445, 446],
-              currentPage: 1,
-            },
-            {
-              type: "判断题",
-              ids: [595, 1001],
-              currentPage: 1,
-            },
-            {
-              type: "填空题",
-              ids: [9801, 9802, 7002],
-              currentPage: 1,
-            },
-            {
-              type: "解答题",
-              ids: [1911, 1912, 1913, 1914, 1915, 1916, 1917, 1918, 1919, 1920], // 解答题
-              currentPage: 1,
-            },
-          ];
-          this.questions = questions; // 更新组件本地的题目列表数据
-          this.loading = false;
-        }, 100); // 模拟延迟
+        const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions/', {
+          user_id: this.$store.getters.getUserId,
+          exam_id: this.$route.params.id,
+        });
+        const questions = response.data.qsdata;
+        this.questions = questions; // 更新组件本地的题目列表数据
+        this.loading = false;
       } catch (e) {
         console.error("获取题目数据失败", e);
         this.error = "获取题目数据失败";
@@ -322,7 +277,7 @@ export default {
       return null;
     },
 
-    goToQuestionDetail(questionId) {
+    async goToQuestionDetail(questionId) {
       this.questionType = this.getQuestionTypeById(questionId);
       console.log(
         `Fetching question for question ID: ${questionId} ${this.questionType}`
@@ -330,13 +285,18 @@ export default {
       this.loadingQuestion = true;
       this.currentQuestionId = questionId;
       // 模拟从后端获取Markdown文本数据
-      setTimeout(() => {
-        this.question = `## 这是题目 ${questionId} 的题面\n\n这是详细的Markdown格式题面说明。`;
-        this.stdanswer = "# 你妈是批发的？";
-        this.answer = "# 草死你";
-        this.loadingQuestion = false;
-        this.dialog = true; // 打开Dialog
-      }, 10); // 模拟网络延迟
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/view_question_result/', {
+          user_id: this.$store.getters.getUserId,
+          exam_id: this.$route.params.id,
+          question_id: questionId,
+
+        });
+      const data = response.data;
+      this.question = data.question_data.content;
+      this.stdanswer = data.question_data.answer;
+      this.answer = data.answer_now;
+      this.loadingQuestion = false;
+      this.dialog = true; // 打开Dialog
     },
 
     closeDialog() {

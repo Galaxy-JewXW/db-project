@@ -9,6 +9,7 @@ from questions.models import Question, UserQuestionRecord
 from utils.views import decode_request
 from django.http import JsonResponse
 from users.models import User
+from exams.models import Exam
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -119,3 +120,45 @@ class GetHomeView(APIView):
 
         except Broadcast.DoesNotExist:
             return Response({'error': 'Broadcast not found'}, status=HTTP_404_NOT_FOUND)
+
+class GetStudentExams(APIView):
+    def post(self, request):
+        try:
+            # 解码请求数据
+            data = decode_request(request)
+            user_id = data.get("user_id")
+            user = User.objects.get(student_id=user_id)
+
+            ongoing_exams = []
+            ongoing_counts = 0
+            coming_exmas = []
+            coming_counts = 0
+            exams = Exam.objects.all().order_by('-start_time')
+            for exam in exams:
+                if user in exam.students.all():
+                    if exam.get_status() == "coming" and coming_counts <= 3:
+                        coming_exmas.append({
+                            "id": exam.id,
+                            "title": exam.title,
+                            "startTime": exam.start_time,
+                            "duration": exam.duration,
+                            "subject": exam.subject
+                        })
+                        coming_counts = coming_counts + 1
+                    elif exam.get_status() == "ongoing" and ongoing_counts <= 3:
+                        ongoing_exams.append({
+                            "id": exam.id,
+                            "title": exam.title,
+                            "startTime": exam.start_time,
+                            "duration": exam.duration,
+                            "subject": exam.subject
+                        })
+                        ongoing_counts = ongoing_counts + 1
+
+            return Response({
+                "success": True,
+                "ongoing_exams": ongoing_exams,
+                "coming_exmas": coming_exmas,
+            }, status=HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)

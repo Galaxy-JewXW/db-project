@@ -614,7 +614,12 @@ export default {
       }
     },
     async fetchExam() {
-
+      const response = await axios.post('http://127.0.0.1:8000/api/board/date/', {
+        user_id: this.$store.getters.getUserId
+      });
+      const data = response.data;
+      this.upcomingexams = data.coming_exmas;
+      this.ongoingexams = data.ongoing_exams;
     },
     sortMessages(messagesArray) {
       messagesArray.sort((a, b) => new Date(b.sendTime) - new Date(a.sendTime));

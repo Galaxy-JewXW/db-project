@@ -3,7 +3,7 @@ from exams import views
 
 urlpatterns = [
     # 创建考试
-    path('create_exam', views.CreateExam.as_view(), name='create_exam'),
+    path('create_exam/', views.CreateExam.as_view(), name='create_exam'),
 
     # 学生报名考试|取消报名
     path('enroll_exam/', views.EnrollExam.as_view(), name='enroll_exam'),
@@ -28,15 +28,15 @@ urlpatterns = [
     # 获取考试内当前学生查看某题的信息，包含题目信息和学生的已有作答
     path('get_exam_student_questions/', views.GetExamQuestionById.as_view(), name='get_exam_student_questions'),
     # 编辑考试
-    path('edit_exam', views.EditExam.as_view(), name='edit_exam'),
+    path('edit_exam/', views.EditExam.as_view(), name='edit_exam'),
     # 删除考试
-    path('delete_exam', views.DeleteExam.as_view(), name='delete_exam'),
+    path('delete_exam/', views.DeleteExam.as_view(), name='delete_exam'),
     # 获取某道题目所有学生的作答情况
     path('get_exam_questions_students/', views.GetExamQuestionOfStudents.as_view(), name='get_exam_questions_students'),
     # 学生查看考试批改状况视图
-    path('view_exam_questions_result', views.ViewExamQuestionsResults.as_view(), name='view_exam_questions_result'),
+    path('view_exam_questions_result/', views.ViewExamQuestionsResults.as_view(), name='view_exam_questions_result'),
     # 学生查看某一题目批改情况
-    path('view_question_result', views.ViewQuestionResult.as_view(), name='view_question_result'),
+    path('view_question_result/', views.ViewQuestionResult.as_view(), name='view_question_result'),
     # 老师更改考试结果公开状态
     path('publish_exam_results/', views.PublishExamResults.as_view(), name='publish_exam_results'),
     # 学生获取考试信息是否公开
