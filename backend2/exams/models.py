@@ -1,13 +1,13 @@
 from datetime import timedelta
 
 from django.db import models
+from django.utils.timezone import now
 from users.models import User
 from questions.models import Question
 
 
 # Exam 模型
 class Exam(models.Model):
-
     SUBJECT_CHOICES = [
         ("工科数学分析（上）", "工科数学分析（上）"),
         ("工科数学分析（下）", "工科数学分析（下）"),
@@ -40,6 +40,25 @@ class Exam(models.Model):
         """
         if self.start_time and self.duration:
             self.end_time = self.start_time + timedelta(minutes=self.duration)
+
+    def get_status(self):
+        """
+        返回考试的状态：
+        - 'coming'：未开始
+        - 'ongoing'：进行中
+        - 'past'：已结束
+        """
+        time_now = now()  # 获取当前时间
+
+        # 计算考试的结束时间
+        end_time = self.start_time + timedelta(minutes=self.duration)
+
+        if time_now < self.start_time:
+            return "coming"  # 未开始
+        elif self.start_time <= time_now <= end_time:
+            return "ongoing"  # 进行中
+        else:
+            return "past"  # 已结束
 
 
 # Exam 做题记录

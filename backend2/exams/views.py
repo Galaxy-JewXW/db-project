@@ -227,7 +227,50 @@ class GetAllExams(APIView):
 
             # 构造返回数据
             exams_data = []
+            ongoing_exams = []
+            coming_exmas = []
+            past_exams = []
+
             for exam in exams:
+                if exam.get_status() == "coming":
+                    coming_exmas.append({
+                        "id": exam.id,
+                        "title": exam.title,
+                        "description": exam.description,
+                        "start_time": exam.start_time,
+                        "duration": exam.duration,
+                        "created_by": exam.created_by.name,
+                        "is_checked": exam.is_checked,
+                        "is_published": exam.is_published,
+                        "student_count": exam.students.count(),
+                        "question_count": exam.questions.count(),
+                    })
+                elif exam.get_status() == "past":
+                    past_exams.append({
+                        "id": exam.id,
+                        "title": exam.title,
+                        "description": exam.description,
+                        "start_time": exam.start_time,
+                        "duration": exam.duration,
+                        "created_by": exam.created_by.name,
+                        "is_checked": exam.is_checked,
+                        "is_published": exam.is_published,
+                        "student_count": exam.students.count(),
+                        "question_count": exam.questions.count(),
+                    })
+                elif exam.get_status() == "ongoing":
+                    ongoing_exams.append({
+                        "id": exam.id,
+                        "title": exam.title,
+                        "description": exam.description,
+                        "start_time": exam.start_time,
+                        "duration": exam.duration,
+                        "created_by": exam.created_by.name,
+                        "is_checked": exam.is_checked,
+                        "is_published": exam.is_published,
+                        "student_count": exam.students.count(),
+                        "question_count": exam.questions.count(),
+                    })
                 exams_data.append({
                     "id": exam.id,
                     "title": exam.title,
@@ -243,7 +286,10 @@ class GetAllExams(APIView):
 
             return Response({
                 "success": True,
-                "exams": exams_data
+                "exams": exams_data,
+                "ongoing_exams": ongoing_exams,
+                "past_exams": past_exams,
+                "coming_exmas": coming_exmas,
             }, status=HTTP_200_OK)
 
         except Exception as e:
@@ -611,6 +657,7 @@ class EditExam(APIView):
             return Response({"error": "Exam not found"}, status=HTTP_404_NOT_FOUND)
         except Question.DoesNotExist:
             return Response({"error": "Question not found"}, status=HTTP_404_NOT_FOUND)
+
 
 class ViewExamQuestionsResults(APIView):
     """
