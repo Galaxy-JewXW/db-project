@@ -1,32 +1,32 @@
 <template>
-    <div>
-        <!-- 顶部横幅 -->
-        <v-banner sticky icon="mdi-plus" lines="one">
-            <template v-slot:text>
-                <div class="text-subtitle-1">作为辅导师，你可创建新的题目，或查看/编辑/删除已有的题目。</div>
-            </template>
-
-            <template v-slot:actions>
-                <v-btn color="primary" class="mr-5" @click="createExercise()">
-                    <div class="text-subtitle-1">创建新题目</div>
-                </v-btn>
-            </template>
-        </v-banner>
-
+    <!-- 顶部横幅 -->
+    <v-banner sticky icon="mdi-plus" lines="one">
+        <template v-slot:text>
+            <div class="text-subtitle-1">作为辅导师，你可创建新的题目，或查看/编辑/删除已有的题目。</div>
+        </template>
+    
+        <template v-slot:actions>
+            <v-btn color="primary" class="mr-5" @click="createExercise()">
+                <div class="text-subtitle-1">创建新题目</div>
+            </v-btn>
+        </template>
+    </v-banner>
+    <v-container v-if="loading">
+        <v-skeleton-loader class="mx-auto main-card" max-width="100%" type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
+    </v-container>
+    <v-container v-else fluid>
         <!-- 筛选条件区域 -->
-        <v-card class="pl-2 pr-2 pb- 2" variant="text" title="筛选题目" subtitle="输入题目ID或学科以查找题目，点击题目可进行查看/编辑/删除操作。"
-            prepend-icon="mdi-filter">
+        <v-card class="pl-2 pr-2 pb- 2" variant="text" title="筛选题目" subtitle="输入题目ID或学科以查找题目，点击题目可进行查看/编辑/删除操作。" prepend-icon="mdi-filter">
             <v-row align="center" justify="start" no-gutters>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
                     <v-text-field v-model="filterId" label="题目 ID" placeholder="输入题目 ID" clearable></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
-                    <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科"
-                        clearable></v-select>
+                    <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科" clearable></v-select>
                 </v-col>
             </v-row>
         </v-card>
-
+    
         <!-- 题目列表区域 -->
         <div class="exercises-container">
             <template v-if="filteredExercises && filteredExercises.length > 0">
@@ -46,34 +46,30 @@
                                 </v-row>
                             </template>
                         </v-expansion-panel-title>
-
+    
                         <v-expansion-panel-text>
                             <v-row no-gutters>
                                 <div class="question-squares">
-                                    <v-btn v-for="id in getPaginatedIds(group)" :key="id"
-                                        class="question-square text-none" color="blue-darken-4" rounded="0"
-                                        @click="editExercise(id)">
+                                    <v-btn v-for="id in getPaginatedIds(group)" :key="id" class="question-square text-none" color="blue-darken-4" rounded="0" @click="editExercise(id)">
                                         <v-responsive class="text-truncate">{{ id }}</v-responsive>
                                     </v-btn>
                                 </div>
                             </v-row>
                             <v-row justify="center" class="mt-2">
-                                <v-pagination v-model="group.currentPage" :total-visible="7"
-                                    :length="Math.ceil(group.ids.length / pageSize)"
-                                    @input="handlePageChange(group, $event)"></v-pagination>
+                                <v-pagination v-model="group.currentPage" :total-visible="7" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
                             </v-row>
                         </v-expansion-panel-text>
                     </v-expansion-panel>
                 </v-expansion-panels>
             </template>
-
+    
             <!-- 没有符合条件的题目 -->
             <div v-else class="no-results">
                 <p>没有符合条件的题目。</p>
             </div>
         </div>
-    </div>
-</template>
+    </v-container>
+    </template>
 
 <script>
 import { mapMutations } from 'vuex';
@@ -82,25 +78,11 @@ export default {
     name: 'AdminExercise',
     data() {
         return {
-            exercises: [
-                { subject: "工科数学分析（上）", ids: [1, 2, 3, 4, 5], currentPage: 1 },
-                { subject: "工科数学分析（下）", ids: [11, 21, 31, 41, 51], currentPage: 1 },
-                { subject: "基础物理学A", ids: [101, 201, 301, 401, 501], currentPage: 1 },
-                { subject: "基础物理学A1", ids: [102, 202, 302, 402, 502], currentPage: 1 },
-                { subject: "基础物理学A2", ids: [103, 203, 303, 403, 503], currentPage: 1 },
-                { subject: "基础物理学A3", ids: [104, 204, 304, 404, 504], currentPage: 1 },
-                { subject: "基础物理学A4", ids: [105, 205, 305, 405, 505], currentPage: 1 },
-                { subject: "基础物理学A5", ids: [106, 206, 306, 406, 506], currentPage: 1 },
-                { subject: "基础物理学A6", ids: [107, 207, 307, 407, 507], currentPage: 1 },
-                { subject: "基础物理学A7", ids: [108, 208, 308, 408, 508], currentPage: 1 },
-                { subject: "基础物理学A8", ids: [109, 209, 309, 409, 509], currentPage: 1 },
-                { subject: "基础物理学A9", ids: [110, 210, 310, 410, 510], currentPage: 1 },
-                { subject: "基础物理学A10", ids: [111, 211, 311, 411, 511], currentPage: 1 },
-                { subject: "基础物理学A11", ids: [112, 212, 312, 412, 512], currentPage: 1 },
-            ],
+            exercises: [],
             filterId: '',
             filterSubject: '',
             pageSize: 40, // 每页显示的题目数量
+            loading: true,
         };
     },
     computed: {
@@ -126,7 +108,8 @@ export default {
             return filtered;
         },
     },
-    mounted() {
+    created() {
+        this.loading = true;
         // 更新标题
         const title = '题目管理';
         this.setAppTitle(title);
@@ -158,6 +141,7 @@ export default {
 
                     // 更新组件的题目数据
                     this.exercises = questions;
+                    this.loading = false;
                 } else {
                     throw new Error("获取题目数据失败");
                 }

@@ -1,6 +1,13 @@
 <!-- components/ProblemSet.vue -->
 <template>
-  <v-container fluid class="problemset-container">
+  <v-container v-if="loading">
+    <v-skeleton-loader
+      class="mx-auto main-card"
+      max-width="100%"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
+    ></v-skeleton-loader>
+  </v-container>
+  <v-container v-else fluid class="problemset-container">
     <!-- Filter Section -->
     <div class="filter-container">
       <v-card class="filter-card" flat elevation="0">
@@ -10,8 +17,15 @@
             <v-col cols="12" class="filter-section pa-0">
               <div class="filter-group">
                 <span class="filter-label">按科目筛选:</span>
-                <v-chip v-for="subject in subjects" :key="subject" class="ma-2" color="primary" variant="outlined"
-                  :class="{ 'selected-chip': selectedSubject === subject }" @click="toggleSubject(subject)">
+                <v-chip
+                  v-for="subject in subjects"
+                  :key="subject"
+                  class="ma-2"
+                  color="primary"
+                  variant="outlined"
+                  :class="{ 'selected-chip': selectedSubject === subject }"
+                  @click="toggleSubject(subject)"
+                >
                   {{ subject }}
                   <v-icon v-if="selectedSubject === subject" class="ml-2" small>
                     mdi-check
@@ -24,12 +38,23 @@
             <v-col cols="12" class="filter-section pa-0">
               <div class="filter-group">
                 <span class="filter-label">按时间筛选:</span>
-                <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary" variant="outlined"
+                <v-chip
+                  v-for="range in timeRanges"
+                  :key="range.value"
+                  class="ma-2"
+                  color="primary"
+                  variant="outlined"
                   :class="{
                     'selected-chip': selectedTimeRange === range.value,
-                  }" @click="toggleTimeRange(range.value)">
+                  }"
+                  @click="toggleTimeRange(range.value)"
+                >
                   {{ range.text }}
-                  <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
+                  <v-icon
+                    v-if="selectedTimeRange === range.value"
+                    class="ml-2"
+                    small
+                  >
                     mdi-check
                   </v-icon>
                 </v-chip>
@@ -50,7 +75,14 @@
       <template v-if="filteredProblemSets.length > 0">
         <!-- Problem Set Cards -->
         <v-row dense class="justify-start">
-          <v-col v-for="problemSet in filteredProblemSets" :key="problemSet.id" cols="12" sm="6" md="3" class="pa-1">
+          <v-col
+            v-for="problemSet in filteredProblemSets"
+            :key="problemSet.id"
+            cols="12"
+            sm="6"
+            md="3"
+            class="pa-1"
+          >
             <v-card class="w-100" hover @click="openDialog(problemSet)">
               <v-card-text>
                 <p class="text-h5 font-weight-bold">{{ problemSet.name }}</p>
@@ -76,7 +108,11 @@
               </v-card-text>
 
               <v-card-actions>
-                <v-btn class="enter-button" text @click.stop="enterProblemSet(problemSet)">
+                <v-btn
+                  class="enter-button"
+                  text
+                  @click.stop="enterProblemSet(problemSet)"
+                >
                   进入题库
                 </v-btn>
               </v-card-actions>
@@ -96,11 +132,17 @@
           selectedProblemSet.name
         }}</v-card-title>
         <v-card-subtitle>
-          <span class="text--secondary">创建者：{{ selectedProblemSet.createdBy }}</span>
+          <span class="text--secondary"
+            >创建者：{{ selectedProblemSet.createdBy }}</span
+          >
           &nbsp;
-          <span class="text--secondary">创建日期：{{ formatDate(selectedProblemSet.createdAt) }}</span>
+          <span class="text--secondary"
+            >创建日期：{{ formatDate(selectedProblemSet.createdAt) }}</span
+          >
           &nbsp;
-          <span class="text--secondary">所属科目：{{ selectedProblemSet.subject }}</span>
+          <span class="text--secondary"
+            >所属科目：{{ selectedProblemSet.subject }}</span
+          >
         </v-card-subtitle>
         <v-card-text>
           <div class="info-row">
@@ -118,24 +160,12 @@
 
 <script>
 import { mapMutations } from "vuex";
-import axios from 'axios';
+import axios from "axios";
 export default {
   name: "ProblemSet",
   data() {
     return {
-      problemSets: [
-        // 示例数据，添加了 description 字段
-        {
-          id: 1,
-          name: "2023-24数分上期中",
-          createdAt: "2024-09-02",
-          subject: "工科数学分析（上）",
-          createdBy: "fysszlr",
-          estimatedTime: 120,
-          description: "2023-2024第一学期数分期中的真题，配套答案。",
-        },
-        // ... 其他题库数据
-      ],
+      problemSets: [],
       subjects: [
         "工科数学分析（上）",
         "工科数学分析（下）",
@@ -153,9 +183,11 @@ export default {
       selectedTimeRange: null,
       dialog: false,
       selectedProblemSet: {},
+      loading: true,
     };
   },
-  mounted() {
+  created() {
+    this.loading = true;
     const title = "题库";
     this.setAppTitle(title);
     this.setPageTitle(title);
@@ -208,33 +240,38 @@ export default {
   },
   methods: {
     // 映射 Vuex 的 mutation
-    ...mapMutations(['setAppTitle', 'setPageTitle']),
+    ...mapMutations(["setAppTitle", "setPageTitle"]),
     async getAll() {
       try {
-        const userId = this.$store.getters.getUserId; 
+        const userId = this.$store.getters.getUserId;
 
         const requestData = {
           user_id: userId,
         };
 
-        const response = await axios.post('http://127.0.0.1:8000/api/questions/get_all_question_banks/', requestData, {
-          headers: {
-            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+        const response = await axios.post(
+          "http://127.0.0.1:8000/api/questions/get_all_question_banks/",
+          requestData,
+          {
+            headers: {
+              "Content-Type": "application/json", // 指定请求体的格式为 JSON
+            },
           }
-        });
+        );
         if (response.data.success) {
           this.problemSets = response.data.question_banks;
-          console.log('请求成功:', response.data);
+          console.log("请求成功:", response.data);
+          this.loading = false;
         } else {
-          console.log('请求失败');
+          console.log("请求失败");
         }
       } catch (error) {
         // 请求失败时处理错误
-        console.error('请求失败:', error);
+        console.error("请求失败:", error);
       }
     },
     formatDate(dateStr) {
-      const options = { year: "numeric", month: '2-digit', day: '2-digit' };
+      const options = { year: "numeric", month: "2-digit", day: "2-digit" };
       return new Date(dateStr).toLocaleDateString(undefined, options);
     },
     openDialog(problemSet) {

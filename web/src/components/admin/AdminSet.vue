@@ -1,7 +1,9 @@
 <template>
     <v-banner sticky icon="mdi-plus" lines="one">
         <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可创建新的题库，或查看/编辑/删除已有的题库。</div>
+            <div class="text-subtitle-1">
+                作为辅导师，你可创建新的题库，或查看/编辑/删除已有的题库。
+            </div>
         </template>
 
         <template v-slot:actions>
@@ -10,7 +12,11 @@
             </v-btn>
         </template>
     </v-banner>
-    <v-container fluid class="problemset-container">
+    <v-container v-if="loading">
+        <v-skeleton-loader class="mx-auto main-card" max-width="100%"
+            type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
+    </v-container>
+    <v-container v-else fluid class="problemset-container">
         <!-- Filter Section -->
         <div class="filter-container">
             <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选题库" subtitle="通过名称搜索、选择科目或选择时间范围进行筛选"
@@ -123,35 +129,23 @@
             </v-card-title>
             <v-card-text>确定删除题库 {{ this.toDeleteName }} 吗？</v-card-text>
             <v-card-actions>
-                <v-btn color="red" variant="text" @click="deleteSet">
-                    确定
-                </v-btn>
-                <v-btn variant="plain" @click="confirmDialogOpen = false">
-                    取消
-                </v-btn>
+                <v-btn color="red" variant="text" @click="deleteSet"> 确定 </v-btn>
+                <v-btn variant="plain" @click="confirmDialogOpen = false"> 取消 </v-btn>
             </v-card-actions>
         </v-card>
     </v-dialog>
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import {
+    mapMutations
+} from "vuex";
 import axios from "axios";
 export default {
     name: "ProblemSet",
     data() {
         return {
-            problemSets: [
-                {
-                    id: 1,
-                    name: "2023-24数分上期中",
-                    createdAt: "2024-09-02 09:00:00",
-                    subject: "工科数学分析（上）",
-                    createdBy: "fysszlr",
-                    estimatedTime: 120,
-                    description: "2023-2024第一学期数分期中的真题，配套答案。",
-                },
-            ],
+            problemSets: [],
             subjects: [
                 "工科数学分析（上）",
                 "工科数学分析（下）",
@@ -159,22 +153,35 @@ export default {
                 "离散数学（信息类）",
                 "基础物理学A",
             ],
-            timeRanges: [
-                { text: "最近7天", value: "7d" },
-                { text: "最近1个月", value: "1m" },
-                { text: "最近半年", value: "6m" },
-                { text: "最近一年", value: "1y" },
+            timeRanges: [{
+                text: "最近7天",
+                value: "7d",
+            },
+            {
+                text: "最近1个月",
+                value: "1m",
+            },
+            {
+                text: "最近半年",
+                value: "6m",
+            },
+            {
+                text: "最近一年",
+                value: "1y",
+            },
             ],
             selectedSubject: null,
             selectedTimeRange: null,
             selectedProblemSet: {},
             confirmDialogOpen: false,
             toDeleteId: null,
-            toDeleteName: '',
+            toDeleteName: "",
             filterName: "",
+            loading: true,
         };
     },
-    mounted() {
+    created() {
+        this.loading = true;
         const title = "题库管理";
         this.setAppTitle(title);
         this.setPageTitle(title);
@@ -227,7 +234,7 @@ export default {
             filtered = filtered.filter((ps) => {
                 const psName = ps.name || "";
                 const matchesName = psName.toLowerCase().includes(filterName);
-                return matchesName
+                return matchesName;
             });
 
             return filtered;
