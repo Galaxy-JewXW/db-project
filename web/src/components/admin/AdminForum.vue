@@ -1,111 +1,113 @@
 <template>
-    <v-container fluid class="discussion-container">
-        <!-- Filter Section -->
-        <div class="filter-container">
-            <v-card class="filter-card" flat elevation="0">
-                <v-card-text class="py-2">
-                    <v-row>
-                        <!-- 标签筛选 -->
-                        <v-col cols="12" class="filter-section pa-0">
-                            <div class="filter-group">
-                                <span class="filter-label">按标签筛选:</span>
-                                <v-chip v-for="tag in subjects" :key="tag" class="ma-2" color="primary"
-                                    variant="outlined" :class="{ 'selected-chip': selectedTag === tag }"
-                                    @click="toggleTag(tag)">
-                                    {{ tag }}
-                                    <v-icon v-if="selectedTag === tag" class="ml-2" small>
-                                        mdi-check
-                                    </v-icon>
-                                </v-chip>
-                            </div>
-                        </v-col>
+<v-container v-if="loading" fluid>
+    <v-skeleton-loader class="mx-auto main-card" max-width="100%" type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
+</v-container>
+<v-container v-else fluid class="discussion-container">
+    <!-- Filter Section -->
+    <div class="filter-container">
+        <v-card class="filter-card" flat elevation="0">
+            <v-card-text class="py-2">
+                <v-row>
+                    <!-- 标签筛选 -->
+                    <v-col cols="12" class="filter-section pa-0">
+                        <div class="filter-group">
+                            <span class="filter-label">按标签筛选:</span>
+                            <v-chip v-for="tag in subjects" :key="tag" class="ma-2" color="primary" variant="outlined" :class="{ 'selected-chip': selectedTag === tag }" @click="toggleTag(tag)">
+                                {{ tag }}
+                                <v-icon v-if="selectedTag === tag" class="ml-2" small>
+                                    mdi-check
+                                </v-icon>
+                            </v-chip>
+                        </div>
+                    </v-col>
 
-                        <!-- 时间筛选 -->
-                        <v-col cols="12" class="filter-section pa-0">
-                            <div class="filter-group">
-                                <span class="filter-label">按时间筛选:</span>
-                                <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary"
-                                    variant="outlined" :class="{
+                    <!-- 时间筛选 -->
+                    <v-col cols="12" class="filter-section pa-0">
+                        <div class="filter-group">
+                            <span class="filter-label">按时间筛选:</span>
+                            <v-chip v-for="range in timeRanges" :key="range.value" class="ma-2" color="primary" variant="outlined" :class="{
                                         'selected-chip': selectedTimeRange === range.value,
                                     }" @click="toggleTimeRange(range.value)">
-                                    {{ range.text }}
-                                    <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
-                                        mdi-check
-                                    </v-icon>
-                                </v-chip>
-                            </div>
-                        </v-col>
-                        <v-col cols="12" class="filter-section pa-0">
-                            <v-row>
+                                {{ range.text }}
+                                <v-icon v-if="selectedTimeRange === range.value" class="ml-2" small>
+                                    mdi-check
+                                </v-icon>
+                            </v-chip>
+                        </div>
+                    </v-col>
+                    <v-col cols="12" class="filter-section pa-0">
+                        <v-row>
+                            <v-col cols="auto">
+                                <v-checkbox label="只查看精华帖" density="compact" v-model="onlyMarked"></v-checkbox>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-row>
+            </v-card-text>
+        </v-card>
+    </div>
+
+    <!-- 总数显示 -->
+    <div class="total-count pl-2">
+        共 {{ filteredDiscussions.length }} 个满足条件的讨论贴
+    </div>
+
+    <!-- Scroll Container -->
+    <div class="scroll-container">
+        <template v-if="filteredDiscussions.length > 0">
+            <!-- 讨论贴列表 -->
+            <v-list dense density="compact">
+                <template v-for="(discussion, index) in filteredDiscussions" :key="discussion.id">
+                    <v-list-item :prepend-avatar="discussion.avatar" @click="openDiscussion(discussion)">
+                        <v-list-item-title class="text-subtitle-1 font-weight-bold">
+                            <v-row align="center">
                                 <v-col cols="auto">
-                                    <v-checkbox label="只查看精华帖" density="compact" v-model="onlyMarked"></v-checkbox>
+                                    {{ discussion.title }}
+                                </v-col>
+                                <v-col cols="auto" class="text-body-2">
+                                    @ {{ discussion.publisher }} 发布于
+                                    {{ formatDate(discussion.publishTime) }}
                                 </v-col>
                             </v-row>
-                        </v-col>
-                    </v-row>
-                </v-card-text>
-            </v-card>
-        </div>
-
-        <!-- 总数显示 -->
-        <div class="total-count pl-2">
-            共 {{ filteredDiscussions.length }} 个满足条件的讨论贴
-        </div>
-
-        <!-- Scroll Container -->
-        <div class="scroll-container">
-            <template v-if="filteredDiscussions.length > 0">
-                <!-- 讨论贴列表 -->
-                <v-list dense density="compact">
-                    <template v-for="(discussion, index) in filteredDiscussions" :key="discussion.id">
-                        <v-list-item :prepend-avatar="discussion.avatar" @click="openDiscussion(discussion)">
-                            <v-list-item-title class="text-subtitle-1 font-weight-bold">
-                                <v-row align="center">
-                                    <v-col cols="auto">
-                                        {{ discussion.title }}
-                                    </v-col>
-                                    <v-col cols="auto" class="text-body-2">
-                                        @ {{ discussion.publisher }} 发布于
-                                        {{ formatDate(discussion.publishTime) }}
-                                    </v-col>
-                                </v-row>
-                            </v-list-item-title>
-                            <v-list-item-subtitle>
-                                <div class="info-row">
-                                    <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
-                                        {{ discussion.tag }}
-                                    </v-chip>
-                                    <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label>
-                                        精华
-                                    </v-chip>
-                                    {{
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                            <div class="info-row">
+                                <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
+                                    {{ discussion.tag }}
+                                </v-chip>
+                                <v-chip v-if="discussion.isMarked" size="small" class="ma-1" color="orange" label>
+                                    精华
+                                </v-chip>
+                                {{
                                         discussion.summary.length > 60
                                             ? discussion.summary.slice(0, 60) + "..."
                                             : discussion.summary
                                     }}
-                                </div>
-                            </v-list-item-subtitle>
-                            <template v-slot:append>
-                                {{ formatLastUpdated(discussion.lastUpdated) }}
-                            </template>
-                        </v-list-item>
-                        <!-- 添加分割线，每个item后面 -->
-                        <v-divider v-if="index < filteredDiscussions.length - 1" />
-                    </template>
-                </v-list>
-            </template>
+                            </div>
+                        </v-list-item-subtitle>
+                        <template v-slot:append>
+                            {{ formatLastUpdated(discussion.lastUpdated) }}
+                        </template>
+                    </v-list-item>
+                    <!-- 添加分割线，每个item后面 -->
+                    <v-divider v-if="index < filteredDiscussions.length - 1" />
+                </template>
+            </v-list>
+        </template>
 
-            <!-- 无结果提示 -->
-            <div v-else class="no-results">没有满足条件的讨论贴</div>
-        </div>
-    </v-container>
-    <v-btn class="floating-btn" fab color="primary" @click="openNewPost()">
-        <v-icon size="32">mdi-plus</v-icon>
-    </v-btn>
+        <!-- 无结果提示 -->
+        <div v-else class="no-results">没有满足条件的讨论贴</div>
+    </div>
+</v-container>
+<v-btn class="floating-btn" fab color="primary" @click="openNewPost()">
+    <v-icon size="32">mdi-plus</v-icon>
+</v-btn>
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import {
+    mapMutations
+} from "vuex";
 import axios from 'axios';
 export default {
     name: "DiscussionArea",
@@ -119,19 +121,32 @@ export default {
                 "离散数学（信息类）",
                 "基础物理学A",
             ],
-            timeRanges: [
-                { text: "最近7天", value: "7d" },
-                { text: "最近1个月", value: "1m" },
-                { text: "最近半年", value: "6m" },
-                { text: "最近一年", value: "1y" },
+            timeRanges: [{
+                    text: "最近7天",
+                    value: "7d"
+                },
+                {
+                    text: "最近1个月",
+                    value: "1m"
+                },
+                {
+                    text: "最近半年",
+                    value: "6m"
+                },
+                {
+                    text: "最近一年",
+                    value: "1y"
+                },
             ],
             selectedTag: null,
             selectedTimeRange: null,
             selectedDiscussion: {},
             onlyMarked: false,
+            loading: true,
         };
     },
     mounted() {
+        this.loading = true;
         const title = "讨论区";
         this.setAppTitle(title);
         this.setPageTitle(title);
@@ -197,16 +212,19 @@ export default {
         async getAllDiscussions() {
             try {
                 const requestData = {
-                    tag: this.tag,         // 当前选择的标签
-                    time_range: this.timeRange,  // 当前选择的时间范围
+                    tag: this.tag, // 当前选择的标签
+                    time_range: this.timeRange, // 当前选择的时间范围
                 };
                 const response = await axios.post('http://127.0.0.1:8000/api/discussions/get_all_discussions/', requestData, {
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
 
                 if (response.data.success) {
                     console.log(response.data.discussions)
                     this.discussions = response.data.discussions;
+                    this.loading = false;
                 }
 
             } catch (error) {
@@ -214,7 +232,11 @@ export default {
             }
         },
         formatDate(dateStr) {
-            const options = { year: "numeric", month: '2-digit', day: '2-digit' };
+            const options = {
+                year: "numeric",
+                month: '2-digit',
+                day: '2-digit'
+            };
             return new Date(dateStr).toLocaleDateString(undefined, options);
         },
         formatLastUpdated(dateString) {
