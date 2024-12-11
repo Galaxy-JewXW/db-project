@@ -15,7 +15,7 @@ urlpatterns = [
     path('view_student_records', views.ViewStudentRecordsById.as_view(), name='view_student_records'),
 
     # 老师批改学生作答
-    path('correct_answer', views.CorrectAnswer.as_view(), name='correct_answer'),
+    path('correct_answer/', views.CorrectAnswer.as_view(), name='correct_answer'),
 
     # 获取所有考试
     path('get_all_exams/', views.GetAllExams.as_view(), name='get_all_exams'),
@@ -32,13 +32,13 @@ urlpatterns = [
     # 删除考试
     path('delete_exam', views.DeleteExam.as_view(), name='delete_exam'),
     # 获取某道题目所有学生的作答情况
-    path('get_exam_questions_students', views.GetExamQuestionOfStudents.as_view(), name='get_exam_questions_students'),
+    path('get_exam_questions_students/', views.GetExamQuestionOfStudents.as_view(), name='get_exam_questions_students'),
     # 学生查看考试批改状况视图
     path('view_exam_questions_result', views.ViewExamQuestionsResults.as_view(), name='view_exam_questions_result'),
     # 学生查看某一题目批改情况
     path('view_question_result', views.ViewQuestionResult.as_view(), name='view_question_result'),
     # 老师更改考试结果公开状态
-    path('publish_exam_results', views.PublishExamResults.as_view(), name='publish_exam_results'),
+    path('publish_exam_results/', views.PublishExamResults.as_view(), name='publish_exam_results'),
     # 学生获取考试信息是否公开
     path('get_exam_publish_status', views.GetExamPublishStatus.as_view(), name='get_exam_publish_status'),
     # 老师获取当前考试批改状态

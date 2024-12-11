@@ -92,7 +92,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from "axios";
 export default {
     name: "ExamList",
     data() {
@@ -205,11 +205,18 @@ export default {
         const title = "模拟测试评分";
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.getAll();
     },
     methods: {
         // 映射 Vuex 的 mutation
         ...mapMutations(["setAppTitle", "setPageTitle"]),
         ...mapActions('snackbar', ['showSnackbar']),
+        async getAll() {
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/get_all_exams/', {
+                user_id: this.$store.getters.getUserId
+            });
+            this.exams = response.data.exams;
+        },
         formatDate(dateString) {
             const options = {
                 year: 'numeric',
@@ -230,14 +237,17 @@ export default {
             // 导航到目标路由
             this.$router.push(`/admin/judge/${exam.id}`);
         },
-        confirm(exam) {
+        async confirm(exam) {
             this.toDiscloseExam = exam;
             this.confirmDialogOpen = true;
         },
-        discloseExam() {
+        async discloseExam() {
             this.confirmDialogOpen = false;
             this.toDiscloseExam.disclosed = true;
-
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/publish_exam_results/', {
+                user_id: this.$store.getters.getUserId,
+                exam_id: this.toDiscloseExam.id
+            });
             this.showSnackbar({
                 message: `已公布“${this.toDiscloseExam.name}”的成绩`,
                 color: 'success',

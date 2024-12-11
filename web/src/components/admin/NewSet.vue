@@ -605,20 +605,7 @@ export default {
     watch: {
         tempTab(newTab, oldTab) {
             this.beforeTabChange(newTab, oldTab);
-        },
-        'form.subject'(newSubject, oldSubject) {
-            if (newSubject !== oldSubject) {
-                this.form.questions = [];
-                this.getExercises(newSubject);
-                if (oldSubject.length !== 0){
-                    this.showSnackbar({
-                    message: `学科由“${oldSubject}”切换为“${newSubject}”，将清空已选择题目`,
-                    color: 'warning',
-                    timeout: 2000
-                });
-                }
-            }
-        },
+        }
     }
 };
 </script>

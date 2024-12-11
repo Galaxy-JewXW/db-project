@@ -53,7 +53,7 @@
           <v-card style="max-height: 80%">
             <v-card-title> 判定正误 </v-card-title>
             <v-card-text>
-              <v-form ref="correctnessForm" @submit.prevent="saveCorrectness">
+              <v-form ref="correctnessForm">
                 <v-switch
                   v-model="isCorrectSelected"
                   :label="isCorrectSelected ? '回答正确' : '回答错误'"
@@ -79,7 +79,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from "axios";
 export default {
   name: "GradingPage",
   props: {
@@ -147,33 +147,29 @@ export default {
     goBack() {
       this.$router.push(`/admin/judge/${this.examId}`);
     },
-    fetchAnswers(examId, exerciseId) {
+    async fetchAnswers(examId, exerciseId) {
       // 在这里应替换为实际的 API 调用以获取数据
       this.stdanswer = `$x * y$`;
       // 示例数据，使用 isCorrect 字段表示正误
-      this.answers = [
-        {
-          student: 22373001,
-          answer: "x + y",
-          isCorrect: false,
-        },
-        {
-          student: 22373002,
-          answer: "x * y",
-          isCorrect: true,
-        },
-        {
-          student: 22373003,
-          answer: `$y * x - 2$`,
-          isCorrect: false,
-        },
-      ];
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions_students/', {
+        user_id: this.$store.getters.getUserId,
+        exam_id: examId,
+        question_id: exerciseId,
+      });
+      this.answers = response.data.students;
       if (this.answers.length > 0) {
         this.isCorrectSelected = this.answers[0].isCorrect;
       }
     },
-    saveCorrectness() {
+    async saveCorrectness() {
       const selectedAnswer = this.filteredAnswers[this.currentWindow];
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/correct_answer/', {
+        user_id: this.$store.getters.getUserId,
+        exam_id: this.examId,
+        question_id: this.exerciseId,
+        student_id: selectedAnswer.student,
+        is_correct: this.isCorrectSelected,
+      });
       if (selectedAnswer) {
         selectedAnswer.isCorrect = this.isCorrectSelected;
         // 这里可调用 API 保存数据

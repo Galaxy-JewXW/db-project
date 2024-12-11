@@ -198,25 +198,40 @@ class CorrectAnswer(APIView):
     def post(self, request):
         try:
             data = decode_request(request)
+            student_id = data.get('student_id')
             user_id = data.get('user_id')
-            record_id = data.get('record_id')
+            exam_id = data.get('exam_id')
+            question_id = data.get('question_id')
+            print(student_id)
+            print(exam_id)
+            print(user_id)
+            print(question_id)
             is_correct = data.get('is_correct')
-
-            user = User.objects.get(id=user_id)
-
+            print(is_correct)
+            user = User.objects.get(student_id=user_id)
+            question = Question.objects.get(id=question_id)
+            exam = Exam.objects.get(id=exam_id)
+            student = User.objects.get(student_id=student_id)
+            print(student)
+            print(exam)
+            print(question)
             if user.user_role != 1:  # 检查是否为老师
                 return Response({"error": "Only teachers can correct answers."}, status=HTTP_400_BAD_REQUEST)
 
             # 获取作答记录
-            record = ExamRecord.objects.get(id=record_id)
+            record = ExamRecord.objects.get(student=student,exam=exam,question=question)
+            print(record)
             record.is_correct = is_correct
             record.is_checked = True
             record.save()
 
             return Response({"success": True, "message": "Answer corrected."}, status=HTTP_200_OK)
 
-        except (User.DoesNotExist, ExamRecord.DoesNotExist):
+        except (User.DoesNotExist):
             return Response({"error": "Invalid user or record."}, status=HTTP_404_NOT_FOUND)
+        
+        except (ExamRecord.DoesNotExist):
+            return Response({"success": True, "message": "Answer corrected."}, status=HTTP_200_OK)
 
 
 class GetAllExams(APIView):
@@ -230,10 +245,9 @@ class GetAllExams(APIView):
             data = decode_request(request)
             user = None
             if data.get('user_id'):
-                print("no ok")
                 user_id = data.get('user_id')
                 user = User.objects.get(student_id=user_id)
-            print(user)
+           
             exams = Exam.objects.all().order_by('-start_time')
             # 构造返回数据
             exams_data = []
@@ -299,14 +313,14 @@ class GetAllExams(APIView):
                     "duration": exam.duration,
                     "createdAt": exam.created_at,
                     "created_by": exam.created_by.name,
-                    "is_checked": exam.is_checked,
-                    "is_published": exam.is_published,
+                    "ready": exam.is_checked,
+                    "disclosed": exam.is_published,
                     "student_count": exam.students.count(),
                     "question_count": exam.questions.count(),
                 })
 
             return Response({
-                "success": True,
+                "success": True, 
                 "exams": exams_data,
                 "ongoing_exams": ongoing_exams,
                 "past_exams": past_exams,
@@ -330,6 +344,7 @@ class GetExamQuestionsTeacher(APIView):
     def post(self, request):
         try:
             # 解码请求数据
+            print("to here")
             data = decode_request(request)
             user_id = data.get("user_id")
             user = User.objects.get(student_id=user_id)
@@ -342,7 +357,8 @@ class GetExamQuestionsTeacher(APIView):
             total_checked_questions = 0  # 已提交题目总数
 
             students = exam.students.all()
-
+            uid = []
+            new_que = []
             # 遍历题目类型并按类型获取题目数据
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = exam.questions.filter(type=question_type).order_by("id")
@@ -350,6 +366,7 @@ class GetExamQuestionsTeacher(APIView):
                 type_checked = 0  # 当前类型的已提交题目数
                 # 获取当前类型题目数据
                 type_questions = []
+                fid = []
                 for question in questions:
                     # 查询 ExamRecord 判断是否提交
                     has_checked = False
@@ -364,15 +381,21 @@ class GetExamQuestionsTeacher(APIView):
 
                     # 统计已提交题目数量
                     if has_checked:
-                        type_checked += 1
-
+                        uid.append(question.id)
+                    fid.append(question.id)
                     # 添加题目数据
                     type_questions.append({
                         "id": question.id,
                         "has_checked": has_checked,
                         "score" : 100,
                     })
-
+                    
+                    
+                new_que.append({
+                        "type": type_label,
+                        "currentPage": 1,
+                        "ids": fid,
+                    })
                 questions_data.append({
                     "currentPage" : 1,
                     "type" : type_label,
@@ -401,11 +424,13 @@ class GetExamQuestionsTeacher(APIView):
                 "startTime": exam.start_time,
                 "duration": exam.duration,
                 "exam_id": exam.id,
+                "finish": uid,
                 "is_checked": exam.is_checked,
                 "is_published": exam.is_published,
                 "total_questions": total_questions,  # 总题目数
                 "total_checked_questions": total_checked_questions,  # 学生已提交题目数
-                "questions": questions_data  # 按类型的题目数据
+                "questions": questions_data,  # 按类型的题目数据
+                "new_que": new_que,
             }, status=HTTP_200_OK)
 
         except Exam.DoesNotExist:
@@ -590,7 +615,7 @@ class GetExamQuestionOfStudents(APIView):
             exam_id = data.get("exam_id")
 
             # 验证用户和权限
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             if user.user_role != 1:  # 检查用户是否为老师
                 return Response({
                     "success": False,
@@ -612,21 +637,14 @@ class GetExamQuestionOfStudents(APIView):
                     # 查找学生的作答记录
                     record = ExamRecord.objects.get(exam=exam, question=question, student=student)
                     students_data.append({
-                        "student_id": student.student_id,
+                        "student": student.student_id,
                         "name": student.name,
-                        "submitted_answer": record.submitted_answer,
-                        "is_correct": record.is_correct,
+                        "answer": record.submitted_answer,
+                        "isCorrect": record.is_correct,
                         "submitted_at": record.submitted_at
                     })
                 except ExamRecord.DoesNotExist:
-                    # 如果没有作答记录
-                    students_data.append({
-                        "student_id": student.student_id,
-                        "name": student.name,
-                        "submitted_answer": None,
-                        "is_correct": None,
-                        "submitted_at": None
-                    })
+                   pass
 
             return Response({
                 "success": True,
@@ -895,7 +913,7 @@ class PublishExamResults(APIView):
             exam_id = data.get("exam_id")
 
             # 获取用户和考试信息
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             exam = Exam.objects.get(id=exam_id)
 
             # 检查权限：只有老师可以公开考试结果
