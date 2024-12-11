@@ -656,10 +656,12 @@ class DeleteQuestionBank(APIView):
         try:
             # 获取请求数据
             user_id = request.data['user_id']
+            print(user_id)
             question_bank_id = request.data['question_bank_id']
-            user = User.objects.get(id=user_id)
-
-            if user.user_role != 1:
+            print(question_bank_id)
+            user = User.objects.get(student_id=user_id)
+            print(user)
+            if user.user_role < 1:
                 return Response({
                     "success": False,
                     "error": "权限不足",

@@ -307,8 +307,14 @@ export default {
             this.toDeleteName = name;
             this.confirmDialogOpen = true;
         },
-        deleteSet(id) {
+        async deleteSet() {
+            const response = await axios.post('http://127.0.0.1:8000/api/questions/delete_questionbank/', {
+                user_id: this.$store.getters.getUserId,
+                question_bank_id : this.toDeleteId
+            });
             this.confirmDialogOpen = false;
+            this.loading = true;
+            this.getAll();
         }
     },
 };
