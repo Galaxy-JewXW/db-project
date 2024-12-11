@@ -559,7 +559,7 @@ export default {
       this.text = String(result.url);
       console.log(this.text);
       console.log("文件上传成功");
-      this.files = [];
+      this.files = null;
       this.submitAnswer();
     },
 
