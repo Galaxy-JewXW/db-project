@@ -14,7 +14,8 @@
         </v-banner>
 
         <!-- 筛选条件区域 -->
-        <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选模拟测试" subtitle="通过名称搜索或选择科目进行筛选" prepend-icon="mdi-filter">
+        <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选模拟测试" subtitle="通过名称搜索或选择科目进行筛选"
+            prepend-icon="mdi-filter">
             <v-row align="center" justify="start" no-gutters>
                 <v-col cols="12" sm="6" md="4" class="pa-2">
                     <v-text-field v-model="filterName" label="考试名称" placeholder="输入考试名称" clearable
@@ -128,7 +129,8 @@
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-btn color="primary" text @click="viewEditExam(exam.id)">查看/编辑测试</v-btn>
-                                        <v-btn color="red" text @click="confirmDeleteExam(exam.id, exam.name)">删除测试</v-btn>
+                                        <v-btn color="red" text
+                                            @click="confirmDeleteExam(exam.id, exam.name)">删除测试</v-btn>
                                     </v-card-actions>
                                 </v-card>
                             </v-col>
@@ -183,7 +185,8 @@
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-btn color="primary" text @click="viewEditExam(exam.id)">查看/编辑测试</v-btn>
-                                        <v-btn color="red" text @click="confirmDeleteExam(exam.id, exam.name)">删除测试</v-btn>
+                                        <v-btn color="red" text
+                                            @click="confirmDeleteExam(exam.id, exam.name)">删除测试</v-btn>
                                     </v-card-actions>
                                 </v-card>
                             </v-col>
@@ -216,7 +219,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from "axios";
 export default {
     name: "ProblemSet",
     data() {
@@ -293,6 +296,7 @@ export default {
         const title = "模拟测试管理";
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.getAll();
     },
     computed: {
         // 获取所有唯一的科目选项
@@ -347,6 +351,13 @@ export default {
     methods: {
         ...mapMutations(["setAppTitle", "setPageTitle"]),
         ...mapActions('snackbar', ['showSnackbar']),
+        async getAll() {
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/get_all_exams/', {
+            });
+            this.ongoingExams = response.data.ongoing_exams;
+            this.pastExams = response.data.past_exams;
+            this.comingExams = response.data.coming_exams;
+        },
         formatDate(dateString) {
             const options = {
                 year: "numeric",
@@ -378,10 +389,10 @@ export default {
         },
         deleteExam() {
             this.showSnackbar({
-                    message: `已删除测试 ${this.toDeleteExamId} ${this.toDeleteExamName}`,
-                    color: 'success',
-                    timeout: 2000
-                });
+                message: `已删除测试 ${this.toDeleteExamId} ${this.toDeleteExamName}`,
+                color: 'success',
+                timeout: 2000
+            });
             this.confirmDialogOpen = false;
         },
         resetPages() {

@@ -31,7 +31,7 @@
                         <!-- 科目输入 -->
                         <v-col cols="12">
                             <v-radio-group v-model="form.subject" label="学科" inline
-                                :rules="[value => !!value || '请选择学科']" required>
+                                :rules="[value => !!value || '请选择学科']" required disabled>
                                 <v-radio label="工科数学分析（上）" value="工科数学分析（上）" />
                                 <v-radio label="工科数学分析（下）" value="工科数学分析（下）" />
                                 <v-radio label="工科高等代数" value="工科高等代数" />

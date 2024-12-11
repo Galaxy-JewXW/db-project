@@ -161,10 +161,13 @@ class UploadAvatarView(APIView):
 @method_decorator(csrf_exempt, name='dispatch')
 class UploadImageView(APIView):
     def post(self, request):
-        if request.FILES.get('avatar'):
-            img = request.FILES['img']  # 获取上传的文件
+        print("to here")
+        print(request)
+        if request.FILES.get('files'):
+            print("to here")
+            img = request.FILES['files']  # 获取上传的文件
             title = request.POST.get('title')  # 获取文件标题（名称）
-
+            print(img)
             # 检查文件类型
             if not allowed_file(img.name):
                 return JsonResponse({"message": "不支持的文件类型"}, status=400)

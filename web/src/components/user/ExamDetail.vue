@@ -237,7 +237,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from "axios";
 export default {
   name: "ProblemSetDetail",
   data() {
@@ -326,14 +326,7 @@ export default {
   },
   mounted() {
     const id = this.$route.params.id;
-    if (id == 1) {
-      this.fetchProblemSetData(id); // 获取模拟测试数据
-    } else {
-      console.log(id);
-      console.error("模拟测试ID缺失，无法加载模拟测试数据");
-      this.$router.push(`/404`);
-    }
-
+    this.fetchProblemSetData(id);
     // 开始一个定时器，每秒更新一次当前时间
     this.intervalId = setInterval(() => {
       this.currentTime = new Date();
@@ -350,29 +343,25 @@ export default {
       console.log(`Fetching problem set data for ID: ${problemSetId}`);
       this.loading = true;
       this.error = null;
-
-      try {
-        // 模拟从后端获取模拟测试数据
-        setTimeout(() => {
-          this.problemSetData = {
-            id: problemSetId,
-            name: "2023-24数分上期中",
-            subject: "工科数学分析（上）",
-            starttime: "2024-12-08T19:00:00",
-            duration: 140,
-          };
-          const title = "模拟测试详情 - " + this.problemSetData.name;
-          this.finishedQuestions = [301, 302, 303, 441, 442, 1001, 9801, 1912, 1917, 1920];
-          this.setAppTitle(title);
-          this.setPageTitle(title);
-          this.fetchQuestionsById(problemSetId); // 获取题目列表
-          this.loading = false;
-        }, 1000); // 模拟网络延迟
-      } catch (e) {
-        console.error("获取模拟测试数据失败", e);
-        this.error = "获取模拟测试数据失败";
-        this.loading = false;
-      }
+      // 模拟从后端获取模拟测试数据
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions/', {
+        user_id: this.$store.getters.getUserId,
+        exam_id: problemSetId
+      });
+      const data = response.data;
+      this.problemSetData = {
+        id: data.id,
+        name: data.name,
+        subject: data.subject,
+        starttime: data.starttime,
+        duration: data.duration,
+      };
+      const title = "模拟测试详情 - " + this.problemSetData.name;
+      this.finishedQuestions = data.finish;
+      this.setAppTitle(title);
+      this.setPageTitle(title);
+      this.fetchQuestionsById(problemSetId); // 获取题目列表
+      this.loading = false;
     },
 
     async fetchQuestionsById(problemSetId) {
@@ -382,37 +371,13 @@ export default {
 
       try {
         // 模拟从后端获取数据
-        setTimeout(() => {
-          const questions = [
-            {
-              type: "单项选择题",
-              ids: [301, 302, 303, 304, 305],
-              currentPage: 1, // 当前页
-            },
-            {
-              type: "多项选择题",
-              ids: [441, 442, 443, 444, 445, 446],
-              currentPage: 1,
-            },
-            {
-              type: "判断题",
-              ids: [595, 1001],
-              currentPage: 1,
-            },
-            {
-              type: "填空题",
-              ids: [9801, 9802, 7002],
-              currentPage: 1,
-            },
-            {
-              type: "解答题",
-              ids: [1911, 1912, 1913, 1914, 1915, 1916, 1917, 1918, 1919, 1920], // 解答题
-              currentPage: 1,
-            },
-          ];
-          this.questions = questions; // 更新组件本地的题目列表数据
-          this.loading = false;
-        }, 100); // 模拟延迟
+        const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions/', {
+          user_id: this.$store.getters.getUserId,
+          exam_id: problemSetId
+        });
+        this.questions = response.data.qsdata; // 更新组件本地的题目列表数据
+        this.loading = false;
+        // 模拟延迟
       } catch (e) {
         console.error("获取题目数据失败", e);
         this.error = "获取题目数据失败";
@@ -459,7 +424,7 @@ export default {
       return null;
     },
 
-    goToQuestionDetail(questionId) {
+    async goToQuestionDetail(questionId) {
       this.questionType = this.getQuestionTypeById(questionId);
       console.log(
         `Fetching question for question ID: ${questionId} ${this.questionType}`
@@ -467,20 +432,23 @@ export default {
       this.loadingQuestion = true;
       this.currentQuestionId = questionId;
       // 模拟从后端获取Markdown文本数据
-      setTimeout(() => {
-        this.question = `## 这是题目 ${questionId} 的题面\n\n这是详细的Markdown格式题面说明。`;
-        this.loadingQuestion = false;
-        if (this.questionType === "单项选择题") {
-          this.choices = 4;
-        } else if (this.questionType === "解答题") {
-          this.choices = -1;
-        } else if (this.questionType === "多项选择题") {
-          this.choices = 4;
-        } else if (this.questionType === "判断题") {
-          this.choices = 2;
-        }
-        this.dialog = true; // 打开Dialog
-      }, 10); // 模拟网络延迟
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_student_questions/', {
+        user_id: this.$store.getters.getUserId,
+        exam_id: this.$route.params.id,
+        question_id: questionId
+      });
+      this.question = response.data.question_data.content;
+      this.loadingQuestion = false;
+      if (this.questionType === "单项选择题") {
+        this.choices = 4;
+      } else if (this.questionType === "解答题") {
+        this.choices = -1;
+      } else if (this.questionType === "多项选择题") {
+        this.choices = 4;
+      } else if (this.questionType === "判断题") {
+        this.choices = 2;
+      }
+      this.dialog = true; // 打开Dialog
     },
 
     closeDialog() {
@@ -506,20 +474,31 @@ export default {
       }
     },
 
-    submitAnswer() {
+    async submitAnswer() {
       // 处理提交逻辑
+      let result = "";
+      console.log(result);
       if (this.questionType === "单项选择题") {
         console.log("提交的单项选择答案:", this.selectedOption);
+        result = this.selectedOption == null ? "null" : String(this.selectedOption);
       } else if (this.questionType === "多项选择题") {
         console.log("提交的多项选择答案:", [...this.selectedOptions].sort());
+        result = ([...this.selectedOptions].sort()).join(',');
       } else if (this.questionType === "判断题") {
         console.log("提交的判断答案:", this.selectedOption);
+        result = this.selectedOption == null ? "null" : String(this.selectedOption);
       } else if (this.questionType === "填空题") {
         console.log(`提交的填空题答案: ${JSON.stringify(this.text)}`);
+        result = this.text;
       } else if (this.questionType === "解答题") {
         console.log("提交了解答题答案");
       }
-
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/submit_answer/', {
+        user_id: this.$store.getters.getUserId,
+        exam_id: this.$route.params.id,
+        question_id: this.currentQuestionId,
+        submitted_answer: result,
+      });
       // 模拟提交结果，有50%的概率成功，50%的概率失败
       const isSuccess = Math.random() < 0.5;
 
@@ -529,6 +508,7 @@ export default {
         color: 'success',
         timeout: 2000
       });
+      this.fetchProblemSetData(this.$route.params.id);
     },
 
     // 文件上传逻辑
@@ -555,8 +535,16 @@ export default {
 
       // 将选中的文件添加到 FormData 中
       this.files.forEach((file) => {
-        formData.append("files[]", file);
+        console.log("hhh");
+        formData.append("file", file);
       });
+
+      const response = await axios.post("http://127.0.0.1:8000/api/images/upload-image/", {
+        body: formData
+      });
+      const result = await response.json();
+      this.text = String(result.url);
+      console.log(this.text);
       console.log("文件上传成功");
       this.files = [];
       this.submitAnswer();

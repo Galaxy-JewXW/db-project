@@ -50,13 +50,17 @@ class CreateExam(APIView):
 class EnrollExam(APIView):
     def post(self, request):
         try:
+            print("to here")
             data = decode_request(request)
             user_id = data.get('user_id')
             exam_id = data.get('exam_id')
 
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             exam = Exam.objects.get(id=exam_id)
-
+            print(user_id)
+            print(user)
+            print(exam)
+            
             # 添加学生到考试 或 取消报名
             if user in exam.students.all():
                 exam.students.remove(user)
@@ -79,8 +83,8 @@ class SubmitAnswer(APIView):
             exam_id = data.get('exam_id')
             question_id = data.get('question_id')
             submitted_answer = data.get('submitted_answer')
-
-            user = User.objects.get(id=user_id)
+            print(submitted_answer)
+            user = User.objects.get(student_id=user_id)
             exam = Exam.objects.get(id=exam_id)
             question = Question.objects.get(id=question_id)
 
@@ -121,7 +125,7 @@ class GetExamQuestionById(APIView):
             exam_id = data.get('exam_id')
             question_id = data.get('question_id')
 
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             exam = Exam.objects.get(id=exam_id)
             question = Question.objects.get(id=question_id)
 
@@ -222,27 +226,32 @@ class GetAllExams(APIView):
 
     def post(self, request):
         try:
-            # 获取所有考试，按开始时间排序
+            # 获取所有考试，按开始时间排序 
             data = decode_request(request)
-            user_id = data.get('user_id')
-            user = User.objects.get(id=user_id)
+            user = None
+            if data.get('user_id'):
+                print("no ok")
+                user_id = data.get('user_id')
+                user = User.objects.get(student_id=user_id)
+            print(user)
             exams = Exam.objects.all().order_by('-start_time')
-
             # 构造返回数据
             exams_data = []
             ongoing_exams = []
-            coming_exmas = []
+            coming_exams = []
             past_exams = []
             enrolled_exams = []
+            
             for exam in exams:
                 if exam.get_status() == "coming":
-                    coming_exmas.append({
+                    coming_exams.append({
                         "id": exam.id,
-                        "title": exam.title,
+                        "name": exam.title,
                         "description": exam.description,
-                        "start_time": exam.start_time,
+                        "starttime": exam.start_time,
+                        "subject": exam.subject,
                         "duration": exam.duration,
-                        "created_at": exam.created_at,
+                        "createdAt": exam.created_at,
                         "created_by": exam.created_by.name,
                         "is_checked": exam.is_checked,
                         "is_published": exam.is_published,
@@ -252,11 +261,12 @@ class GetAllExams(APIView):
                 elif exam.get_status() == "past":
                     past_exams.append({
                         "id": exam.id,
-                        "title": exam.title,
+                        "name": exam.title,
                         "description": exam.description,
-                        "start_time": exam.start_time,
+                        "starttime": exam.start_time,
+                        "subject": exam.subject,
                         "duration": exam.duration,
-                        "created_at": exam.created_at,
+                        "createdAt": exam.created_at,
                         "created_by": exam.created_by.name,
                         "is_checked": exam.is_checked,
                         "is_published": exam.is_published,
@@ -266,11 +276,12 @@ class GetAllExams(APIView):
                 elif exam.get_status() == "ongoing":
                     ongoing_exams.append({
                         "id": exam.id,
-                        "title": exam.title,
+                        "name": exam.title,
                         "description": exam.description,
-                        "start_time": exam.start_time,
+                        "starttime": exam.start_time,
+                        "subject": exam.subject,
                         "duration": exam.duration,
-                        "created_at": exam.created_at,
+                        "createdAt": exam.created_at,
                         "created_by": exam.created_by.name,
                         "is_checked": exam.is_checked,
                         "is_published": exam.is_published,
@@ -281,11 +292,12 @@ class GetAllExams(APIView):
                     enrolled_exams.append(exam.id)
                 exams_data.append({
                     "id": exam.id,
-                    "title": exam.title,
+                    "name": exam.title,
                     "description": exam.description,
-                    "start_time": exam.start_time,
+                    "starttime": exam.start_time,
+                    "subject": exam.subject,
                     "duration": exam.duration,
-                    "created_at": exam.created_at,
+                    "createdAt": exam.created_at,
                     "created_by": exam.created_by.name,
                     "is_checked": exam.is_checked,
                     "is_published": exam.is_published,
@@ -298,8 +310,8 @@ class GetAllExams(APIView):
                 "exams": exams_data,
                 "ongoing_exams": ongoing_exams,
                 "past_exams": past_exams,
-                "coming_exmas": coming_exmas,
                 "enrolled_exams": enrolled_exams,
+                "coming_exams": coming_exams,
             }, status=HTTP_200_OK)
 
         except Exception as e:
@@ -320,7 +332,7 @@ class GetExamQuestionsTeacher(APIView):
             # 解码请求数据
             data = decode_request(request)
             user_id = data.get("user_id")
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             exam_id = data.get("exam_id")
             exam = Exam.objects.get(id=exam_id)
 
@@ -413,7 +425,7 @@ class GetExamQuestions(APIView):
             # 解码请求数据
             data = decode_request(request)
             user_id = data.get("user_id")
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
             exam_id = data.get("exam_id")
             exam = Exam.objects.get(id=exam_id)
 
@@ -421,7 +433,7 @@ class GetExamQuestions(APIView):
             questions_data = []
             total_questions = exam.questions.count()  # 总题目数
             total_submitted_questions = 0  # 已提交题目总数
-
+            fid = []
             # 遍历题目类型并按类型获取题目数据
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = exam.questions.filter(type=question_type).order_by("id")
@@ -430,6 +442,7 @@ class GetExamQuestions(APIView):
 
                 # 获取当前类型题目数据
                 type_questions = []
+                uid = []
                 for question in questions:
                     # 查询 ExamRecord 判断是否提交
                     try:
@@ -440,8 +453,9 @@ class GetExamQuestions(APIView):
 
                     # 统计已提交题目数量
                     if has_submitted:
-                        type_submitted += 1
-
+                        fid.append(question.id)
+                        
+                    uid.append(question.id)
                     # 添加题目数据
                     type_questions.append({
                         "id": question.id,
@@ -454,17 +468,22 @@ class GetExamQuestions(APIView):
                 # 按类型添加到结果
                 questions_data.append({
                     "type": type_label,
-                    "total": type_total,  # 当前类型的总题目数
-                    "submitted": type_submitted,  # 当前类型的已提交题目数
-                    "questions": type_questions  # 题目列表及提交状态
+                    "ids" : uid,
+                    "currentPage" : 1  
                 })
 
             return Response({
                 "success": True,
-                "exam_id": exam.id,
+                "id": exam.id,
+                "name": exam.title,
+                "subject": exam.subject,
+                "starttime": exam.start_time,
+                "duration": exam.duration,
                 "total_questions": total_questions,  # 总题目数
                 "total_submitted_questions": total_submitted_questions,  # 学生已提交题目数
-                "questions": questions_data  # 按类型的题目数据
+                "questions": questions_data,  # 按类型的题目数据
+                "qsdata" : questions_data,
+                "finish": fid
             }, status=HTTP_200_OK)
 
         except Exam.DoesNotExist:

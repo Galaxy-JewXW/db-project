@@ -469,7 +469,7 @@ export default {
                     name : this.form.name,
                 });
                 this.showSnackbar({
-                    message: '编辑题库成功',
+                    message: '新建题库成功',
                     color: 'success',
                     timeout: 2000
                 });

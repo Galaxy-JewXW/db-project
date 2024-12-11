@@ -168,7 +168,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from "axios";
 export default {
   name: "ExamList",
   data() {
@@ -217,7 +217,7 @@ export default {
           id: 2,
           name: "2023-24数分期末模拟测试 a",
           createdAt: "2024-12-01 19:00:00",
-          subject: "工科数学分析（上）",
+          subject: "工科数学分析（）",
           starttime: "2024-12-15 09:00:00",
           duration: 120,
         },
@@ -301,11 +301,22 @@ export default {
     const title = "模拟测试";
     this.setAppTitle(title);
     this.setPageTitle(title);
+    this.getAll();
   },
   methods: {
     // 映射 Vuex 的 mutation
     ...mapMutations(["setAppTitle", "setPageTitle"]),
     ...mapActions('snackbar', ['showSnackbar']),
+    async getAll() {
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/get_all_exams/', {
+        user_id: this.$store.getters.getUserId
+      });
+      this.ongoingExams = response.data.ongoing_exams;
+      this.pastExams = response.data.past_exams;
+      this.comingExams = response.data.coming_exams;
+      this.enrolledExams = response.data.enrolled_exams;
+      console.log(this.enrolledExams);
+    },
     formatDate(dateString) {
       const options = {
         year: 'numeric',
@@ -319,12 +330,16 @@ export default {
       const date = new Date(dateString);
       return date.toLocaleString("zh-CN", options).replace(/\//g, "-");
     },
-    enterExam(exam) {
+    async enterExam(exam) {
       // 导航到目标路由
       if (this.enrolledExams.includes(exam.id)) {
         this.$router.push(`/exam/${exam.id}`);
       } else {
         this.enrolledExams.push(exam.id);
+        const response = await axios.post('http://127.0.0.1:8000/api/exams/enroll_exam/', {
+          user_id: this.$store.getters.getUserId,
+          exam_id: exam.id
+        });
         this.showSnackbar({
           message: `成功报名 ${exam.name}`,
           color: 'success',
@@ -332,8 +347,12 @@ export default {
         });
       }
     },
-    modifyEnrollmentStatus(exam) {
+    async modifyEnrollmentStatus(exam) {
       if (this.enrolledExams.includes(exam.id)) {
+        const response = await axios.post('http://127.0.0.1:8000/api/exams/enroll_exam/', {
+          user_id: this.$store.getters.getUserId,
+          exam_id: exam.id
+        });
         this.enrolledExams = this.enrolledExams.filter((id) => id !== exam.id);
         this.showSnackbar({
           message: `成功取消报名 ${exam.name}`,
@@ -341,6 +360,10 @@ export default {
           timeout: 2000
         });
       } else {
+        const response = await axios.post('http://127.0.0.1:8000/api/exams/enroll_exam/', {
+          user_id: this.$store.getters.getUserId,
+          exam_id: exam.id
+        });
         this.enrolledExams.push(exam.id);
         this.showSnackbar({
           message: `成功报名 ${exam.name}`,
