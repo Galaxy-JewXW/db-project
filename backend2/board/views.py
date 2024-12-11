@@ -14,6 +14,7 @@ from exams.models import Exam
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
+from random import sample
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetHomeView(APIView):
@@ -65,18 +66,37 @@ class GetHomeView(APIView):
                 .order_by('-attempted_at')
                 .values_list('question_id', flat=True)[:3]
             )
-            wrong_questions_data = list(Question.objects.filter(id__in=wrong_questions))
+            
+            wrong_questions_data=[]
+            for ids in wrong_questions:
+                wrong_questions_data.append(Question.objects.get(id=ids))
             # 2. 获取剩余需要补足的题目
             num_wrong_questions = len(wrong_questions_data)
             num_additional_questions = max(0, 7 - num_wrong_questions)
-
+        
             # 随机选取未做过的题目，排除错题
-            remaining_questions = (
-                Question.objects.exclude(id__in=wrong_questions)
-                .exclude(user_records__user=user)
-                .order_by('?')[:num_additional_questions]
-            )
+            # remaining_questions = (
+            #     Question.objects.exclude(id__in=wrong_questions)
+            #     .exclude(user_records__user=user)
+            #     .order_by('?')[:num_additional_questions]
+            # )
+            filtered_questions = []
+            all_questions = Question.objects.all()
 
+            for question in all_questions:
+                if question.id not in wrong_questions:
+                    filtered_questions.append(question)
+
+# 进一步过滤掉已经有 user_records 的问题
+            remaining_questions = []
+            for question in filtered_questions:
+                if not question.user_records.filter(user=user).exists():
+                    remaining_questions.append(question)
+
+# 随机打乱顺序并取指定数量的问题
+            if len(remaining_questions) > num_additional_questions:
+                remaining_questions = sample(remaining_questions, num_additional_questions)
+            
             # 合并错题和随机选题
             recommended_questions = wrong_questions_data + list(remaining_questions)
             recommended_questions_data = [

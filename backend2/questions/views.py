@@ -360,7 +360,7 @@ class GetQuestionsBySubject(APIView):
             # 构造返回的数据
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = questionall.filter(type=question_type).order_by("id")
-                if questions.exists():
+                if questions.exists() and question_type.count!=0:
                     qsdata.append({
                         "type": type_label,
                         "ids": [question.id for question in questions],
@@ -461,7 +461,7 @@ class GetQuestionsByQuestionBank(APIView):
             # 遍历题目类型并按类型获取题目 ID
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = question_bank.questions.filter(type=question_type).order_by("id")
-                if questions.exists():
+                if questions.exists() and question_type!=0:
                     questions_data.append({
                         "type": type_label,
                         "ids": [question.id for question in questions],
@@ -594,7 +594,7 @@ class GetQuestionBankById(APIView):
 
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = question_bank.questions.filter(type=question_type).order_by("id")
-                if questions.exists():
+                if questions.exists() and questions.count()!=0:
                     questions_data.append({
                         "type": type_label,
                         "questions": [
@@ -960,7 +960,17 @@ class EditQuestionBank(APIView):
             for item in questions:
                 all_ids.extend(item['ids'])
             # 更新题目关联
-            new_questions = Question.objects.filter(id__in=all_ids)
+            all_questions = Question.objects.all()
+
+# 手动筛选 id 在 all_ids 中的问题
+            filtered_questions = []
+            for question in all_questions:
+                if question.id in all_ids:
+                    filtered_questions.append(question)
+
+# 转换为列表以保持与 QuerySet 的一致性
+            new_questions = list(filtered_questions)
+            # new_questions = Question.objects.filter(id__in=all_ids)
             question_bank.questions.set(new_questions)  # 重置题目关联
 
             # 更新题目数量

@@ -39,7 +39,16 @@ class CreateExam(APIView):
             )
 
             # 关联题目
-            questions = Question.objects.filter(id__in=all_ids)
+            all_questions = Question.objects.all()
+
+# 手动筛选 id 在 all_ids 中的问题
+            filtered_questions = []
+            for question in all_questions:
+                if question.id in all_ids:
+                    filtered_questions.append(question)
+
+# 转换为列表以保持与 QuerySet 的一致性
+            questions = list(filtered_questions)
             exam.questions.add(*questions)
 
             return Response({"success": True, "exam_id": exam.id}, status=HTTP_200_OK)
@@ -702,8 +711,18 @@ class EditExam(APIView):
             exam.start_time = start_time
             exam.duration = duration
 
+            all_questions = Question.objects.all()
+
+# 手动筛选 id 在 all_ids 中的问题
+            filtered_questions = []
+            for question in all_questions:
+                if question.id in all_ids:
+                    filtered_questions.append(question)
+
+# 转换为列表以保持与 QuerySet 的一致性
+            new_questions = list(filtered_questions)
             # 关联题目
-            new_questions = Question.objects.filter(id__in=all_ids)
+            # new_questions = Question.objects.filter(id__in=all_ids)
             exam.questions.set(new_questions)
 
             exam.save()
