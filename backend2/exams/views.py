@@ -369,27 +369,37 @@ class GetExamQuestionsTeacher(APIView):
                     # 添加题目数据
                     type_questions.append({
                         "id": question.id,
-                        "has_checked": has_checked
+                        "has_checked": has_checked,
+                        "score" : 100,
                     })
 
+                questions_data.append({
+                    "currentPage" : 1,
+                    "type" : type_label,
+                    "questions": type_questions,
+                })
                 # 累计总提交题目数
-                total_checked_questions += type_checked
+                # total_checked_questions += type_checked
 
                 # 按类型添加到结果
-                questions_data.append({
-                    "type": type_label,
-                    "total": type_total,  # 当前类型的总题目数
-                    "checked": type_checked,  # 当前类型的已提交题目数
-                    "questions": type_questions  # 题目列表及提交状态
-                })
+                # questions_data.append({
+                #     "type": type_label,
+                #     "total": type_total,  # 当前类型的总题目数
+                #     "checked": type_checked,  # 当前类型的已提交题目数
+                #     "questions": type_questions  # 题目列表及提交状态
+                # })
 
             if total_checked_questions == total_questions:
                 exam.is_checked = True
 
             exam.save()
-
+            print(exam.start_time)
             return Response({
                 "success": True,
+                "name": exam.title,
+                "subject": exam.subject,
+                "startTime": exam.start_time,
+                "duration": exam.duration,
                 "exam_id": exam.id,
                 "is_checked": exam.is_checked,
                 "is_published": exam.is_published,

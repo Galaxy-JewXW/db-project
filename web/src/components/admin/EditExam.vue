@@ -426,33 +426,21 @@ export default {
         goBack() {
             this.$router.push("/admin/exam");
         },
-        fetchExam(problemId) {
+        async fetchExam(problemId) {
             // 模拟直接从后端获取数据
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions_teacher/', {
+                user_id: this.$store.getters.getUserId,
+                exam_id: problemId,
+            });
+            const data = response.data;
+            console.log(data.startTime);
+            console.log(data.startTime);
             const mockProblemData = {
-                name: "史上最难数分",
-                subject: "工科数学分析（上）",
-                startTime: "2024-11-25 14:20:00",
-                duration: 120,
-                questions: [
-                    {
-                        currentPage: 1,
-                        type: "单项选择题",
-                        questions: [
-                            { id: 12, score: 1 },
-                            { id: 13, score: 1 },
-                            { id: 14, score: 10 },
-                        ]
-                    },
-                    {
-                        currentPage: 1,
-                        type: "多项选择题",
-                        questions: [
-                            { id: 121, score: 10 },
-                            { id: 131, score: 10 },
-                            { id: 141, score: 10 },
-                        ]
-                    },
-                ],
+                name: data.name,
+                subject: data.subject,
+                startTime: data.startTime,
+                duration: data.duration,
+                questions: data.questions,
             };
             this.form = { ...mockProblemData };
             console.log(this.form);
@@ -693,7 +681,7 @@ export default {
                     user_id: this.$store.getters.getUserId,
                     question_id: id
                 });
-               
+
                 // 检查后端返回的响应
                 if (response.data.success) {
                     const question_data = response.data.question;
