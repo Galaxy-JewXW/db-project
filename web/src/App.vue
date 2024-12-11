@@ -386,9 +386,6 @@ export default {
     this.timer = setInterval(this.updateTime, 1000);
     document.title = this.pageTitle || "标题";
     this.setRoleBasedOnRoute();
-    if (!this.isLoginRoute) {
-      this.fetchNotice();
-    }
   },
   beforeUnmount() {
     clearInterval(this.timer);
