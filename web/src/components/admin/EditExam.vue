@@ -160,50 +160,8 @@
                 </v-row>
             </v-tabs-window-item>
 
-            <!-- 编辑题目分值 -->
-            <v-tabs-window-item :value="3" eager>
-                <v-form ref="scoreFormRef" @submit.prevent>
-                    <v-row>
-                        <v-col cols="12">
-                            <v-alert type="info" icon="mdi-information" class="mb-4">
-                                请为每个已添加的题目设置分数。 当前总分：{{ calculateTotalScore().total }}
-                            </v-alert>
-                        </v-col>
-                        <v-col v-for="(group, groupIndex) in form.questions" :key="groupIndex" cols="12">
-                            <v-card class="mb-4 ml-2 mr-2">
-                                <v-card-title class="text-h6">
-                                    {{ group.type }} （总分：{{ calculateTotalScore()[group.type] || 0 }}）
-                                </v-card-title>
-                                <v-divider></v-divider>
-                                <v-card-text>
-                                    <v-data-table :headers="scoreHeaders" :items="group.questions" density="compact"
-                                        disable-pagination disable-sort>
-                                        <template v-slot:item.id="{ item }">
-                                            {{ item.id }}
-                                        </template>
-                                        <template v-slot:item.score="{ item, index }">
-                                            <v-text-field v-model.number="item.score" type="number" min="1" :rules="[
-                                                v => v !== null && v !== undefined || '分数为必填项',
-                                                v => Number.isInteger(v) || '分数必须是整数',
-                                                v => v > 0 || '分数必须大于0'
-                                            ]" @change="updateScore(group.type, item.id, item.score)"></v-text-field>
-                                        </template>
-                                        <template v-slot:item.actions="{ item }">
-                                            <v-btn color="primary" variant="text" small
-                                                @click="viewQuestion(group.type, item.id)">
-                                                查看题目
-                                            </v-btn>
-                                        </template>
-                                    </v-data-table>
-                                </v-card-text>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-form>
-            </v-tabs-window-item>
-
             <!-- 预览模拟测试 -->
-            <v-tabs-window-item :value="4" eager>
+            <v-tabs-window-item :value="3" eager>
                 <v-alert color="warning" class="mb-3" icon="mdi-circle-multiple-outline">
                     <v-alert-title>确认</v-alert-title>
                     请确认模拟测试信息编辑是否正确。若均填写正确，请点击下方提交按钮。直接离开本界面不会对原有测试进行更改。
@@ -376,8 +334,7 @@ export default {
             tabs: [
                 { value: 1, label: "编辑基本信息" },
                 { value: 2, label: "编辑题目" },
-                { value: 3, label: "编辑题目分值" },
-                { value: 4, label: "预览模拟测试" },
+                { value: 3, label: "预览模拟测试" },
             ],
             form: {
                 name: "",
@@ -433,17 +390,14 @@ export default {
                 exam_id: problemId,
             });
             const data = response.data;
-            console.log(data.startTime);
-            console.log(data.startTime);
             const mockProblemData = {
                 name: data.name,
                 subject: data.subject,
-                startTime: data.startTime,
+                startTime: this.convertToDatetimeLocal(data.startTime),
                 duration: data.duration,
                 questions: data.questions,
             };
             this.form = { ...mockProblemData };
-            console.log(this.form);
             this.originalForm = { ...mockProblemData };
         },
         formatDate(dateString) {
@@ -460,6 +414,23 @@ export default {
             return date
                 .toLocaleString("zh-CN", options)
                 .replace(/\//g, "-");
+        },
+        convertToDatetimeLocal(isoString, includeSeconds = false) {
+            const date = new Date(isoString);
+            const pad = (num) => String(num).padStart(2, '0');
+
+            const yyyy = date.getFullYear();
+            const mm = pad(date.getMonth() + 1); // 月份从0开始
+            const dd = pad(date.getDate());
+            const hh = pad(date.getHours());
+            const min = pad(date.getMinutes());
+            const ss = pad(date.getSeconds());
+
+            if (includeSeconds) {
+            return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
+            } else {
+            return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+            }
         },
         calculateTotalScore() {
             const scores = this.form.questions.reduce((result, group) => {
@@ -520,27 +491,6 @@ export default {
                 return false;
             }
         },
-        async validateScoreForm() {
-            try {
-                const isValid = await this.$refs.scoreFormRef.validate();
-                if (!isValid) {
-                    this.showSnackbar({
-                        message: '请为所有题目设置有效分数！',
-                        color: 'error',
-                        timeout: 2000
-                    });
-                }
-                return isValid;
-            } catch (error) {
-                console.error("分数表单验证出错：", error);
-                this.showSnackbar({
-                    message: '分数表单验证出错',
-                    color: 'error',
-                    timeout: 2000
-                });
-                return false;
-            }
-        },
         async beforeTabChange(newTab, oldTab) {
             if (newTab > oldTab) {
                 // 只在前往后续页面时校验
@@ -577,41 +527,6 @@ export default {
                         this.tab = 2;
                         return;
                     }
-                } else if (newTab === 4) {
-                    const isValid = await this.validateForm();
-                    console.log(isValid);
-                    if (!isValid.valid) {
-                        this.showSnackbar({
-                            message: '基本信息未填写或有误，请及时修改',
-                            color: 'error',
-                            timeout: 2000
-                        });
-                        this.tempTab = oldTab;
-                        this.tab = oldTab;
-                        return;
-                    }
-                    if (this.form.questions.length === 0) {
-                        this.showSnackbar({
-                            message: '模拟测试内容不能为空',
-                            color: 'error',
-                            timeout: 2000
-                        });
-                        this.tempTab = 2;
-                        this.tab = 2;
-                        return;
-                    }
-                    const scoreValid = await this.validateScoreForm();
-                    console.log(scoreValid);
-                    if (!scoreValid) {
-                        this.showSnackbar({
-                            message: '请为所有题目设置有效分数',
-                            color: 'error',
-                            timeout: 2000
-                        });
-                        this.tempTab = 3;
-                        this.tab = 3;
-                        return;
-                    }
                 }
                 this.maxAllowedTab = Math.max(this.maxAllowedTab, newTab); // 解锁新页面
             }
@@ -620,7 +535,6 @@ export default {
         async handleSubmit() {
             // Validate all forms
             const isValidForm = await this.validateForm();
-            const isValidScores = await this.validateScoreForm();
 
             if (!isValidForm.valid) {
                 this.showSnackbar({
@@ -641,17 +555,6 @@ export default {
                 });
                 this.tempTab = 2;
                 this.tab = 2;
-                return;
-            }
-
-            if (!isValidScores) {
-                this.showSnackbar({
-                    message: '请为所有题目设置有效分数',
-                    color: 'error',
-                    timeout: 2000
-                });
-                this.tempTab = 3;
-                this.tab = 3;
                 return;
             }
 
