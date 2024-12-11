@@ -6,7 +6,7 @@ urlpatterns = [
     path('upload_question/', views.UploadQuestion.as_view(), name='upload_question'),
 
     # 用户完成题目
-    path('complete_question', views.CompleteQuestion.as_view(), name='complete_question'),
+    path('complete_question/', views.CompleteQuestion.as_view(), name='complete_question'),
 
     # 创建题库
     path('create_questionbank/', views.CreateQuestionBank.as_view(), name='create_questionbank'),

@@ -509,7 +509,8 @@ export default {
                     question_bank_id : this.$route.params.id,
                     estimated_time : this.form.duration,
                     description : this.form.description,
-                    questions : this.form.questions
+                    questions : this.form.questions,
+                    name : this.form.name,
                 });
                 this.showSnackbar({
                     message: '编辑题库成功',

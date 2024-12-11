@@ -63,11 +63,13 @@ class UploadQuestion(APIView):
 class CompleteQuestion(APIView):
     def post(self, request):
         try:
+            print(1)
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            print(user_id)
+            user = User.objects.get(student_id=user_id)
             question_id = request.data['question_id']
             is_correct = request.data['is_correct']
-
+            print(question_id)
             # 获取 Question
             question = Question.objects.get(id=question_id)
 
@@ -110,15 +112,13 @@ class CompleteQuestion(APIView):
 class CreateQuestionBank(APIView):
     def post(self, request):
         try:
-            user_id = request.data['user_id']
-            data = request.data['data']
-            user = User.objects.get(student_id=user_id)
-
             # 创建 QuestionBank
+            user_id = request.data['user_id']
+            user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.create(
                 subject="",
-                estimated_time="",
-                creator="",
+                estimated_time="100",
+                creator=user,
                 description="",
             )
             question_bank.save()
@@ -935,6 +935,7 @@ class EditQuestionBank(APIView):
             estimated_time = data.get('estimated_time')
             description = data.get('description')
             questions = data.get('questions')
+            name = data.get('name')
             # 验证用户身份
             user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.get(id=question_bank_id)
@@ -951,6 +952,8 @@ class EditQuestionBank(APIView):
             question_bank.estimated_time = estimated_time
 
             question_bank.description = description
+            
+            question_bank.name = name
             all_ids = []
             for item in questions:
                 all_ids.extend(item['ids'])

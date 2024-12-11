@@ -175,7 +175,12 @@ export default {
     },
 
     // 处理用户点击“做对了”或“做错了”
-    handleAnswer(isCorrect) {
+    async handleAnswer(isCorrect) {
+      const response = await axios.post("http://127.0.0.1:8000/api/questions/complete_question/", {
+        user_id: this.$store.getters.getUserId,
+        question_id: this.$route.params.id,
+        is_correct : isCorrect
+      });
       if (isCorrect) {
         this.answerResult = 'correct';
         this.alertMessage = '恭喜你，回答正确！';

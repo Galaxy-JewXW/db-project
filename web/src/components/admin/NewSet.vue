@@ -458,13 +458,15 @@ export default {
                     description : this.form.description,
                     questions : this.form.questions
                 });
+                console.log(response1.data.question_bank_id);
                 const response = await axios.post('http://127.0.0.1:8000/api/questions/edit_questionbank/', {
                     user_id: this.$store.getters.getUserId,
                     subject: this.form.subject,
-                    question_bank_id : this.$route.params.id,
+                    question_bank_id : response1.data.question_bank_id,
                     estimated_time : this.form.duration,
                     description : this.form.description,
-                    questions : this.form.questions
+                    questions : this.form.questions,
+                    name : this.form.name,
                 });
                 this.showSnackbar({
                     message: '编辑题库成功',
