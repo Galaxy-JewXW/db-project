@@ -273,7 +273,7 @@ class GetAllExams(APIView):
                         "student_count": exam.students.count(),
                         "question_count": exam.questions.count(),
                     })
-                elif exam.get_status() == "past":
+                elif exam.get_status() == "past" and exam.is_published:
                     past_exams.append({
                         "id": exam.id,
                         "name": exam.title,

@@ -2,7 +2,7 @@
   <div class="problem-set-detail" v-if="examData">
     <v-alert type="success">
       <v-alert-title> 本次测试成绩已公布。 </v-alert-title>
-      你做对了{{ this.totalQuestions }}题中{{ finishedQuestions.length }}题。
+      你做对了{{ this.totalQuestions }}题中的{{ finishedQuestions.length }}题。
     </v-alert>
     <!-- 题库名称 -->
     <h1 style="padding-top: 10px">{{ examData.name }}</h1>

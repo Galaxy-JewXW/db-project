@@ -36,7 +36,7 @@
       </v-scroll-y-transition>
 
       <!-- 进度条 -->
-      <v-progress-linear v-if="remainingTime > 0" :value="progressPercentage" color="primary" height="9" rounded
+      <v-progress-linear v-if="remainingTime > 0" :model-value="progressPercentage" color="primary" height="9" rounded
         style="margin-bottom: 10px"></v-progress-linear>
 
       <!-- 题库名称 -->
