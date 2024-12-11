@@ -10,11 +10,18 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
+import json
+import os
 
+from pathlib import Path
+current_dir = os.path.dirname(__file__)
+env_path = os.path.join(current_dir, 'env.json')
+with open(env_path) as env:
+    ENV = json.load(env)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+MEDIA_URL = '/media/'  # 访问媒体文件的URL
+MEDIA_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'media')  # 使用当前文件目录来设置media路径
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -24,9 +31,6 @@ SECRET_KEY = 'django-insecure-a^^f&6afax$7l)7ucoopf2r@5q9oqa+2&bsh%yrz_l_zy-bdqm
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -39,21 +43,31 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'myapp2',
-    'rest_framework'
+    'rest_framework',
+    'utils',
+    'users',
+    'images',
+    'message',
+    'questions',
+    'exams',
+    'board',
+    'discussions',
+    'broadcast',
 ]
-
+CORS_ALLOW_CREDENTIALS = True
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend2.urls'
+ALLOWED_HOSTS = ['*'] 
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -92,13 +106,19 @@ WSGI_APPLICATION = 'backend2.wsgi.application'
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',  # 数据库后端
-#         'NAME': 'gauss-2de2',  # 数据库名
+#         'NAME': 'h_db22371058',  # 数据库名
 #         'HOST': '120.46.3.97',  # 主机地址
 #         'PORT': '3306',  # 端口
 #         'USER': 'u22371058',  # 用户名
 #         'PASSWORD': 'Aa961886',  # 密码
 #     }
 # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -138,5 +158,15 @@ STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATICFILES_DIRS = [
+    MEDIA_ROOT
+]
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ExamContent from '../components/ExamContent.vue';
+import ExamContent from '@/components/user/ExamContent.vue';
 
 export default {
     name: 'ExamPage',
