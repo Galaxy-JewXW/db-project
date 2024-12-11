@@ -379,7 +379,7 @@ class GetExamQuestionsTeacher(APIView):
                 fid = []
                 for question in questions:
                     # 查询 ExamRecord 判断是否提交
-                    has_checked = False
+                    has_checked = True
                     for student in students:
                         try:
                             exam_record = ExamRecord.objects.get(exam=exam, question=question, student=student)

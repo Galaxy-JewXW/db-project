@@ -31,7 +31,7 @@ class Discussion(models.Model):
             Message.objects.create(
                 sender=None,  # 系统消息
                 receiver=subscriber,
-                content=f"您关注的帖子《{self.title}》更新了: {update_content[:50]}",
+                content=f"您关注的帖子《{self.title}》更新了: {update_content[:5000]}",
                 is_read=False,
             )
 
@@ -54,7 +54,7 @@ class Reply(models.Model):
         Message.objects.create(
             sender=self.publisher,  # 回复者
             receiver=self.discussion.publisher,  # 收帖人是主帖发布者
-            content=f"您发布的帖子《{self.discussion.title}》收到新回复: {self.content[:50]}...",
+            content=f"您发布的帖子《{self.discussion.title}》收到新回复: {self.content[:5000]}...",
             is_read=False,
         )
 

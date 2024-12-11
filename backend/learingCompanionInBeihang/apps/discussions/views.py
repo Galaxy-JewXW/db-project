@@ -168,7 +168,7 @@ class EditDiscussion(APIView):
             discussion.save()
 
             # 通知订阅者帖子更新
-            update_content = f"帖子内容更新: {content[:50]}..."
+            update_content = f"帖子内容更新: {content[:5000]}..."
             discussion.notify_subscribers(update_content)
 
             return Response({"success": True, "message": "Discussion updated successfully."}, status=HTTP_200_OK)
@@ -214,7 +214,7 @@ class EditReply(APIView):
             discussion.save()
 
             # 通知订阅者帖子更新
-            update_content = f"回复内容更新: {content[:50]}..."
+            update_content = f"回复内容更新: {content[:5000]}..."
             discussion.notify_subscribers(update_content)
 
             return Response({"success": True, "message": "Reply updated successfully."}, status=HTTP_200_OK)
