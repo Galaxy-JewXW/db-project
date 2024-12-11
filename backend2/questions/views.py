@@ -113,19 +113,11 @@ class CreateQuestionBank(APIView):
 
             # 创建 QuestionBank
             question_bank = QuestionBank.objects.create(
-                subject=data['subject'],
-                estimated_time=data['estimated_time'],
-                creator=user,
-                description=data.get('description'),
+                subject="",
+                estimated_time="",
+                creator="",
+                description="",
             )
-
-            # 关联题目到题库
-            question_ids = data.get('question_ids')
-            questions = Question.objects.filter(id__in=question_ids)
-            question_bank.questions.add(*questions)
-
-            # 更新题目数量
-            question_bank.question_count = question_bank.questions.count()
             question_bank.save()
 
             return Response({
@@ -371,7 +363,6 @@ class GetQuestionsBySubject(APIView):
                         "ids": [question.id for question in questions],
                         "currentPage": 1
                     })
-            print(qsdata)
             questions_data = []
             for question in questionall:
                 questions_data.append({
@@ -941,13 +932,12 @@ class EditQuestionBank(APIView):
             estimated_time = data.get('estimated_time')
             description = data.get('description')
             questions = data.get('questions')
-
             # 验证用户身份
             user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.get(id=question_bank_id)
 
             # 权限检查：只有管理员或题库创建者才能编辑
-            if user.user_role != 1 and question_bank.creator != user:
+            if user.user_role < 1 and question_bank.creator != user:
                 return Response({
                     "success": False,
                     "error": "Permission denied. Only admins or the creator can edit the QuestionBank."
@@ -958,9 +948,11 @@ class EditQuestionBank(APIView):
             question_bank.estimated_time = estimated_time
 
             question_bank.description = description
-
+            all_ids = []
+            for item in questions:
+                all_ids.extend(item['ids'])
             # 更新题目关联
-            new_questions = Question.objects.filter(id__in=questions)
+            new_questions = Question.objects.filter(id__in=all_ids)
             question_bank.questions.set(new_questions)  # 重置题目关联
 
             # 更新题目数量

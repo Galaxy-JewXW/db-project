@@ -9,7 +9,7 @@ urlpatterns = [
     path('complete_question', views.CompleteQuestion.as_view(), name='complete_question'),
 
     # 创建题库
-    path('create_questionbank', views.CreateQuestionBank.as_view(), name='create_questionbank'),
+    path('create_questionbank/', views.CreateQuestionBank.as_view(), name='create_questionbank'),
 
     # 给题目写评论
     path('add_comment', views.AddComment.as_view(), name='add_comment'),
@@ -54,4 +54,6 @@ urlpatterns = [
     path('create_question_in_bank', views.CreateQuestionInBank.as_view(), name='create_question_in_bank'),
 
     path('remove_question_from_bank/', views.RemoveQuestionFromBank.as_view(), name='remove_question_from_bank'),
+    
+    path('edit_questionbank/', views.EditQuestionBank.as_view(), name='edit_questionbank'),
 ]
