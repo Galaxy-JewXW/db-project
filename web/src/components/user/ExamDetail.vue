@@ -137,14 +137,16 @@
                   </div>
                   <v-divider></v-divider>
                   <div class="pt-2" v-if="choices === -1">
-                    <v-btn v-if="lastAnswer.length" :href="lastAnswer" target="_blank" class="text-subtitle-1" color="primary" variant="outlined" prepend-icon="mdi-file-download-outline">
+                    <v-btn v-if="lastAnswer.length" :href="lastAnswer" target="_blank" class="text-subtitle-1"
+                      color="primary" variant="outlined" prepend-icon="mdi-file-download-outline">
                       查看上一次提交
                     </v-btn>
                     <!-- 文件上传 -->
                     <v-file-input v-model="files" label="提交答案" variant="underlined" counter show-size chips
                       accept=".jpg,.png,.jpeg">
                     </v-file-input>
-                    <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files">
+                    <v-btn color="primary" variant="text" @click="uploading = !uploading; uploadFiles()"
+                      :disabled="!files" :loading="uploading">
                       上传答案
                     </v-btn>
                   </div>
@@ -266,6 +268,7 @@ export default {
       questionType: "", // 当前题目的类型
       currentQuestionId: null, // 当前题目ID
       lastAnswer: "",
+      uploading: false,
     };
   },
   computed: {
@@ -572,6 +575,13 @@ export default {
       group.currentPage = newPage;
     },
   },
+  watch: {
+    uploading(val) {
+      if (!val) return;
+
+      setTimeout(() => (this.uploading = false), 2000)
+    },
+  }
 };
 </script>
 
