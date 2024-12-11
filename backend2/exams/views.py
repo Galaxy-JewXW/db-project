@@ -223,6 +223,9 @@ class GetAllExams(APIView):
     def post(self, request):
         try:
             # 获取所有考试，按开始时间排序
+            data = decode_request(request)
+            user_id = data.get('user_id')
+            user = User.objects.get(id=user_id)
             exams = Exam.objects.all().order_by('-start_time')
 
             # 构造返回数据
@@ -230,7 +233,7 @@ class GetAllExams(APIView):
             ongoing_exams = []
             coming_exmas = []
             past_exams = []
-
+            enrolled_exams = []
             for exam in exams:
                 if exam.get_status() == "coming":
                     coming_exmas.append({
@@ -239,6 +242,7 @@ class GetAllExams(APIView):
                         "description": exam.description,
                         "start_time": exam.start_time,
                         "duration": exam.duration,
+                        "created_at": exam.created_at,
                         "created_by": exam.created_by.name,
                         "is_checked": exam.is_checked,
                         "is_published": exam.is_published,
@@ -252,6 +256,7 @@ class GetAllExams(APIView):
                         "description": exam.description,
                         "start_time": exam.start_time,
                         "duration": exam.duration,
+                        "created_at": exam.created_at,
                         "created_by": exam.created_by.name,
                         "is_checked": exam.is_checked,
                         "is_published": exam.is_published,
@@ -265,18 +270,22 @@ class GetAllExams(APIView):
                         "description": exam.description,
                         "start_time": exam.start_time,
                         "duration": exam.duration,
+                        "created_at": exam.created_at,
                         "created_by": exam.created_by.name,
                         "is_checked": exam.is_checked,
                         "is_published": exam.is_published,
                         "student_count": exam.students.count(),
                         "question_count": exam.questions.count(),
                     })
+                if user in exam.students.all():
+                    enrolled_exams.append(exam.id)
                 exams_data.append({
                     "id": exam.id,
                     "title": exam.title,
                     "description": exam.description,
                     "start_time": exam.start_time,
                     "duration": exam.duration,
+                    "created_at": exam.created_at,
                     "created_by": exam.created_by.name,
                     "is_checked": exam.is_checked,
                     "is_published": exam.is_published,
@@ -290,6 +299,7 @@ class GetAllExams(APIView):
                 "ongoing_exams": ongoing_exams,
                 "past_exams": past_exams,
                 "coming_exmas": coming_exmas,
+                "enrolled_exams": enrolled_exams,
             }, status=HTTP_200_OK)
 
         except Exception as e:
