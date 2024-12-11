@@ -492,7 +492,9 @@ export default {
         result = this.text;
       } else if (this.questionType === "解答题") {
         console.log("提交了解答题答案");
+        result = this.text;
       }
+      console.log(result);
       const response = await axios.post('http://127.0.0.1:8000/api/exams/submit_answer/', {
         user_id: this.$store.getters.getUserId,
         exam_id: this.$route.params.id,
@@ -535,11 +537,11 @@ export default {
 
       // 将选中的文件添加到 FormData 中
       this.files.forEach((file) => {
-        console.log("hhh");
-        formData.append("file", file);
+        formData.append("files", file);
       });
-
-      const response = await axios.post("http://127.0.0.1:8000/api/images/upload-image/", {
+      console.log(formData);
+      const response = await fetch("http://127.0.0.1:8000/api/images/upload-image/", {
+        method: "POST",
         body: formData
       });
       const result = await response.json();
