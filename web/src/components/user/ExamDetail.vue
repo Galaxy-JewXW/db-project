@@ -193,7 +193,7 @@
                   </div>
                   <div class="pt-2" v-else-if="questionType === '判断题'">
                     <!-- 判断题 -->
-                    最近一次的提交：{{ this.lastAnswer === "True" ? "正确" : "错误" }}
+                    <div v-if="this.lastAnswer">最近一次的提交：{{ this.lastAnswer === "True" ? "正确" : "错误" }}</div>
                     <v-row no-gutters>
                       <v-radio-group v-model="selectedOption" inline>
                         <v-radio label="正确" value="True" dense />

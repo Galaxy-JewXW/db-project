@@ -285,18 +285,28 @@ export default {
       this.loadingQuestion = true;
       this.currentQuestionId = questionId;
       // 模拟从后端获取Markdown文本数据
-      const response = await axios.post('http://127.0.0.1:8000/api/exams/view_question_result/', {
+      axios
+        .post('http://127.0.0.1:8000/api/exams/view_question_result/', {
           user_id: this.$store.getters.getUserId,
           exam_id: this.$route.params.id,
           question_id: questionId,
-
+        })
+        .then((response) => {
+          const data = response.data;
+          this.question = data.question_data.content;
+          this.stdanswer = data.question_data.answer;
+          this.answer = data.answer_now;
+          this.loadingQuestion = false;
+          this.dialog = true;
+        })
+        .catch((error) => {
+          this.showSnackbar({
+            message: `不存在题目${questionId}的提交记录`,
+            color: 'error',
+            timeout: 2000
+          });
         });
-      const data = response.data;
-      this.question = data.question_data.content;
-      this.stdanswer = data.question_data.answer;
-      this.answer = data.answer_now;
-      this.loadingQuestion = false;
-      this.dialog = true; // 打开Dialog
+
     },
 
     closeDialog() {
