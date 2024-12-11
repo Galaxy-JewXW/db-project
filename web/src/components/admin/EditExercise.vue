@@ -393,8 +393,12 @@ export default {
             this.$router.push("/admin/exercise");
         },
 
-        deleteExercise() {
+        async deleteExercise() {
             // TODO: 添加删除逻辑
+            const response = await axios.post('http://127.0.0.1:8000/api/questions/delete_question/', {
+                    user_id: this.$store.getters.getUserId,
+                    question_id: this.$route.params.id
+                });
             this.showSnackbar({
                 message: '题目已删除',
                 color: 'success',

@@ -8,27 +8,30 @@ from users.models import User
 from .models import Question, QuestionBank, UserQuestionRecord, QuestionDiscussion, QuestionComment
 from rest_framework.permissions import IsAuthenticated
 from utils.views import decode_request
+from datetime import datetime
 
 # 用户上传 Question
 class UploadQuestion(APIView):
     def post(self, request):
         try:
             user_id = request.data['user_id']
+            print(user_id)
             data = request.data['data']
-            user = User.objects.get(id=user_id)
-
+            user = User.objects.get(student_id=user_id)
+            print(data)
+            
             # 创建 Question
             question = Question.objects.create(
-                type=data['type'],
+                type=data['questionType'],
                 content=data['content'],
                 subject=data['subject'],
-                added_at=data['added_at'],
+                added_at=datetime.now(),
                 source=data.get('source'),
-                tags=data.get('tags'),
+                tags=[tag.strip() for tag in data.get('tags').split(',') if tag.strip()],
                 difficulty=data['difficulty'],
                 answer=data.get('answer'),
                 added_by=user,
-                option_count=data.get('option_count', 0)  # 允许前端指定选项数量
+                option_count=data.get('optionsCount', 0)  # 允许前端指定选项数量
             )
 
             QuestionDiscussion.objects.create(
@@ -534,7 +537,7 @@ class DeleteQuestion(APIView):
     def post(self, request):
         try:
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
 
             if user.user_role != 1:  # 检查是否为管理员/老师
                 return Response({

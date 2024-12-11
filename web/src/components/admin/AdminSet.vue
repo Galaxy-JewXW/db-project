@@ -259,6 +259,7 @@ export default {
                 if (response.data.success) {
                     this.problemSets = response.data.question_banks;
                     console.log('请求成功:', response.data);
+                    this.loading = false;
                 } else {
                     console.log('请求失败');
                 }

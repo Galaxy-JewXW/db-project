@@ -196,7 +196,7 @@
 
 <script>
 import { mapMutations, mapActions } from 'vuex';
-
+import axios from 'axios';
 export default {
     name: 'NewExercise',
     data() {
@@ -328,12 +328,15 @@ export default {
 
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
+                const response = await axios.post('http://127.0.0.1:8000/api/questions/upload_question/', {
+                    user_id: this.$store.getters.getUserId,
+                    data: this.form
+                });
                 this.showSnackbar({
                     message: '创建题目成功',
                     color: 'success',
                     timeout: 2000
                 });
-                console.log(this.form);
                 this.goBack();
             } catch (error) {
                 console.error('表单提交出错：', error);
