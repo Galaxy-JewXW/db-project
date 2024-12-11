@@ -85,9 +85,9 @@
                     'question-square',
                     { finished: finishedQuestions.includes(questionId) },
                   ]" :color="finishedQuestions.includes(questionId)
-                  ? 'green'
-                  : 'blue-darken-4'
-                  " rounded="0" @click="goToQuestionDetail(questionId)">
+                    ? 'green'
+                    : 'blue-darken-4'
+                    " rounded="0" @click="goToQuestionDetail(questionId)">
                     <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
                   </v-btn>
                 </div>
@@ -121,13 +121,10 @@
           <v-card-text>
             <v-row>
               <v-col cols="8">
-                <div v-if="question" class="markdown-content">
+                <div class="markdown-content">
                   <v-md-preview :text="question" />
                 </div>
-                <!-- 加载或错误状态 -->
-                <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
               </v-col>
-
               <v-col cols="4">
                 <v-card class="pa-4" outlined>
                   <v-card-title style="padding-left: 0" class="text-h5 font-weight-regular">
@@ -140,18 +137,14 @@
                   </div>
                   <v-divider></v-divider>
                   <div class="pt-2" v-if="choices === -1">
+                    <v-btn v-if="lastAnswer.length" :href="lastAnswer" target="_blank" class="text-subtitle-1" color="primary" variant="outlined" prepend-icon="mdi-file-download-outline">
+                      查看上一次提交
+                    </v-btn>
                     <!-- 文件上传 -->
-                    <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
+                    <v-file-input v-model="files" label="提交答案" variant="underlined" counter show-size chips
                       accept=".jpg,.png,.jpeg">
-                      <template v-slot:selection="{ fileNames }">
-                        <template v-for="fileName in fileNames" :key="fileName">
-                          <v-chip class="me-2" color="primary" size="small" label>
-                            {{ fileName }}
-                          </v-chip>
-                        </template>
-                      </template>
                     </v-file-input>
-                    <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files.length">
+                    <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files">
                       上传答案
                     </v-btn>
                   </div>
@@ -264,7 +257,7 @@ export default {
       dialog: false, // 控制dialog显示
       question: "", // 存储题面的Markdown文本
       finishedQuestions: [], // 完成的题目
-      files: [],
+      files: null, // File对象
       choices: -2,
       selectedOption: null, // 单项选择题
       selectedOptions: [], // 多项选择题
@@ -455,13 +448,15 @@ export default {
         this.text = this.lastAnswer;
       }
       if (this.questionType === "单项选择题") {
-        this.choices = 4;
+        this.choices = response.data.question_data.option_count;
       } else if (this.questionType === "解答题") {
         this.choices = -1;
       } else if (this.questionType === "多项选择题") {
-        this.choices = 4;
+        this.choices = response.data.question_data.option_count;
       } else if (this.questionType === "判断题") {
         this.choices = 2;
+      } else {
+        this.choices = -3;
       }
       this.dialog = true; // 打开Dialog
     },
@@ -519,8 +514,8 @@ export default {
         question_id: this.currentQuestionId,
         submitted_answer: result,
       });
-      selectedOption = null; // 单项选择题
-      selectedOptions = []; // 多项选择题
+      this.selectedOption = null; // 单项选择题
+      this.selectedOptions = []; // 多项选择题
       // 设置 Snackbar 的提示信息和颜色
       this.showSnackbar({
         message: `题目 - ${this.currentQuestionId} 提交成功`,
@@ -532,30 +527,26 @@ export default {
 
     // 文件上传逻辑
     async uploadFiles() {
-      if (!this.files.length) {
+      console.log(this.files);
+      if (!this.files) {
         console.log("没有选择文件");
         return;
       }
       const acceptedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-      for (const file of this.files) {
-        if (!acceptedTypes.includes(file.type)) {
-          this.showSnackbar({
-            message: "提交文件类型仅限.jpg，.png，.jpeg格式",
-            color: 'error',
-            timeout: 2000
-          });
-          this.files = []
-          return;
-        }
+      const file = this.files;
+      if (!acceptedTypes.includes(file.type)) {
+        this.showSnackbar({
+          message: "提交文件类型仅限.jpg，.png，.jpeg格式",
+          color: 'error',
+          timeout: 2000
+        });
+        this.files = null;
+        return;
       }
-
       // 创建一个 FormData 对象
       const formData = new FormData();
-
       // 将选中的文件添加到 FormData 中
-      this.files.forEach((file) => {
-        formData.append("files", file);
-      });
+      formData.append("files", file);
       console.log(formData);
       const response = await fetch("http://127.0.0.1:8000/api/images/upload-image/", {
         method: "POST",
