@@ -24,12 +24,97 @@
       <template v-slot:append>
         <v-menu v-if="!isLoginRoute" :close-on-content-click="false" location="bottum" open-on-hover>
           <template v-slot:activator="{ props }">
-            <v-btn icon="mdi-bell" v-bind="props"></v-btn>
+            <v-btn :icon="ongoingexams.length > 0 ? 'mdi-calendar-badge' : 'mdi-calendar-blank'"
+              :color="ongoingexams.length > 0 ? 'primary' : ''" v-bind="props"></v-btn>
           </template>
           <v-card style="min-width: 475px; max-width: 500px;">
             <v-card-title>
               <v-row class="fill-height pt-2 pb-2" align="center" justify="space-between">
-                <span class="pl-2">系统通知</span>
+                <span class="pl-2">测试日程</span>
+              </v-row>
+            </v-card-title>
+            <v-divider></v-divider>
+            <v-tabs v-model="daily" color="primary" density="compact" grow>
+              <v-tab value="ongoing">正在进行的测试</v-tab>
+              <v-tab value="upcoming">即将进行的测试</v-tab>
+            </v-tabs>
+            <v-card-text class="pa-0">
+              <v-tabs-window v-model="daily">
+                <v-tabs-window-item value="ongoing">
+                  <div v-if="ongoingexams.length > 0">
+                    <v-list lines="two" class="pa-0">
+                      <v-list-item v-for="exam in ongoingexams" :key="exam.id">
+                        <v-list-item-title class="font-weight-medium">
+                          <v-row align="center">
+                            <v-col cols="auto">
+                              <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
+                                {{ exam.subject }}
+                              </v-chip>
+                              {{ exam.title }}
+                            </v-col>
+                          </v-row>
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          <v-row>
+                            <v-col cols="auto" class="text-body-2">
+                              {{ formatDate(exam.startTime) }}
+                            </v-col>
+                            <v-col cols="auto" class="text-body-2">
+                              {{ exam.duration }} 分钟
+                            </v-col>
+                          </v-row>
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </v-list>
+                  </div>
+                  <div class="no-results" v-else>
+                    暂无正在进行的测试
+                  </div>
+                </v-tabs-window-item>
+                <v-tabs-window-item value="upcoming">
+                  <div v-if="upcomingexams.length > 0">
+                    <v-list lines="two" class="pa-0">
+                      <v-list-item v-for="exam in upcomingexams" :key="exam.id">
+                        <v-list-item-title class="font-weight-medium">
+                          <v-row align="center">
+                            <v-col cols="auto">
+                              <v-chip size="small" class="ma-1" variant="outlined" color="primary" label>
+                                {{ exam.subject }}
+                              </v-chip>
+                              {{ exam.title }}
+                            </v-col>
+                          </v-row>
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                          <v-row>
+                            <v-col cols="auto" class="text-body-2">
+                              {{ formatDate(exam.startTime) }}
+                            </v-col>
+                            <v-col cols="auto" class="text-body-2">
+                              {{ exam.duration }} 分钟
+                            </v-col>
+                          </v-row>
+                        </v-list-item-subtitle>
+                      </v-list-item>
+                    </v-list>
+                  </div>
+                  <div class="no-results" v-else>
+                    暂无即将进行的测试
+                  </div>
+                </v-tabs-window-item>
+              </v-tabs-window>
+            </v-card-text>
+          </v-card>
+        </v-menu>
+        <v-menu v-if="!isLoginRoute" :close-on-content-click="false" location="bottum" open-on-hover>
+          <template v-slot:activator="{ props }">
+            <v-btn :icon="unreadmessages.length > 0 ? 'mdi-bell-badge' : 'mdi-bell'"
+              :color="unreadmessages.length > 0 ? 'primary' : ''" v-bind="props"></v-btn>
+          </template>
+          <v-card style="min-width: 475px; max-width: 500px;">
+            <v-card-title>
+              <v-row class="fill-height pt-2 pb-2" align="center" justify="space-between">
+                <span class="pl-2">通知</span>
                 <v-btn icon variant="text" @click="markAllAsRead">
                   <v-icon>mdi-check-all</v-icon>
                 </v-btn>
@@ -121,6 +206,8 @@
             </v-list-item>
           </v-list>
         </v-menu>
+
+        <!-- 信息显示区 -->
         <div class="info-display ml-2">
           <span class="date-part">{{ datePart }}</span>
           <span class="weekday">{{ weekday }}</span>
@@ -140,6 +227,7 @@
       </v-container>
     </v-main>
 
+    <!-- Snackbar 通知 -->
     <v-snackbar v-model="snackbar.visible" :timeout="snackbar.timeout" :color="snackbar.color" min-width="25%"
       style="z-index: 100000;">
       <div style="font-size: 16px">{{ snackbar.message }}</div>
@@ -150,6 +238,7 @@
       </template>
     </v-snackbar>
 
+    <!-- 消息对话框 -->
     <v-dialog v-model="messageDialogVisible" max-width="60%">
       <v-card>
         <v-card-title class="dialog-title">{{ selectedMessage.sender }}</v-card-title>
@@ -191,7 +280,26 @@ export default {
       allmessages: [],
       readmessages: [],
       unreadmessages: [],
+      upcomingexams: [
+        {
+          id: 1,
+          title: '数分',
+          startTime: '2024-12-11T19:00:00',
+          duration: 120,
+          subject: '工科数学分析（上）'
+        }
+      ],
+      ongoingexams: [
+        {
+          id: 2,
+          title: '高代',
+          startTime: '2024-12-11T19:00:00',
+          duration: 120,
+          subject: '工科高等代数'
+        }
+      ],
       tab: null,
+      daily: null,
       messageDialogVisible: false,
       selectedMessage: null,
       itemsPerPage: 5, // 每页显示5个通知
@@ -290,6 +398,7 @@ export default {
       this.setRoleBasedOnRoute();
       if (!this.isLoginRoute) {
         this.fetchNotice();
+        this.fetchExam();
       }
     },
     pageTitle(newTitle) {
@@ -325,6 +434,7 @@ export default {
       // After changing role, refetch notices to ensure correct message sorting
       if (!this.isLoginRoute) {
         this.fetchNotice();
+        this.fetchExam();
       }
     },
     setRoleBasedOnRoute() {
@@ -373,16 +483,25 @@ export default {
         message_id: notice.id
       };
       let url = 'http://127.0.0.1:8000/api/message/read_message/';
-      const response = await axios.post(url, requestData, {
-        headers: {
-          'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
-        }
-      });
-      this.showSnackbar({
-        message: `已将“${notice.sender}”设置为已读`,
-        color: 'success',
-        timeout: 2000
-      });
+      try {
+        const response = await axios.post(url, requestData, {
+          headers: {
+            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+          }
+        });
+        this.showSnackbar({
+          message: `已将“${notice.sender}”设置为已读`,
+          color: 'success',
+          timeout: 2000
+        });
+      } catch (error) {
+        console.error('Error marking message as read:', error);
+        this.showSnackbar({
+          message: '标记为已读时出错',
+          color: 'error',
+          timeout: 3000
+        });
+      }
     },
     async markAsUnread(notice) {
       notice.read = false;
@@ -395,39 +514,59 @@ export default {
         message_id: notice.id
       };
       let url = 'http://127.0.0.1:8000/api/message/unread_message/';
-      const response = await axios.post(url, requestData, {
-        headers: {
-          'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
-        }
-      });
-      this.showSnackbar({
-        message: `已将“${notice.sender}”设置为未读`,
-        color: 'warning',
-        timeout: 2000
-      });
+      try {
+        const response = await axios.post(url, requestData, {
+          headers: {
+            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+          }
+        });
+        this.showSnackbar({
+          message: `已将“${notice.sender}”设置为未读`,
+          color: 'warning',
+          timeout: 2000
+        });
+      } catch (error) {
+        console.error('Error marking message as unread:', error);
+        this.showSnackbar({
+          message: '标记为未读时出错',
+          color: 'error',
+          timeout: 3000
+        });
+      }
     },
     async markAllAsRead() {
-      this.unreadmessages.forEach(notice => {
-        notice.read = true;
-        this.readmessages.push(notice);
-      });
-      const userId = this.$store.getters.getUserId;
-      const requestData = {
-        user_id: userId,
-      };
-      let url = 'http://127.0.0.1:8000/api/message/read_all_message/';
-      const response = await axios.post(url, requestData, {
-        headers: {
-          'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
-        }
-      });
-      this.unreadmessages = [];
-      this.sortMessages(this.readmessages);
-      this.showSnackbar({
-        message: '已将所有通知设置为已读',
-        color: 'success',
-        timeout: 2000
-      });
+      try {
+        const userId = this.$store.getters.getUserId;
+        const requestData = {
+          user_id: userId,
+        };
+        let url = 'http://127.0.0.1:8000/api/message/read_all_message/';
+        const response = await axios.post(url, requestData, {
+          headers: {
+            'Content-Type': 'application/json',  // 指定请求体的格式为 JSON
+          }
+        });
+        this.unreadmessages.forEach(notice => {
+          notice.read = true;
+          this.readmessages.push(notice);
+        });
+        this.unreadmessages = [];
+        this.sortMessages(this.readmessages);
+        this.showSnackbar({
+          message: '已将所有通知设置为已读',
+          color: 'success',
+          timeout: 2000
+        });
+        this.currentPageUnread = 1;
+        this.currentPageRead = 1;
+      } catch (error) {
+        console.error('Error marking all messages as read:', error);
+        this.showSnackbar({
+          message: '标记所有为已读时出错',
+          color: 'error',
+          timeout: 3000
+        });
+      }
     },
     async fetchNotice() {
       const requestData = {
@@ -467,7 +606,15 @@ export default {
         this.currentPageUnread = 1;
       } catch (error) {
         console.error('Error fetching messages:', error);
+        this.showSnackbar({
+          message: '获取通知时出错',
+          color: 'error',
+          timeout: 3000
+        });
       }
+    },
+    async fetchExam() {
+
     },
     sortMessages(messagesArray) {
       messagesArray.sort((a, b) => new Date(b.sendTime) - new Date(a.sendTime));
