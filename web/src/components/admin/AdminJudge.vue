@@ -215,6 +215,7 @@ export default {
             const response = await axios.post('http://127.0.0.1:8000/api/exams/get_all_exams/', {
                 user_id: this.$store.getters.getUserId
             });
+            console.log(response.data);
             this.exams = response.data.exams;
         },
         formatDate(dateString) {

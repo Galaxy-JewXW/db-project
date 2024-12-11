@@ -391,6 +391,7 @@ class GetExamQuestionsTeacher(APIView):
 
                     # 统计已提交题目数量
                     if has_checked:
+                        total_checked_questions = total_checked_questions + 1
                         uid.append(question.id)
                     fid.append(question.id)
                     # 添加题目数据
@@ -421,12 +422,15 @@ class GetExamQuestionsTeacher(APIView):
                 #     "checked": type_checked,  # 当前类型的已提交题目数
                 #     "questions": type_questions  # 题目列表及提交状态
                 # })
-
+            print(total_checked_questions)
+            print(total_questions)
             if total_checked_questions == total_questions:
                 exam.is_checked = True
 
             exam.save()
             print(exam.start_time)
+            print(exam.is_checked)
+            print(exam)
             return Response({
                 "success": True,
                 "name": exam.title,
@@ -657,6 +661,7 @@ class GetExamQuestionOfStudents(APIView):
                    pass
 
             return Response({
+                "type": question.type,
                 "success": True,
                 "exam_id": exam.id,
                 "question_id": question.id,

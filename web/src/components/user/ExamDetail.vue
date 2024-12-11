@@ -431,6 +431,12 @@ export default {
       return null;
     },
 
+    parseAnswer(markdownString) {
+      const regex = /!\[Alt]\((.+?)\)/; // 正则匹配 ![Alt](...)
+      const match = markdownString.match(regex);
+      return match ? match[1] : null; // 如果匹配到，返回第一个捕获组，否则返回 null
+    },
+
     async goToQuestionDetail(questionId) {
       this.questionType = this.getQuestionTypeById(questionId);
       this.clearSelection();
@@ -450,6 +456,13 @@ export default {
       if (response.data.question_data.type === "填空题") {
         this.text = this.lastAnswer;
       }
+
+      if (response.data.question_data.type === '解答题' && this.lastAnswer.length > 0) {
+        console.log(this.lastAnswer);
+        this.lastAnswer = this.parseAnswer(this.lastAnswer);
+        console.log(this.lastAnswer);
+      }
+
       if (this.questionType === "单项选择题") {
         this.choices = response.data.question_data.option_count;
       } else if (this.questionType === "解答题") {
@@ -557,8 +570,8 @@ export default {
       });
       const result = await response.json();
       this.text = String(result.url);
+      this.text = `![Alt](${this.text})`;
       console.log(this.text);
-      console.log("文件上传成功");
       this.files = null;
       this.submitAnswer();
     },
