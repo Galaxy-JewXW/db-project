@@ -1,10 +1,7 @@
 <template>
   <v-container v-if="loading" class="scroll-container">
-    <v-skeleton-loader
-      class="mx-auto main-card"
-      max-width="100%"
-      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
-    ></v-skeleton-loader>
+    <v-skeleton-loader class="mx-auto main-card" max-width="100%"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
   </v-container>
   <div v-else class="scroll-container">
     <!-- 主讨论卡片和评论卡片作为一个整体 -->
@@ -26,9 +23,7 @@
           </v-row>
         </template>
         <template v-slot:append>
-          <v-icon v-if="mainDiscussion.isLiked" color="#ee3f4d"
-            >mdi-thumb-up</v-icon
-          >
+          <v-icon v-if="mainDiscussion.isLiked" color="#ee3f4d">mdi-thumb-up</v-icon>
           <v-icon v-if="isSubscribed" color="#fbc02d">mdi-bell</v-icon>
           <v-icon v-if="isMarked" color="#fbc02d">mdi-star</v-icon>
         </template>
@@ -48,13 +43,8 @@
       <v-divider></v-divider>
       <v-row no-gutters>
         <v-col cols="auto">
-          <v-btn
-            rounded="0"
-            @click="toggleLike('main')"
-            class="like-btn"
-            :variant="mainDiscussion.isLiked ? 'tonal' : 'text'"
-            color="#ee3f4d"
-          >
+          <v-btn rounded="0" @click="toggleLike('main')" class="like-btn"
+            :variant="mainDiscussion.isLiked ? 'tonal' : 'text'" color="#ee3f4d">
             <v-icon>{{
               mainDiscussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline"
             }}</v-icon>
@@ -62,13 +52,8 @@
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn
-            rounded="0"
-            @click="toggleSubscription"
-            class="subscribe-btn"
-            :variant="isSubscribed ? 'tonal' : 'text'"
-            :color="'#fbc02d'"
-          >
+          <v-btn rounded="0" @click="toggleSubscription" class="subscribe-btn"
+            :variant="isSubscribed ? 'tonal' : 'text'" :color="'#fbc02d'">
             <v-icon>{{
               isSubscribed ? "mdi-bell-off" : "mdi-bell-outline"
             }}</v-icon>
@@ -76,13 +61,8 @@
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn
-            rounded="0"
-            @click="toggleMark"
-            class="subscribe-btn"
-            :variant="isMarked ? 'tonal' : 'text'"
-            :color="'#fbc02d'"
-          >
+          <v-btn rounded="0" @click="toggleMark" class="subscribe-btn" :variant="isMarked ? 'tonal' : 'text'"
+            :color="'#fbc02d'">
             <v-icon>{{
               isMarked ? "mdi-star-minus-outline" : "mdi-star-plus-outline"
             }}</v-icon>
@@ -90,41 +70,27 @@
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn
-            rounded="0"
-            variant="text"
-            :color="'#574266'"
-            @click="commentDiscussion(mainDiscussion.id, true, true)"
-          >
+          <v-btn rounded="0" variant="text" :color="'#574266'"
+            @click="commentDiscussion(mainDiscussion.id, true, true)">
             <v-icon left>mdi-comment-outline</v-icon>
             评论
           </v-btn>
         </v-col>
         <v-col v-if="mainDiscussion.publisherId == currentUserId" cols="auto">
-          <v-btn
-            rounded="0"
-            variant="text"
-            :color="'#1867c0'"
-            @click="
-              editDiscussion(
-                mainDiscussion.id,
-                mainDiscussion.content,
-                true,
-                false
-              )
-            "
-          >
+          <v-btn rounded="0" variant="text" :color="'#1867c0'" @click="
+            editDiscussion(
+              mainDiscussion.id,
+              mainDiscussion.content,
+              true,
+              false
+            )
+            ">
             <v-icon left>mdi-pencil</v-icon>
             编辑
           </v-btn>
         </v-col>
         <v-col cols="auto">
-          <v-btn
-            rounded="0"
-            variant="text"
-            color="red"
-            @click="confirmDelete(1, true)"
-          >
+          <v-btn rounded="0" variant="text" color="red" @click="confirmDelete(1, true)">
             <v-icon left>mdi-trash-can-outline</v-icon>
             删除讨论贴
           </v-btn>
@@ -133,11 +99,7 @@
     </v-card>
 
     <div v-for="discussion in followDiscussion" :key="discussion.id">
-      <v-card
-        class="mx-auto follow-card"
-        max-width="85%"
-        style="margin-bottom: 20px"
-      >
+      <v-card class="mx-auto follow-card" max-width="85%" style="margin-bottom: 20px">
         <v-card-item :prepend-avatar="discussion.avatar">
           <template v-slot:title class="text-h6 font-weight-regular">
             <v-row align="center" no-gutters>
@@ -154,9 +116,7 @@
             </v-row>
           </template>
           <template v-slot:append>
-            <v-icon v-if="discussion.isLiked" color="#ee3f4d"
-              >mdi-thumb-up</v-icon
-            >
+            <v-icon v-if="discussion.isLiked" color="#ee3f4d">mdi-thumb-up</v-icon>
           </template>
         </v-card-item>
         <v-divider></v-divider>
@@ -173,13 +133,8 @@
         <v-divider></v-divider>
         <v-row no-gutters>
           <v-col cols="auto">
-            <v-btn
-              rounded="0"
-              @click="toggleLike(discussion.id)"
-              class="like-btn"
-              :variant="discussion.isLiked ? 'tonal' : 'text'"
-              :color="'#ee3f4d'"
-            >
+            <v-btn rounded="0" @click="toggleLike(discussion.id)" class="like-btn"
+              :variant="discussion.isLiked ? 'tonal' : 'text'" :color="'#ee3f4d'">
               <v-icon>{{
                 discussion.isLiked ? "mdi-thumb-up" : "mdi-thumb-up-outline"
               }}</v-icon>
@@ -187,36 +142,21 @@
             </v-btn>
           </v-col>
           <v-col cols="auto">
-            <v-btn
-              rounded="0"
-              variant="text"
-              :color="'#574266'"
-              @click="commentDiscussion(discussion.id, false, true)"
-            >
+            <v-btn rounded="0" variant="text" :color="'#574266'" @click="commentDiscussion(discussion.id, false, true)">
               <v-icon left>mdi-comment-outline</v-icon>
               评论
             </v-btn>
           </v-col>
           <v-col v-if="discussion.publisherId == currentUserId" cols="auto">
-            <v-btn
-              rounded="0"
-              variant="text"
-              :color="'#1867c0'"
-              @click="
-                editDiscussion(discussion.id, discussion.content, false, false)
-              "
-            >
+            <v-btn rounded="0" variant="text" :color="'#1867c0'" @click="
+              editDiscussion(discussion.id, discussion.content, false, false)
+              ">
               <v-icon left>mdi-pencil</v-icon>
               编辑
             </v-btn>
           </v-col>
           <v-col cols="auto">
-            <v-btn
-              rounded="0"
-              variant="text"
-              color="red"
-              @click="confirmDelete(discussion.id, false)"
-            >
+            <v-btn rounded="0" variant="text" color="red" @click="confirmDelete(discussion.id, false)">
               <v-icon left>mdi-trash-can-outline</v-icon>
               删除回复
             </v-btn>
@@ -232,13 +172,9 @@
 
   <v-dialog v-model="editDialog" height="45%" width="60%">
     <v-card title="编辑">
-      <v-md-editor
-        v-model="text"
-        height="325px"
-        width="20%"
+      <v-md-editor v-model="text" height="325px" width="20%"
         left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
-        right-toolbar="preview toc sync-scroll"
-      ></v-md-editor>
+        right-toolbar="preview toc sync-scroll"></v-md-editor>
       <v-spacer></v-spacer>
       <v-card-actions>
         <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
@@ -248,13 +184,9 @@
 
   <v-dialog v-model="commentDialog" height="45%" width="60%">
     <v-card title="评论">
-      <v-md-editor
-        v-model="text"
-        height="325px"
-        width="20%"
+      <v-md-editor v-model="text" height="325px" width="20%"
         left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
-        right-toolbar="preview toc sync-scroll"
-      ></v-md-editor>
+        right-toolbar="preview toc sync-scroll"></v-md-editor>
       <v-spacer></v-spacer>
       <v-card-actions>
         <v-btn color="primary" variant="text" @click="emitEdit">提交</v-btn>
@@ -268,23 +200,19 @@
         <v-icon color="primary">mdi-alert-circle-outline</v-icon>
         <span class="headline ml-2">操作不可逆</span>
       </v-card-title>
-      <v-card-text
-        >确定删除{{ this.toDeleteContent.content }}吗？
+      <v-card-text>确定删除{{ this.toDeleteContent.content }}吗？
         <div v-if="this.toDeleteContent.isMainDiscussion">
           注意：删除讨论贴后，所有的评论也会被删除。
         </div>
       </v-card-text>
       <v-card-actions>
-        <v-btn
-          color="red"
-          variant="text"
-          @click="
-            deleted(
-              this.toDeleteContent.id,
-              this.toDeleteContent.isMainDiscussion
-            )
-          "
-        >
+        <v-btn color="red" variant="text" @click="
+          deleted(
+            this.toDeleteContent.id,
+            this.toDeleteContent.isMainDiscussion
+          );
+        this.confirmDialog = false;
+        ">
           确定
         </v-btn>
         <v-btn variant="plain" @click="confirmDialog = false"> 取消 </v-btn>
