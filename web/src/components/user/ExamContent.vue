@@ -1,11 +1,8 @@
 <!-- components/ExamList.vue -->
 <template>
   <v-container v-if="loading" fluid>
-    <v-skeleton-loader
-      class="mx-auto main-card"
-      max-width="100%"
-      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
-    ></v-skeleton-loader>
+    <v-skeleton-loader class="mx-auto main-card" max-width="100%"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
   </v-container>
   <v-container v-else fluid class="problemset-container">
     <!-- Button to open Past Exams Dialog -->
@@ -105,7 +102,7 @@
     </v-dialog>
 
     <!-- Combined Exams Section -->
-    <h2 style="padding-top: 20px">测试列表</h2>
+    <h2 style="padding-top: 20px">可报名的测试列表</h2>
     <div class="scroll-container">
       <template v-if="combinedExams.length > 0">
         <v-row dense class="justify-start">
@@ -273,6 +270,13 @@ export default {
       this.enrolledExams = response.data.enrolled_exams;
       console.log(this.enrolledExams);
       this.loading = false;
+      if (this.ongoingExams.length > 0) {
+        this.showSnackbar({
+          message: `已报名的测试正在进行中。`,
+          color: 'success',
+          timeout: 2000
+        });
+      }
     },
     formatDate(dateString) {
       const options = {
