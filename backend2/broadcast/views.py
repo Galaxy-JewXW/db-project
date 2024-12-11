@@ -19,6 +19,7 @@ class PublishBroadcast(APIView):
             user = User.objects.get(student_id=user_id)
             # sender = data.get("sender")  # 默认发件人名字为"系统通知"
             sender = user.name
+            sender_name = user
             title = data.get("title")
             content = data.get("content")
             print(user_id)
@@ -31,14 +32,15 @@ class PublishBroadcast(APIView):
                 }, status=HTTP_400_BAD_REQUEST)
             print(user.user_role)
             # 创建新的广播消息
-            broadcast = Broadcast.objects.create(sender=sender, title=title, content=content)
+            broadcast = Broadcast.objects.create(sender=sender, title=title, content=content, sender_name = sender_name)
 
             return Response({
                 "success": True,
                 "message": "Broadcast published successfully.",
                 "broadcast_id": broadcast.id,
                 "broadcast_details": {
-                    "sender": broadcast.sender,
+                    "sender": broadcast.sender_name.name,
+                    "sender_name": broadcast.sender,
                     "sent_at": broadcast.sent_at,
                     "content": broadcast.content,
                 }
@@ -96,7 +98,7 @@ class EditBroadcast(APIView):
                 "success": True,
                 "message": "Broadcast updated successfully.",
                 "broadcast_details": {
-                    "sender": broadcast.sender,
+                    "sender": broadcast.sender_name.name,
                     "sent_at": broadcast.sent_at,
                     "title": broadcast.title,
                     "last_updated": broadcast.last_updated,  # 返回最新更新时间
@@ -192,7 +194,7 @@ class GetAllBroadcasts(APIView):
             for broadcast in broadcasts:
                 broadcasts_data.append({
                     "id": broadcast.id,
-                    "publisher": broadcast.sender,
+                    "publisher": broadcast.sender_name.name,
                     "sent_at": broadcast.sent_at,
                     "releaseTime": broadcast.last_updated,
                     "title": broadcast.title,

@@ -27,7 +27,7 @@ class GetHomeView(APIView):
             broadcast_data = [
                 {
                     "id": b.id,
-                    "sender": b.sender,
+                    "sender": b.sender_name.name,
                     "sent_at": b.sent_at,
                     "last_updated": b.last_updated,
                     "title": b.title,
