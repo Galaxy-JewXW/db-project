@@ -1,237 +1,250 @@
 <template>
-  <div class="problem-set-detail" v-if="problemSetData">
-    <v-scroll-y-transition mode="out-in">
-      <!-- 测试进行中且未完成所有题目 -->
-      <div v-if="remainingTime > 0 && finishedQuestions.length < totalQuestions" style="padding-bottom: 15px">
-        <v-alert type="info" icon="mdi-clock-outline">
-          <v-alert-title>
-            测试进行中，剩余时间：{{ formatDuration(remainingTime) }}
-          </v-alert-title>
-          你已完成{{ totalQuestions }}题中的{{ finishedQuestions.length }}题。
-        </v-alert>
+  <v-container v-if="loading">
+    <v-skeleton-loader class="mx-auto main-card" max-width="100%"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
+  </v-container>
+  <div v-else>
+    <div class="problem-set-detail" v-if="problemSetData">
+      <v-scroll-y-transition mode="out-in">
+        <!-- 测试进行中且未完成所有题目 -->
+        <div v-if="remainingTime > 0 && finishedQuestions.length < totalQuestions" style="padding-bottom: 15px">
+          <v-alert type="info" icon="mdi-clock-outline">
+            <v-alert-title>
+              测试进行中，剩余时间：{{ formatDuration(remainingTime) }}
+            </v-alert-title>
+            你已完成{{ totalQuestions }}题中的{{ finishedQuestions.length }}题。
+          </v-alert>
+        </div>
+
+        <!-- 测试进行中且已完成所有题目 -->
+        <div v-else-if="remainingTime > 0 && finishedQuestions.length === totalQuestions" style="padding-bottom: 15px">
+          <v-alert type="success">
+            <v-alert-title>
+              测试进行中，剩余时间：{{ formatDuration(remainingTime) }}
+            </v-alert-title>
+            你已完成本次测试的所有题目。
+          </v-alert>
+        </div>
+
+        <!-- 测试已结束 -->
+        <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
+          <v-alert type="error">
+            <v-alert-title>测试已结束</v-alert-title>
+            公布成绩前，你无法再次查看测试题。
+          </v-alert>
+        </div>
+      </v-scroll-y-transition>
+
+      <!-- 进度条 -->
+      <v-progress-linear v-if="remainingTime > 0" :value="progressPercentage" color="primary" height="9" rounded
+        style="margin-bottom: 10px"></v-progress-linear>
+
+      <!-- 题库名称 -->
+      <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
+
+      <!-- 信息芯片 -->
+      <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
+        <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
+          <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
+          {{ chip.label }}: {{ chip.value }}
+        </v-chip>
       </div>
 
-      <!-- 测试进行中且已完成所有题目 -->
-      <div v-else-if="remainingTime > 0 && finishedQuestions.length === totalQuestions" style="padding-bottom: 15px">
-        <v-alert type="success">
-          <v-alert-title>
-            测试进行中，剩余时间：{{ formatDuration(remainingTime) }}
-          </v-alert-title>
-          你已完成本次测试的所有题目。
-        </v-alert>
-      </div>
+      <!-- 可滚动的题目列表区域 -->
+      <div v-if="remainingTime > 0" class="questions-container">
+        <v-expansion-panels>
+          <v-expansion-panel v-for="(group, index) in questions" :key="index">
+            <v-expansion-panel-title>
+              <template v-slot:default="{ expanded }">
+                <v-row no-gutters>
+                  <v-col class="d-flex justify-start text-bold" cols="4">
+                    {{ group.type }}
+                  </v-col>
+                  <v-col class="text-grey" cols="8">
+                    <v-fade-transition leave-absolute>
+                      <span>
+                        本部分共 {{ group.ids.length }} 题， 你已完成
+                        {{
+                          finishedQuestions.filter((qid) =>
+                            group.ids.includes(qid)
+                          ).length
+                        }}
+                        题
+                      </span>
+                    </v-fade-transition>
+                  </v-col>
+                </v-row>
+              </template>
+            </v-expansion-panel-title>
 
-      <!-- 测试已结束 -->
-      <div v-else-if="remainingTime === 0" style="padding-bottom: 15px">
-        <v-alert type="error">
-          <v-alert-title>测试已结束</v-alert-title>
-          公布成绩前，你无法再次查看测试题。
-        </v-alert>
-      </div>
-    </v-scroll-y-transition>
-
-    <!-- 进度条 -->
-    <v-progress-linear v-if="remainingTime > 0" :value="progressPercentage" color="primary" height="9" rounded
-      style="margin-bottom: 10px"></v-progress-linear>
-
-    <!-- 题库名称 -->
-    <h1 style="padding-top: 10px">{{ problemSetData.name }}</h1>
-
-    <!-- 信息芯片 -->
-    <div class="chips-row" style="padding-bottom: 5px; margin-bottom: 5px">
-      <v-chip v-for="(chip, index) in chips" :key="index" :color="chip.color" class="ma-1 chip-item">
-        <v-icon left class="chip-icon">{{ chip.icon }}</v-icon>
-        {{ chip.label }}: {{ chip.value }}
-      </v-chip>
-    </div>
-
-    <!-- 可滚动的题目列表区域 -->
-    <div v-if="remainingTime > 0" class="questions-container">
-      <v-expansion-panels>
-        <v-expansion-panel v-for="(group, index) in questions" :key="index">
-          <v-expansion-panel-title>
-            <template v-slot:default="{ expanded }">
+            <!-- 题目按钮及分页控件 -->
+            <v-expansion-panel-text>
               <v-row no-gutters>
-                <v-col class="d-flex justify-start text-bold" cols="4">
-                  {{ group.type }}
-                </v-col>
-                <v-col class="text-grey" cols="8">
-                  <v-fade-transition leave-absolute>
-                    <span>
-                      本部分共 {{ group.ids.length }} 题， 你已完成
-                      {{
-                        finishedQuestions.filter((qid) =>
-                          group.ids.includes(qid)
-                        ).length
-                      }}
-                      题
-                    </span>
-                  </v-fade-transition>
-                </v-col>
-              </v-row>
-            </template>
-          </v-expansion-panel-title>
-
-          <!-- 题目按钮及分页控件 -->
-          <v-expansion-panel-text>
-            <v-row no-gutters>
-              <div class="question-squares">
-                <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId" :class="[
-                  'question-square',
-                  { finished: finishedQuestions.includes(questionId) },
-                ]" :color="finishedQuestions.includes(questionId)
+                <div class="question-squares">
+                  <v-btn v-for="questionId in getPaginatedIds(group)" :key="questionId" :class="[
+                    'question-square',
+                    { finished: finishedQuestions.includes(questionId) },
+                  ]" :color="finishedQuestions.includes(questionId)
                   ? 'green'
                   : 'blue-darken-4'
                   " rounded="0" @click="goToQuestionDetail(questionId)">
-                  <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
-                </v-btn>
-              </div>
-            </v-row>
-            <!-- 分页控件 -->
-            <v-row justify="center" class="mt-2">
-              <v-pagination v-model="group.currentPage" :total-visible="7"
-                :length="Math.ceil(group.ids.length / pageSize)"
-                @input="handlePageChange(group, $event)"></v-pagination>
-            </v-row>
-          </v-expansion-panel-text>
-        </v-expansion-panel>
-      </v-expansion-panels>
-    </div>
-
-    <!-- 测试已结束时的提示 -->
-    <div v-else>本次测试已结束，你无法再查看题目。</div>
-
-    <!-- 全屏对话框用于显示和回答题目 -->
-    <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
-      <v-card class="fullscreen-card">
-        <v-toolbar dark color="primary">
-          <v-btn icon @click="closeDialog">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-          <v-toolbar-title>
-            {{ questionType }}：题目 - {{ currentQuestionId }}
-          </v-toolbar-title>
-        </v-toolbar>
-
-        <v-card-text>
-          <v-row>
-            <v-col cols="8">
-              <div v-if="question" class="markdown-content">
-                <v-md-preview :text="question" />
-              </div>
-              <!-- 加载或错误状态 -->
-              <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
-            </v-col>
-
-            <v-col cols="4">
-              <v-card class="pa-4" outlined>
-                <v-card-title style="padding-left: 0" class="text-h5 font-weight-regular">
-                  提交题目 - {{ currentQuestionId }}
-                </v-card-title>
-                <v-chip color="primary" variant="outlined">
-                  {{ questionType }}
-                </v-chip>
-                <v-spacer></v-spacer>
-                <div v-if="choices === -1">
-                  <!-- 文件上传 -->
-                  <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
-                    accept=".jpg,.png,.jpeg">
-                    <template v-slot:selection="{ fileNames }">
-                      <template v-for="fileName in fileNames" :key="fileName">
-                        <v-chip class="me-2" color="primary" size="small" label>
-                          {{ fileName }}
-                        </v-chip>
-                      </template>
-                    </template>
-                  </v-file-input>
-                  <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files.length">
-                    上传答案
+                    <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
                   </v-btn>
                 </div>
-                <div v-else-if="
-                  choices >= 3 && questionType === '单项选择题'
-                ">
-                  <!-- 单项选择题 -->
-                  <v-row no-gutters>
-                    <v-radio-group v-model="selectedOption" inline>
-                      <v-radio v-for="index in choices" :key="index" :label="getOptionLetter(index)"
-                        :value="getOptionLetter(index)" dense />
-                    </v-radio-group>
-                  </v-row>
+              </v-row>
+              <!-- 分页控件 -->
+              <v-row justify="center" class="mt-2">
+                <v-pagination v-model="group.currentPage" :total-visible="7"
+                  :length="Math.ceil(group.ids.length / pageSize)"
+                  @input="handlePageChange(group, $event)"></v-pagination>
+              </v-row>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </div>
 
-                  <v-row no-gutters>
-                    <v-card-actions>
-                      <v-btn color="primary" text="提交" variant="text" :disabled="!selectedOption"
-                        @click="submitAnswer"></v-btn>
-                      <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
-                    </v-card-actions>
-                  </v-row>
-                </div>
-                <div v-else-if="
-                  choices >= 3 && questionType === '多项选择题'
-                ">
-                  <!-- 多项选择题 -->
-                  <v-row no-gutters>
-                    <v-container>
-                      <v-checkbox v-for="index in choices" v-model="selectedOptions" :key="index"
-                        :label="getOptionLetter(index)" :value="getOptionLetter(index)" style="margin-bottom: -30px" />
-                    </v-container>
-                  </v-row>
+      <!-- 测试已结束时的提示 -->
+      <div v-else>本次测试已结束，你无法再查看题目。</div>
 
-                  <v-row no-gutters>
-                    <v-card-actions>
-                      <v-btn color="primary" text="提交" variant="text" :disabled="selectedOptions.length === 0"
-                        @click="submitAnswer"></v-btn>
-                      <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
-                    </v-card-actions>
-                  </v-row>
-                </div>
-                <div v-else-if="questionType === '判断题'">
-                  <!-- 判断题 -->
-                  <v-row no-gutters>
-                    <v-radio-group v-model="selectedOption" inline>
-                      <v-radio label="正确" value="True" dense />
-                      <v-radio label="错误" value="False" dense />
-                    </v-radio-group>
-                  </v-row>
-                  <v-row no-gutters>
-                    <v-card-actions>
-                      <v-btn color="primary" text="提交" variant="text" :disabled="!selectedOption" @click="submitAnswer">
-                        提交
-                      </v-btn>
-                      <v-btn text="清除" variant="plain" @click="clearSelection">
-                        清除
-                      </v-btn>
-                    </v-card-actions>
-                  </v-row>
-                </div>
-                <div v-else-if="questionType === '填空题'">
-                  <!-- 填空题 -->
-                  <v-card-text style="padding-left: 0" class="text-subtitle-3 font-weight-regular">
-                    使用markdown在左侧输入框输入答案，右侧为预览。
-                    <br />
-                    <a href="https://freeopen.github.io/mathjax/">在markdown中写数学公式</a>
-                  </v-card-text>
+      <!-- 全屏对话框用于显示和回答题目 -->
+      <v-dialog v-model="dialog" transition="dialog-bottom-transition" fullscreen>
+        <v-card class="fullscreen-card">
+          <v-toolbar dark color="primary">
+            <v-btn icon @click="closeDialog">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+            <v-toolbar-title>
+              {{ questionType }}：题目 - {{ currentQuestionId }}
+            </v-toolbar-title>
+          </v-toolbar>
 
-                  <v-md-editor v-model="text" height="200px" left-toolbar="" right-toolbar=""></v-md-editor>
-                  <v-row no-gutters>
-                    <v-card-actions>
-                      <v-btn color="primary" text="提交" variant="text" :disabled="!text" @click="submitAnswer">
-                        提交
-                      </v-btn>
-                      <v-btn text="清除" variant="plain" @click="clearSelection">
-                        清除
-                      </v-btn>
-                    </v-card-actions>
-                  </v-row>
+          <v-card-text>
+            <v-row>
+              <v-col cols="8">
+                <div v-if="question" class="markdown-content">
+                  <v-md-preview :text="question" />
                 </div>
-                <div v-else>暂无提交方式。请联系负责人。</div>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+                <!-- 加载或错误状态 -->
+                <v-alert v-else type="info" class="ma-4">正在加载...</v-alert>
+              </v-col>
+
+              <v-col cols="4">
+                <v-card class="pa-4" outlined>
+                  <v-card-title style="padding-left: 0" class="text-h5 font-weight-regular">
+                    提交题目 - {{ currentQuestionId }}
+                  </v-card-title>
+                  <div class="pb-2">
+                    <v-chip color="primary" variant="outlined">
+                      {{ questionType }}
+                    </v-chip>
+                  </div>
+                  <v-divider></v-divider>
+                  <div class="pt-2" v-if="choices === -1">
+                    <!-- 文件上传 -->
+                    <v-file-input v-model="files" label="提交答案" variant="underlined" counter multiple show-size
+                      accept=".jpg,.png,.jpeg">
+                      <template v-slot:selection="{ fileNames }">
+                        <template v-for="fileName in fileNames" :key="fileName">
+                          <v-chip class="me-2" color="primary" size="small" label>
+                            {{ fileName }}
+                          </v-chip>
+                        </template>
+                      </template>
+                    </v-file-input>
+                    <v-btn color="primary" variant="text" @click="uploadFiles" :disabled="!files.length">
+                      上传答案
+                    </v-btn>
+                  </div>
+                  <div class="pt-2" v-else-if="
+                    choices >= 3 && questionType === '单项选择题'
+                  ">
+                    最近一次的提交：{{ this.lastAnswer }}
+                    <!-- 单项选择题 -->
+                    <v-row no-gutters>
+                      <v-radio-group v-model="selectedOption" inline>
+                        <v-radio v-for="index in choices" :key="index" :label="getOptionLetter(index)"
+                          :value="getOptionLetter(index)" dense />
+                      </v-radio-group>
+                    </v-row>
+
+                    <v-row no-gutters>
+                      <v-card-actions>
+                        <v-btn color="primary" text="提交" variant="text" :disabled="!selectedOption"
+                          @click="submitAnswer"></v-btn>
+                        <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
+                      </v-card-actions>
+                    </v-row>
+                  </div>
+                  <div class="pt-2" v-else-if="
+                    choices >= 3 && questionType === '多项选择题'
+                  ">
+                    最近一次的提交：{{ this.lastAnswer }}
+                    <!-- 多项选择题 -->
+                    <v-row no-gutters>
+                      <v-container>
+                        <v-checkbox v-for="index in choices" v-model="selectedOptions" :key="index"
+                          :label="getOptionLetter(index)" :value="getOptionLetter(index)"
+                          style="margin-bottom: -30px" />
+                      </v-container>
+                    </v-row>
+
+                    <v-row no-gutters>
+                      <v-card-actions>
+                        <v-btn color="primary" text="提交" variant="text" :disabled="selectedOptions.length === 0"
+                          @click="submitAnswer"></v-btn>
+                        <v-btn text="清除" variant="plain" @click="clearSelection"></v-btn>
+                      </v-card-actions>
+                    </v-row>
+                  </div>
+                  <div class="pt-2" v-else-if="questionType === '判断题'">
+                    <!-- 判断题 -->
+                    最近一次的提交：{{ this.lastAnswer === "True" ? "正确" : "错误" }}
+                    <v-row no-gutters>
+                      <v-radio-group v-model="selectedOption" inline>
+                        <v-radio label="正确" value="True" dense />
+                        <v-radio label="错误" value="False" dense />
+                      </v-radio-group>
+                    </v-row>
+                    <v-row no-gutters>
+                      <v-card-actions>
+                        <v-btn color="primary" text="提交" variant="text" :disabled="!selectedOption"
+                          @click="submitAnswer">
+                          提交
+                        </v-btn>
+                        <v-btn text="清除" variant="plain" @click="clearSelection">
+                          清除
+                        </v-btn>
+                      </v-card-actions>
+                    </v-row>
+                  </div>
+                  <div class="pt-2" v-else-if="questionType === '填空题'">
+                    <!-- 填空题 -->
+                    <v-card-text style="padding-left: 0" class="text-subtitle-3 font-weight-regular">
+                      使用markdown在左侧输入框输入答案，右侧为预览。
+                      <br />
+                      <a href="https://freeopen.github.io/mathjax/">在markdown中写数学公式</a>
+                    </v-card-text>
+
+                    <v-md-editor v-model="text" height="200px" left-toolbar="" right-toolbar=""></v-md-editor>
+                    <v-row no-gutters>
+                      <v-card-actions>
+                        <v-btn color="primary" text="提交" variant="text" :disabled="!text" @click="submitAnswer">
+                          提交
+                        </v-btn>
+                        <v-btn text="清除" variant="plain" @click="clearSelection">
+                          清除
+                        </v-btn>
+                      </v-card-actions>
+                    </v-row>
+                  </div>
+                  <div class="pt-2" v-else>暂无提交方式。请联系负责人。</div>
+                </v-card>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </div>
   </div>
 </template>
 
@@ -244,13 +257,12 @@ export default {
     return {
       problemSetData: null,
       questions: [],
-      loading: false,
+      loading: true,
       error: null,
       currentTime: new Date(), // 当前时间
       intervalId: null, // 定时器ID
       dialog: false, // 控制dialog显示
       question: "", // 存储题面的Markdown文本
-      loadingQuestion: false, // 控制加载状态
       finishedQuestions: [], // 完成的题目
       files: [],
       choices: -2,
@@ -260,6 +272,7 @@ export default {
       pageSize: 10, // 每页显示的题目数量
       questionType: "", // 当前题目的类型
       currentQuestionId: null, // 当前题目ID
+      lastAnswer: "",
     };
   },
   computed: {
@@ -361,12 +374,10 @@ export default {
       this.setAppTitle(title);
       this.setPageTitle(title);
       this.fetchQuestionsById(problemSetId); // 获取题目列表
-      this.loading = false;
     },
 
     async fetchQuestionsById(problemSetId) {
       console.log(`Fetching questions for problem set ID: ${problemSetId}`);
-      this.loading = true;
       this.error = null;
 
       try {
@@ -426,10 +437,10 @@ export default {
 
     async goToQuestionDetail(questionId) {
       this.questionType = this.getQuestionTypeById(questionId);
+      this.clearSelection();
       console.log(
         `Fetching question for question ID: ${questionId} ${this.questionType}`
       );
-      this.loadingQuestion = true;
       this.currentQuestionId = questionId;
       // 模拟从后端获取Markdown文本数据
       const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_student_questions/', {
@@ -437,8 +448,12 @@ export default {
         exam_id: this.$route.params.id,
         question_id: questionId
       });
+      console.log(response.data);
       this.question = response.data.question_data.content;
-      this.loadingQuestion = false;
+      this.lastAnswer = response.data.answer_now;
+      if (response.data.question_data.type === "填空题") {
+        this.text = this.lastAnswer;
+      }
       if (this.questionType === "单项选择题") {
         this.choices = 4;
       } else if (this.questionType === "解答题") {
@@ -477,16 +492,19 @@ export default {
     async submitAnswer() {
       // 处理提交逻辑
       let result = "";
-      console.log(result);
+      this.dialog = false;
       if (this.questionType === "单项选择题") {
         console.log("提交的单项选择答案:", this.selectedOption);
         result = this.selectedOption == null ? "null" : String(this.selectedOption);
+        this.lastAnswer = result;
       } else if (this.questionType === "多项选择题") {
         console.log("提交的多项选择答案:", [...this.selectedOptions].sort());
         result = ([...this.selectedOptions].sort()).join(',');
+        this.lastAnswer = result;
       } else if (this.questionType === "判断题") {
         console.log("提交的判断答案:", this.selectedOption);
         result = this.selectedOption == null ? "null" : String(this.selectedOption);
+        this.lastAnswer = result;
       } else if (this.questionType === "填空题") {
         console.log(`提交的填空题答案: ${JSON.stringify(this.text)}`);
         result = this.text;
@@ -494,16 +512,15 @@ export default {
         console.log("提交了解答题答案");
         result = this.text;
       }
-      console.log(result);
+      console.log(this.lastAnswer);
       const response = await axios.post('http://127.0.0.1:8000/api/exams/submit_answer/', {
         user_id: this.$store.getters.getUserId,
         exam_id: this.$route.params.id,
         question_id: this.currentQuestionId,
         submitted_answer: result,
       });
-      // 模拟提交结果，有50%的概率成功，50%的概率失败
-      const isSuccess = Math.random() < 0.5;
-
+      selectedOption = null; // 单项选择题
+      selectedOptions = []; // 多项选择题
       // 设置 Snackbar 的提示信息和颜色
       this.showSnackbar({
         message: `题目 - ${this.currentQuestionId} 提交成功`,
