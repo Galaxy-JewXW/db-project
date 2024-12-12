@@ -265,7 +265,7 @@ class GetAllExams(APIView):
             coming_exams = []
             past_exams = []
             enrolled_exams = []
-
+            print(user)
             for exam in exams:
                 if exam.get_status() == "coming":
                     coming_exams.append({
@@ -282,7 +282,7 @@ class GetAllExams(APIView):
                         "student_count": exam.students.count(),
                         "question_count": exam.questions.count(),
                     })
-                elif exam.get_status() == "past" and exam.is_published and user in exam.students.all():
+                elif exam.get_status() == "past" and ((exam.is_published and user in exam.students.all()) or (user!=None and user.user_role>=1)):
                     past_exams.append({
                         "id": exam.id,
                         "name": exam.title,
@@ -328,7 +328,7 @@ class GetAllExams(APIView):
                     "student_count": exam.students.count(),
                     "question_count": exam.questions.count(),
                 })
-
+            print(exams_data)
             return Response({
                 "success": True,
                 "exams": exams_data,

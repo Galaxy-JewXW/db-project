@@ -305,6 +305,7 @@ export default {
         ...mapActions('snackbar', ['showSnackbar']),
         async getAll() {
             const response = await axios.post('http://127.0.0.1:8000/api/exams/get_all_exams/', {
+                user_id: this.$store.getters.getUserId
             });
             this.ongoingExams = response.data.ongoing_exams;
             this.pastExams = response.data.past_exams;
