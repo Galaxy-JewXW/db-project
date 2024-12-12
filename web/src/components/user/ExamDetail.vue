@@ -514,7 +514,7 @@ export default {
         this.lastAnswer = result;
       } else if (this.questionType === "判断题") {
         console.log("提交的判断答案:", this.selectedOption);
-        result = this.selectedOption == null ? "null" : (this.selectedOption ?"正确":"错误");
+        result = this.selectedOption == null ? "null" : (this.selectedOption ? "正确" : "错误");
         this.lastAnswer = result;
       } else if (this.questionType === "填空题") {
         console.log(`提交的填空题答案: ${JSON.stringify(this.text)}`);
@@ -593,6 +593,11 @@ export default {
       if (!val) return;
 
       setTimeout(() => (this.uploading = false), 2000)
+    },
+    remainingTime(newVal) {
+      if (newVal === 0 && this.dialog) {
+        this.dialog = false;
+      }
     },
   }
 };
