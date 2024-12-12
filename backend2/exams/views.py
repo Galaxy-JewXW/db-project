@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
 from utils.views import decode_request
+from questions.models import QuestionBank
 from .models import Exam, Question, User, ExamRecord
 
 
@@ -964,6 +965,19 @@ class PublishExamResults(APIView):
             # 更新考试的公开状态
             exam.is_published = not exam.is_published
             exam.save()
+
+            question_bank = QuestionBank.objects.create(
+                subject = exam.subject,
+                estimated_time = exam.duration,
+                creator = user,
+                description = f"这是{exam.title}的题目",
+                name = exam.title
+            )
+
+            questions = exam.questions.all()
+            question_bank.questions.set(questions)
+            question_bank.question_count = questions.count()
+            question_bank.save()
 
             return Response({
                 "success": True,

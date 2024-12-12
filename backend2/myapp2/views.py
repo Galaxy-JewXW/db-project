@@ -68,7 +68,7 @@ def register_view(request):
                 college=college,
                 entryYear=entry_year,
                 avatar=avatar,
-                user_role=1  # 默认角色
+                user_role=0  # 默认角色
             )
 
             return JsonResponse({"success": True, "message": "注册成功"}, status=201)

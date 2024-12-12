@@ -262,7 +262,7 @@ export default {
             },
             function () {
                 this.selectedOptions = [];
-                this.form.answer = this.originalExercise.answer;
+                this.form.answer = "";
             }
         ]
     },
