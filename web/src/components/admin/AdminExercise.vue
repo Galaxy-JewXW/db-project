@@ -1,80 +1,78 @@
 <template>
-<!-- 顶部横幅 -->
-<v-banner sticky icon="mdi-plus" lines="one">
-    <template v-slot:text>
-        <div class="text-subtitle-1">作为辅导师，你可创建新的题目，或查看/编辑/删除已有的题目。</div>
-    </template>
-
-    <template v-slot:actions>
-        <v-btn color="primary" class="mr-5" @click="createExercise()">
-            <div class="text-subtitle-1">创建新题目</div>
-        </v-btn>
-    </template>
-</v-banner>
-<v-container v-if="loading">
-    <v-skeleton-loader class="mx-auto main-card" max-width="100%" type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
-</v-container>
-<v-container v-else fluid>
-    <!-- 筛选条件区域 -->
-    <v-card class="pl-2 pr-2 pb- 2" variant="text" title="筛选题目" subtitle="输入题目ID或学科以查找题目，点击题目可进行查看/编辑/删除操作。" prepend-icon="mdi-filter">
-        <v-row align="center" justify="start" no-gutters>
-            <v-col cols="12" sm="6" md="4" class="pa-2">
-                <v-text-field v-model="filterId" label="题目 ID" placeholder="输入题目 ID" clearable></v-text-field>
-            </v-col>
-            <v-col cols="12" sm="6" md="4" class="pa-2">
-                <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科" clearable></v-select>
-            </v-col>
-        </v-row>
-    </v-card>
-
-    <!-- 题目列表区域 -->
-    <div class="exercises-container">
-        <template v-if="filteredExercises && filteredExercises.length > 0">
-            <v-expansion-panels>
-                <v-expansion-panel v-for="(group, index) in filteredExercises" :key="group.subject">
-                    <v-expansion-panel-title>
-                        <template v-slot:default="{ expanded }">
-                            <v-row no-gutters class="align-center w-100">
-                                <v-col class="d-flex justify-start text-bold" cols="2">
-                                    {{ group.subject }}
-                                </v-col>
-                                <v-col class="text-grey" cols="9">
-                                    <v-fade-transition leave-absolute>
-                                        <span> 共 {{ group.ids.length }} 题 </span>
-                                    </v-fade-transition>
-                                </v-col>
-                            </v-row>
-                        </template>
-                    </v-expansion-panel-title>
-
-                    <v-expansion-panel-text>
-                        <v-row no-gutters>
-                            <div class="question-squares">
-                                <v-btn v-for="id in getPaginatedIds(group)" :key="id" class="question-square text-none" color="blue-darken-4" rounded="0" @click="editExercise(id)">
-                                    <v-responsive class="text-truncate">{{ id }}</v-responsive>
-                                </v-btn>
-                            </div>
-                        </v-row>
-                        <v-row justify="center" class="mt-2">
-                            <v-pagination v-model="group.currentPage" :total-visible="7" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
-                        </v-row>
-                    </v-expansion-panel-text>
-                </v-expansion-panel>
-            </v-expansion-panels>
+    <!-- 顶部横幅 -->
+    <v-banner sticky icon="mdi-plus" lines="one">
+        <template v-slot:text>
+            <div class="text-subtitle-1">作为辅导师，你可创建新的题目，或查看/编辑/删除已有的题目。</div>
         </template>
-
-        <!-- 没有符合条件的题目 -->
-        <div v-else class="no-results">
-            <p>没有符合条件的题目。</p>
+    
+        <template v-slot:actions>
+            <v-btn color="primary" class="mr-5" @click="createExercise()">
+                <div class="text-subtitle-1">创建新题目</div>
+            </v-btn>
+        </template>
+    </v-banner>
+    <v-container v-if="loading">
+        <v-skeleton-loader class="mx-auto main-card" max-width="100%" type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
+    </v-container>
+    <v-container v-else fluid>
+        <!-- 筛选条件区域 -->
+        <v-card class="pl-2 pr-2 pb- 2" variant="text" title="筛选题目" subtitle="输入题目ID或学科以查找题目，点击题目可进行查看/编辑/删除操作。" prepend-icon="mdi-filter">
+            <v-row align="center" justify="start" no-gutters>
+                <v-col cols="12" sm="6" md="4" class="pa-2">
+                    <v-text-field v-model="filterId" label="题目 ID" placeholder="输入题目 ID" clearable></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4" class="pa-2">
+                    <v-select v-model="filterSubject" :items="subjectOptions" label="学科" placeholder="选择学科" clearable></v-select>
+                </v-col>
+            </v-row>
+        </v-card>
+    
+        <!-- 题目列表区域 -->
+        <div class="exercises-container">
+            <template v-if="filteredExercises && filteredExercises.length > 0">
+                <v-expansion-panels>
+                    <v-expansion-panel v-for="(group, index) in filteredExercises" :key="group.subject">
+                        <v-expansion-panel-title>
+                            <template v-slot:default="{ expanded }">
+                                <v-row no-gutters class="align-center w-100">
+                                    <v-col class="d-flex justify-start text-bold" cols="2">
+                                        {{ group.subject }}
+                                    </v-col>
+                                    <v-col class="text-grey" cols="9">
+                                        <v-fade-transition leave-absolute>
+                                            <span> 共 {{ group.ids.length }} 题 </span>
+                                        </v-fade-transition>
+                                    </v-col>
+                                </v-row>
+                            </template>
+                        </v-expansion-panel-title>
+    
+                        <v-expansion-panel-text>
+                            <v-row no-gutters>
+                                <div class="question-squares">
+                                    <v-btn v-for="id in getPaginatedIds(group)" :key="id" class="question-square text-none" color="blue-darken-4" rounded="0" @click="editExercise(id)">
+                                        <v-responsive class="text-truncate">{{ id }}</v-responsive>
+                                    </v-btn>
+                                </div>
+                            </v-row>
+                            <v-row justify="center" class="mt-2">
+                                <v-pagination v-model="group.currentPage" :total-visible="7" :length="Math.ceil(group.ids.length / pageSize)" @input="handlePageChange(group, $event)"></v-pagination>
+                            </v-row>
+                        </v-expansion-panel-text>
+                    </v-expansion-panel>
+                </v-expansion-panels>
+            </template>
+    
+            <!-- 没有符合条件的题目 -->
+            <div v-else class="no-results">
+                <p>没有符合条件的题目。</p>
+            </div>
         </div>
-    </div>
-</v-container>
-</template>
+    </v-container>
+    </template>
 
 <script>
-import {
-    mapMutations
-} from 'vuex';
+import { mapMutations } from 'vuex';
 import axios from 'axios';
 export default {
     name: 'AdminExercise',
@@ -111,8 +109,8 @@ export default {
         },
     },
     created() {
-        // 更新标题
         this.loading = true;
+        // 更新标题
         const title = '题目管理';
         this.setAppTitle(title);
         this.setPageTitle(title);
@@ -140,6 +138,7 @@ export default {
                             currentPage: question.currentPage, // 保留当前页信息
                         };
                     });
+
                     // 更新组件的题目数据
                     this.exercises = questions;
                     this.loading = false;

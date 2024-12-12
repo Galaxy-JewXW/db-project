@@ -4,21 +4,10 @@
       <v-row>
         <!-- 左侧栏：学生答案 -->
         <v-col cols="12" md="8">
-          <v-card
-            variant="text"
-            class="pb-0 pl-2 pr-2"
-            title="筛选学生提交"
-            subtitle="通过输入学号进行筛选"
-            prepend-icon="mdi-filter"
-          >
+          <v-card variant="text" class="pb-0 pl-2 pr-2" title="筛选学生提交" subtitle="通过输入学号进行筛选" prepend-icon="mdi-filter">
             <v-row align="center" justify="start" no-gutters>
               <v-col cols="12" sm="6" md="4" class="pa-2">
-                <v-text-field
-                  v-model="filterStudentNumber"
-                  label="学号"
-                  placeholder="输入学号"
-                  clearable
-                ></v-text-field>
+                <v-text-field v-model="filterStudentNumber" label="学号" placeholder="输入学号" clearable></v-text-field>
               </v-col>
             </v-row>
           </v-card>
@@ -26,10 +15,7 @@
           <!-- 根据过滤结果显示回答或提示信息 -->
           <template v-if="filteredAnswers.length > 0">
             <v-window v-model="currentWindow" show-arrows="hover" class="pa-0">
-              <v-window-item
-                v-for="(answer, index) in filteredAnswers"
-                :key="answer.student"
-              >
+              <v-window-item v-for="(answer, index) in filteredAnswers" :key="answer.student">
                 <v-card class="pa-4">
                   <!-- 答案导航指示器 -->
                   <v-card-title> 学生ID: {{ answer.student }} </v-card-title>
@@ -53,12 +39,9 @@
           <v-card style="max-height: 80%">
             <v-card-title> 判定正误 </v-card-title>
             <v-card-text>
-              <v-form ref="correctnessForm" @submit.prevent="saveCorrectness">
-                <v-switch
-                  v-model="isCorrectSelected"
-                  :label="isCorrectSelected ? '回答正确' : '回答错误'"
-                  hide-details="auto"
-                ></v-switch>
+              <v-form ref="correctnessForm">
+                <v-switch v-model="isCorrectSelected" :label="isCorrectSelected ? '回答正确' : '回答错误'"
+                  hide-details="auto"></v-switch>
                 <v-btn color="primary" @click="saveCorrectness">
                   保存结果
                 </v-btn>
@@ -79,7 +62,7 @@
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from "axios";
 export default {
   name: "GradingPage",
   props: {
@@ -99,6 +82,7 @@ export default {
       answers: [],
       isCorrectSelected: false,
       filterStudentNumber: "", // 修改为字符串类型
+      type: "",
     };
   },
   computed: {
@@ -147,39 +131,36 @@ export default {
     goBack() {
       this.$router.push(`/admin/judge/${this.examId}`);
     },
-    fetchAnswers(examId, exerciseId) {
+    async fetchAnswers(examId, exerciseId) {
       // 在这里应替换为实际的 API 调用以获取数据
-      this.stdanswer = `$x * y$`;
       // 示例数据，使用 isCorrect 字段表示正误
-      this.answers = [
-        {
-          student: 22373001,
-          answer: "x + y",
-          isCorrect: false,
-        },
-        {
-          student: 22373002,
-          answer: "x * y",
-          isCorrect: true,
-        },
-        {
-          student: 22373003,
-          answer: `$y * x - 2$`,
-          isCorrect: false,
-        },
-      ];
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions_students/', {
+        user_id: this.$store.getters.getUserId,
+        exam_id: examId,
+        question_id: exerciseId,
+      });
+      console.log(response.data);
+      this.stdanswer = response.data.question_answer;
+      this.type = response.data.type;
+      this.answers = response.data.students;
       if (this.answers.length > 0) {
         this.isCorrectSelected = this.answers[0].isCorrect;
       }
     },
-    saveCorrectness() {
+    async saveCorrectness() {
       const selectedAnswer = this.filteredAnswers[this.currentWindow];
+      const response = await axios.post('http://127.0.0.1:8000/api/exams/correct_answer/', {
+        user_id: this.$store.getters.getUserId,
+        exam_id: this.examId,
+        question_id: this.exerciseId,
+        student_id: selectedAnswer.student,
+        is_correct: this.isCorrectSelected,
+      });
       if (selectedAnswer) {
         selectedAnswer.isCorrect = this.isCorrectSelected;
         // 这里可调用 API 保存数据
         console.log(
-          `已保存学生 ${selectedAnswer.student} 的判定结果: ${
-            this.isCorrectSelected ? "正确" : "错误"
+          `已保存学生 ${selectedAnswer.student} 的判定结果: ${this.isCorrectSelected ? "正确" : "错误"
           }`
         );
         this.showSnackbar({

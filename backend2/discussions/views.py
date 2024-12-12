@@ -180,7 +180,7 @@ class CreateReply(APIView):
             if discussion.publisher != user:
                 reply.notify_publisher()
             # 通知订阅者帖子更新
-            update_content = f"新回复by{user.name}：\n{content[:50]}"  # 节选回复内容
+            update_content = f"新回复by{user.name}：\n{content[:5000]}"  # 节选回复内容
             discussion.notify_subscribers(update_content, user)
 
             return Response({"success": True, "reply_id": reply.id}, status=HTTP_200_OK)
@@ -220,7 +220,7 @@ class EditDiscussion(APIView):
             discussion.save()
 
             # 通知订阅者帖子更新
-            update_content = f"帖子内容更新: {content[:50]}"
+            update_content = f"帖子内容更新: {content[:5000]}"
             discussion.notify_subscribers(update_content, user)
 
             return Response({"success": True, "message": "Discussion updated successfully."}, status=HTTP_200_OK)
@@ -269,7 +269,7 @@ class EditReply(APIView):
                 reply.notify_publisher()
 
             # 通知订阅者帖子更新
-            update_content = f"回复内容更新: {content[:50]}"
+            update_content = f"回复内容更新: {content[:5000]}"
             discussion.notify_subscribers(update_content, user)
 
             return Response({"success": True, "message": "Reply updated successfully."}, status=HTTP_200_OK)

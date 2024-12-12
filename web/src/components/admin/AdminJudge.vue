@@ -1,145 +1,110 @@
 <!-- components/ExamList.vue -->
 <template>
-    <v-banner sticky icon="mdi-plus" lines="one">
-        <template v-slot:text>
-            <div class="text-subtitle-1">作为辅导师，你可对模拟测试进行批改，或公布已完成批改的测试成绩。</div>
-        </template>
-    </v-banner>
-
-    <!-- 筛选条件区域 -->
-    <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选模拟测试" subtitle="通过名称搜索或选择科目进行筛选" prepend-icon="mdi-filter">
-        <v-row align="center" justify="start" no-gutters>
-            <v-col cols="12" sm="6" md="4" class="pa-2">
-                <v-text-field v-model="filterName" label="考试名称" placeholder="输入考试名称" clearable
-                    @input="resetPages"></v-text-field>
-            </v-col>
-            <v-col cols="12" sm="6" md="4" class="pa-2">
-                <v-select v-model="filterSubject" :items="subjectOptions" label="科目" placeholder="选择科目" clearable
-                    @change="resetPages"></v-select>
-            </v-col>
-            <v-col cols="12" sm="6" md="4" class="pa-2">
-                <v-select v-model="filterStatus" :items="statusOptions" label="状态" placeholder="选择测试状态" clearable
-                    @change="resetPages"></v-select>
-            </v-col>
-        </v-row>
-    </v-card>
-    <v-container fluid class="problemset-container">
-        <div class="scroll-container">
-            <template v-if="paginatedExams.length > 0">
-                <v-row dense class="justify-start">
-                    <v-col v-for="exam in paginatedExams" :key="exam.id" cols="12" sm="6" md="3" class="pa-1">
-                        <v-card class="w-100" hover>
-                            <v-card-text>
-                                <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
-
-                                <div class="mt-2">
-                                    <div class="info-row">
-                                        <span>创建日期：</span>
-                                        <span>{{ formatDate(exam.createdAt) }}</span>
-                                    </div>
-                                    <div class="info-row">
-                                        <span>所属科目：</span>
-                                        <span>{{ exam.subject }}</span>
-                                    </div>
-                                    <div class="info-row">
-                                        <span>开始时间：</span>
-                                        <span>{{ formatDate(exam.starttime) }}</span>
-                                    </div>
-                                    <div class="info-row">
-                                        <span>时长：</span>
-                                        <span>{{ exam.duration }} 分钟</span>
-                                    </div>
-                                </div>
-                            </v-card-text>
-                            <v-card-actions>
-                                <v-btn v-if="!(exam.ready && exam.disclosed)" color="primary"
-                                    @click="enterExam(exam)">进入批改</v-btn>
-                                <v-btn v-if="exam.ready && !exam.disclosed" color="red"
-                                    @click="confirm(exam)">公布成绩</v-btn>
-                                <v-btn v-else-if="exam.ready && exam.disclosed" disabled>成绩已公布</v-btn>
-                            </v-card-actions>
-                        </v-card>
-                    </v-col>
-                </v-row>
-
-                <!-- Pagination Controls -->
-                <v-row justify="center" class="mt-4">
-                    <v-pagination v-model="currentPage" :length="totalPages" :total-visible="7"
-                        @input="onPageChange"></v-pagination>
-                </v-row>
+    <div v-if="loading" class="scroll-container">
+        <v-skeleton-loader class="mx-auto main-card" max-width="100%"
+            type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
+    </div>
+    <div v-else>
+        <v-banner sticky icon="mdi-plus" lines="one">
+            <template v-slot:text>
+                <div class="text-subtitle-1">作为辅导师，你可对模拟测试进行批改，或公布已完成批改的测试成绩。</div>
             </template>
-            <div v-else class="no-results">暂无批改任务</div>
-        </div>
-    </v-container>
-    <v-dialog v-model="confirmDialogOpen" max-width="50%">
-        <v-card>
-            <v-card-title>
-                <v-icon color="primary">mdi-alert-circle-outline</v-icon>
-                <span class="headline ml-2">公布后无法修改成绩</span>
-            </v-card-title>
-            <v-card-text>确定公布测试 {{ this.toDiscloseExam.name }} 的成绩吗？</v-card-text>
-            <v-card-actions>
-                <v-btn color="red" variant="text" @click="discloseExam">
-                    确定
-                </v-btn>
-                <v-btn variant="plain" @click="confirmDialogOpen = false">
-                    取消
-                </v-btn>
-            </v-card-actions>
+        </v-banner>
+
+        <!-- 筛选条件区域 -->
+        <v-card variant="text" class="pb-2 pl-2 pr-2" title="筛选模拟测试" subtitle="通过名称搜索或选择科目进行筛选"
+            prepend-icon="mdi-filter">
+            <v-row align="center" justify="start" no-gutters>
+                <v-col cols="12" sm="6" md="4" class="pa-2">
+                    <v-text-field v-model="filterName" label="考试名称" placeholder="输入考试名称" clearable
+                        @input="resetPages"></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="6" md="4" class="pa-2">
+                    <v-select v-model="filterSubject" :items="subjectOptions" label="科目" placeholder="选择科目" clearable
+                        @change="resetPages"></v-select>
+                </v-col>
+                <v-col cols="12" sm="6" md="4" class="pa-2">
+                    <v-select v-model="filterStatus" :items="statusOptions" label="状态" placeholder="选择测试状态" clearable
+                        @change="resetPages"></v-select>
+                </v-col>
+            </v-row>
         </v-card>
-    </v-dialog>
+        <v-container fluid class="problemset-container">
+            <div class="scroll-container">
+                <template v-if="paginatedExams.length > 0">
+                    <v-row dense class="justify-start">
+                        <v-col v-for="exam in paginatedExams" :key="exam.id" cols="12" sm="6" md="3" class="pa-1">
+                            <v-card class="w-100" hover>
+                                <v-card-text>
+                                    <p class="text-h5 font-weight-bold">{{ exam.name }}</p>
+
+                                    <div class="mt-2">
+                                        <div class="info-row">
+                                            <span>创建日期：</span>
+                                            <span>{{ formatDate(exam.createdAt) }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span>所属科目：</span>
+                                            <span>{{ exam.subject }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span>开始时间：</span>
+                                            <span>{{ formatDate(exam.starttime) }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span>时长：</span>
+                                            <span>{{ exam.duration }} 分钟</span>
+                                        </div>
+                                    </div>
+                                </v-card-text>
+                                <v-card-actions>
+                                    <v-btn v-if="!(exam.ready && exam.disclosed)" color="primary"
+                                        @click="enterExam(exam)">进入批改</v-btn>
+                                    <v-btn v-if="exam.ready && !exam.disclosed" color="red"
+                                        @click="confirm(exam)">公布成绩</v-btn>
+                                    <v-btn v-else-if="exam.ready && exam.disclosed" disabled>成绩已公布</v-btn>
+                                </v-card-actions>
+                            </v-card>
+                        </v-col>
+                    </v-row>
+
+                    <!-- Pagination Controls -->
+                    <v-row justify="center" class="mt-4">
+                        <v-pagination v-model="currentPage" :length="totalPages" :total-visible="7"
+                            @input="onPageChange"></v-pagination>
+                    </v-row>
+                </template>
+                <div v-else class="no-results">暂无批改任务</div>
+            </div>
+        </v-container>
+        <v-dialog v-model="confirmDialogOpen" max-width="50%">
+            <v-card>
+                <v-card-title>
+                    <v-icon color="primary">mdi-alert-circle-outline</v-icon>
+                    <span class="headline ml-2">公布后无法修改成绩</span>
+                </v-card-title>
+                <v-card-text>确定公布测试 {{ this.toDiscloseExam.name }} 的成绩吗？</v-card-text>
+                <v-card-actions>
+                    <v-btn color="red" variant="text" @click="discloseExam">
+                        确定
+                    </v-btn>
+                    <v-btn variant="plain" @click="confirmDialogOpen = false">
+                        取消
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </div>
 </template>
 
 <script>
 import { mapMutations, mapActions } from "vuex";
-
+import axios from "axios";
 export default {
     name: "ExamList",
     data() {
         return {
-            exams: [
-                {
-                    id: 1,
-                    name: "2023-24数分上期中 a",
-                    createdAt: "2024-09-02 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-11-13 19:00:00",
-                    duration: 120,
-                    ready: true,
-                    disclosed: false,
-                },
-                {
-                    id: 11,
-                    name: "2023-24数分上期中",
-                    createdAt: "2024-09-02 19:00:00",
-                    subject: "工科数学分析（上）",
-                    starttime: "2024-11-13 19:00:00",
-                    duration: 120,
-                    ready: false,
-                    disclosed: false,
-                },
-                {
-                    id: 2,
-                    name: "2023-24物理期中 a",
-                    createdAt: "2024-09-05 10:30:00",
-                    subject: "工科物理",
-                    starttime: "2024-11-15 09:00:00",
-                    duration: 90,
-                    ready: true,
-                    disclosed: true,
-                },
-                {
-                    id: 3,
-                    name: "2023-24化学期中 a",
-                    createdAt: "2024-09-10 14:20:00",
-                    subject: "化学基础",
-                    starttime: "2024-11-20 13:00:00",
-                    duration: 60,
-                    ready: false,
-                    disclosed: false,
-                },
-                // ... more exams
-            ],
+            exams: [],
             filterName: "",
             filterSubject: "",
             currentPage: 1,
@@ -149,7 +114,8 @@ export default {
             filterStatus: '全部',
             statusOptions: [
                 '全部', '待批改', '已批改完成', '已公布成绩'
-            ]
+            ],
+            loading: true,
         };
     },
     computed: {
@@ -205,11 +171,20 @@ export default {
         const title = "模拟测试评分";
         this.setAppTitle(title);
         this.setPageTitle(title);
+        this.getAll();
     },
     methods: {
         // 映射 Vuex 的 mutation
         ...mapMutations(["setAppTitle", "setPageTitle"]),
         ...mapActions('snackbar', ['showSnackbar']),
+        async getAll() {
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/get_all_exams/', {
+                user_id: this.$store.getters.getUserId
+            });
+            console.log(response.data);
+            this.exams = response.data.exams;
+            this.loading = false;
+        },
         formatDate(dateString) {
             const options = {
                 year: 'numeric',
@@ -230,14 +205,17 @@ export default {
             // 导航到目标路由
             this.$router.push(`/admin/judge/${exam.id}`);
         },
-        confirm(exam) {
+        async confirm(exam) {
             this.toDiscloseExam = exam;
             this.confirmDialogOpen = true;
         },
-        discloseExam() {
+        async discloseExam() {
             this.confirmDialogOpen = false;
             this.toDiscloseExam.disclosed = true;
-
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/publish_exam_results/', {
+                user_id: this.$store.getters.getUserId,
+                exam_id: this.toDiscloseExam.id
+            });
             this.showSnackbar({
                 message: `已公布“${this.toDiscloseExam.name}”的成绩`,
                 color: 'success',

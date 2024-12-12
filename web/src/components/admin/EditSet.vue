@@ -31,7 +31,7 @@
                         <!-- 科目输入 -->
                         <v-col cols="12">
                             <v-radio-group v-model="form.subject" label="学科" inline
-                                :rules="[value => !!value || '请选择学科']" required>
+                                :rules="[value => !!value || '请选择学科']" required disabled>
                                 <v-radio label="工科数学分析（上）" value="工科数学分析（上）" />
                                 <v-radio label="工科数学分析（下）" value="工科数学分析（下）" />
                                 <v-radio label="工科高等代数" value="工科高等代数" />
@@ -339,7 +339,7 @@ export default {
             currentQuestion: {
                 id: 1,
                 questionType: "单项选择题",
-                content: "猜猜",
+                content: "错误！",
                 subject: "工科数学分析（上）",
                 source: "自出题",
                 tags: "算法",
@@ -479,6 +479,8 @@ export default {
         },
         async handleSubmit() {
             // 验证第一页的表单
+            console.log(this.form);
+            console.log(this.form.questions);
             const isValid = await this.validateForm();
             if (!isValid.valid) {
                 this.showSnackbar({
@@ -501,7 +503,15 @@ export default {
                 return;
             }
             try {
-                // TODO: 在这里添加实际的表单提交逻辑
+                const response = await axios.post('http://127.0.0.1:8000/api/questions/edit_questionbank/', {
+                    user_id: this.$store.getters.getUserId,
+                    subject: this.form.subject,
+                    question_bank_id : this.$route.params.id,
+                    estimated_time : this.form.duration,
+                    description : this.form.description,
+                    questions : this.form.questions,
+                    name : this.form.name,
+                });
                 this.showSnackbar({
                     message: '编辑题库成功',
                     color: 'success',

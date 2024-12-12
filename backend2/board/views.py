@@ -9,10 +9,12 @@ from questions.models import Question, UserQuestionRecord
 from utils.views import decode_request
 from django.http import JsonResponse
 from users.models import User
+from exams.models import Exam
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.permissions import AllowAny
+from random import sample
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GetHomeView(APIView):
@@ -25,7 +27,7 @@ class GetHomeView(APIView):
             broadcast_data = [
                 {
                     "id": b.id,
-                    "sender": b.sender,
+                    "sender": b.sender_name.name,
                     "sent_at": b.sent_at,
                     "last_updated": b.last_updated,
                     "title": b.title,
@@ -64,18 +66,37 @@ class GetHomeView(APIView):
                 .order_by('-attempted_at')
                 .values_list('question_id', flat=True)[:3]
             )
-            wrong_questions_data = list(Question.objects.filter(id__in=wrong_questions))
+            
+            wrong_questions_data=[]
+            for ids in wrong_questions:
+                wrong_questions_data.append(Question.objects.get(id=ids))
             # 2. 获取剩余需要补足的题目
             num_wrong_questions = len(wrong_questions_data)
             num_additional_questions = max(0, 7 - num_wrong_questions)
-
+        
             # 随机选取未做过的题目，排除错题
-            remaining_questions = (
-                Question.objects.exclude(id__in=wrong_questions)
-                .exclude(user_records__user=user)
-                .order_by('?')[:num_additional_questions]
-            )
+            # remaining_questions = (
+            #     Question.objects.exclude(id__in=wrong_questions)
+            #     .exclude(user_records__user=user)
+            #     .order_by('?')[:num_additional_questions]
+            # )
+            filtered_questions = []
+            all_questions = Question.objects.all()
 
+            for question in all_questions:
+                if question.id not in wrong_questions:
+                    filtered_questions.append(question)
+
+# 进一步过滤掉已经有 user_records 的问题
+            remaining_questions = []
+            for question in filtered_questions:
+                if not question.user_records.filter(user=user).exists():
+                    remaining_questions.append(question)
+
+# 随机打乱顺序并取指定数量的问题
+            if len(remaining_questions) > num_additional_questions:
+                remaining_questions = sample(remaining_questions, num_additional_questions)
+            
             # 合并错题和随机选题
             recommended_questions = wrong_questions_data + list(remaining_questions)
             recommended_questions_data = [
@@ -119,3 +140,45 @@ class GetHomeView(APIView):
 
         except Broadcast.DoesNotExist:
             return Response({'error': 'Broadcast not found'}, status=HTTP_404_NOT_FOUND)
+
+class GetStudentExams(APIView):
+    def post(self, request):
+        try:
+            # 解码请求数据
+            data = decode_request(request)
+            user_id = data.get("user_id")
+            user = User.objects.get(student_id=user_id)
+
+            ongoing_exams = []
+            ongoing_counts = 0
+            coming_exmas = []
+            coming_counts = 0
+            exams = Exam.objects.all().order_by('-start_time')
+            for exam in exams:
+                if user in exam.students.all():
+                    if exam.get_status() == "coming" and coming_counts <= 3:
+                        coming_exmas.append({
+                            "id": exam.id,
+                            "title": exam.title,
+                            "startTime": exam.start_time,
+                            "duration": exam.duration,
+                            "subject": exam.subject
+                        })
+                        coming_counts = coming_counts + 1
+                    elif exam.get_status() == "ongoing" and ongoing_counts <= 3:
+                        ongoing_exams.append({
+                            "id": exam.id,
+                            "title": exam.title,
+                            "startTime": exam.start_time,
+                            "duration": exam.duration,
+                            "subject": exam.subject
+                        })
+                        ongoing_counts = ongoing_counts + 1
+
+            return Response({
+                "success": True,
+                "ongoing_exams": ongoing_exams,
+                "coming_exmas": coming_exmas,
+            }, status=HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found."}, status=HTTP_404_NOT_FOUND)

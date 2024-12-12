@@ -8,27 +8,30 @@ from users.models import User
 from .models import Question, QuestionBank, UserQuestionRecord, QuestionDiscussion, QuestionComment
 from rest_framework.permissions import IsAuthenticated
 from utils.views import decode_request
+from datetime import datetime
 
 # 用户上传 Question
 class UploadQuestion(APIView):
     def post(self, request):
         try:
             user_id = request.data['user_id']
+            print(user_id)
             data = request.data['data']
-            user = User.objects.get(id=user_id)
-
+            user = User.objects.get(student_id=user_id)
+            print(data)
+            
             # 创建 Question
             question = Question.objects.create(
-                type=data['type'],
+                type=data['questionType'],
                 content=data['content'],
                 subject=data['subject'],
-                added_at=data['added_at'],
+                added_at=datetime.now(),
                 source=data.get('source'),
-                tags=data.get('tags'),
+                tags=[tag.strip() for tag in data.get('tags').split(',') if tag.strip()],
                 difficulty=data['difficulty'],
                 answer=data.get('answer'),
                 added_by=user,
-                option_count=data.get('option_count', 0)  # 允许前端指定选项数量
+                option_count=data.get('optionsCount', 0)  # 允许前端指定选项数量
             )
 
             QuestionDiscussion.objects.create(
@@ -60,11 +63,13 @@ class UploadQuestion(APIView):
 class CompleteQuestion(APIView):
     def post(self, request):
         try:
+            print(1)
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            print(user_id)
+            user = User.objects.get(student_id=user_id)
             question_id = request.data['question_id']
             is_correct = request.data['is_correct']
-
+            print(question_id)
             # 获取 Question
             question = Question.objects.get(id=question_id)
 
@@ -107,25 +112,15 @@ class CompleteQuestion(APIView):
 class CreateQuestionBank(APIView):
     def post(self, request):
         try:
-            user_id = request.data['user_id']
-            data = request.data['data']
-            user = User.objects.get(student_id=user_id)
-
             # 创建 QuestionBank
+            user_id = request.data['user_id']
+            user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.create(
-                subject=data['subject'],
-                estimated_time=data['estimated_time'],
+                subject="",
+                estimated_time="100",
                 creator=user,
-                description=data.get('description'),
+                description="",
             )
-
-            # 关联题目到题库
-            question_ids = data.get('question_ids')
-            questions = Question.objects.filter(id__in=question_ids)
-            question_bank.questions.add(*questions)
-
-            # 更新题目数量
-            question_bank.question_count = question_bank.questions.count()
             question_bank.save()
 
             return Response({
@@ -365,13 +360,12 @@ class GetQuestionsBySubject(APIView):
             # 构造返回的数据
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = questionall.filter(type=question_type).order_by("id")
-                if questions.exists():
+                if questions.exists() and question_type.count!=0:
                     qsdata.append({
                         "type": type_label,
                         "ids": [question.id for question in questions],
                         "currentPage": 1
                     })
-            print(qsdata)
             questions_data = []
             for question in questionall:
                 questions_data.append({
@@ -467,7 +461,7 @@ class GetQuestionsByQuestionBank(APIView):
             # 遍历题目类型并按类型获取题目 ID
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = question_bank.questions.filter(type=question_type).order_by("id")
-                if questions.exists():
+                if questions.exists() and question_type!=0:
                     questions_data.append({
                         "type": type_label,
                         "ids": [question.id for question in questions],
@@ -543,7 +537,7 @@ class DeleteQuestion(APIView):
     def post(self, request):
         try:
             user_id = request.data['user_id']
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(student_id=user_id)
 
             if user.user_role != 1:  # 检查是否为管理员/老师
                 return Response({
@@ -600,7 +594,7 @@ class GetQuestionBankById(APIView):
 
             for question_type, type_label in Question.TYPE_CHOICES:
                 questions = question_bank.questions.filter(type=question_type).order_by("id")
-                if questions.exists():
+                if questions.exists() and questions.count()!=0:
                     questions_data.append({
                         "type": type_label,
                         "questions": [
@@ -662,10 +656,12 @@ class DeleteQuestionBank(APIView):
         try:
             # 获取请求数据
             user_id = request.data['user_id']
+            print(user_id)
             question_bank_id = request.data['question_bank_id']
-            user = User.objects.get(id=user_id)
-
-            if user.user_role != 1:
+            print(question_bank_id)
+            user = User.objects.get(student_id=user_id)
+            print(user)
+            if user.user_role < 1:
                 return Response({
                     "success": False,
                     "error": "权限不足",
@@ -941,13 +937,13 @@ class EditQuestionBank(APIView):
             estimated_time = data.get('estimated_time')
             description = data.get('description')
             questions = data.get('questions')
-
+            name = data.get('name')
             # 验证用户身份
             user = User.objects.get(student_id=user_id)
             question_bank = QuestionBank.objects.get(id=question_bank_id)
 
             # 权限检查：只有管理员或题库创建者才能编辑
-            if user.user_role != 1 and question_bank.creator != user:
+            if user.user_role < 1 and question_bank.creator != user:
                 return Response({
                     "success": False,
                     "error": "Permission denied. Only admins or the creator can edit the QuestionBank."
@@ -958,9 +954,23 @@ class EditQuestionBank(APIView):
             question_bank.estimated_time = estimated_time
 
             question_bank.description = description
-
+            
+            question_bank.name = name
+            all_ids = []
+            for item in questions:
+                all_ids.extend(item['ids'])
             # 更新题目关联
-            new_questions = Question.objects.filter(id__in=questions)
+            all_questions = Question.objects.all()
+
+# 手动筛选 id 在 all_ids 中的问题
+            filtered_questions = []
+            for question in all_questions:
+                if question.id in all_ids:
+                    filtered_questions.append(question)
+
+# 转换为列表以保持与 QuerySet 的一致性
+            new_questions = list(filtered_questions)
+            # new_questions = Question.objects.filter(id__in=all_ids)
             question_bank.questions.set(new_questions)  # 重置题目关联
 
             # 更新题目数量

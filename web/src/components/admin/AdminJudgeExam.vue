@@ -12,8 +12,7 @@
             </div>
 
             <!-- 测试进行中且已完成所有题目 -->
-            <div v-else-if="finishedQuestions.length === totalQuestions"
-                style="padding-bottom: 15px">
+            <div v-else-if="finishedQuestions.length === totalQuestions" style="padding-bottom: 15px">
                 <v-alert type="success">
                     <v-alert-title>
                         批改已完成。
@@ -51,7 +50,7 @@
                                             {{
                                                 finishedQuestions.filter((qid) =>
                                                     group.ids.includes(qid)
-                                            ).length
+                                                ).length
                                             }}
                                             题
                                         </span>
@@ -69,9 +68,9 @@
                                     'question-square',
                                     { finished: finishedQuestions.includes(questionId) },
                                 ]" :color="finishedQuestions.includes(questionId)
-                            ? 'green'
-                            : 'blue-darken-4'
-                        " rounded="0" @click="goToQuestionDetail(questionId)">
+                                    ? 'green'
+                                    : 'blue-darken-4'
+                                    " rounded="0" @click="goToQuestionDetail(questionId)">
                                     <v-responsive class="text-truncate">{{ questionId }}</v-responsive>
                                 </v-btn>
                             </div>
@@ -91,7 +90,7 @@
 
 <script>
 import { mapMutations } from "vuex";
-
+import axios from "axios";
 export default {
     name: "ProblemSetDetail",
     props: {
@@ -173,21 +172,24 @@ export default {
 
             try {
                 // 模拟从后端获取模拟测试数据
-                setTimeout(() => {
-                    this.problemSetData = {
-                        id: problemSetId,
-                        name: "2023-24数分上期中",
-                        subject: "工科数学分析（上）",
-                        starttime: "2024-11-24 15:00:00",
-                        duration: 140,
-                    };
-                    const title = "模拟测试详情 - " + this.problemSetData.name;
-                    this.finishedQuestions = [301, 302, 303, 441, 442, 1001, 9801, 1912, 1917, 1920];
-                    this.setAppTitle(title);
-                    this.setPageTitle(title);
-                    this.fetchQuestionsById(problemSetId); // 获取题目列表
-                    this.loading = false;
-                }, 1000); // 模拟网络延迟
+                const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions_teacher/', {
+                    user_id: this.$store.getters.getUserId,
+                    exam_id: problemSetId
+                });
+                const data = response.data;
+                this.problemSetData = {
+                    id: data.exam_id,
+                    name: data.name,
+                    subject: data.subject,
+                    starttime: data.startTime,
+                    duration: data.duration,
+                };
+                const title = "模拟测试详情 - " + this.problemSetData.name;
+                this.finishedQuestions = data.finish;
+                this.setAppTitle(title);
+                this.setPageTitle(title);
+                this.fetchQuestionsById(problemSetId); // 获取题目列表
+                this.loading = false;
             } catch (e) {
                 console.error("获取模拟测试数据失败", e);
                 this.error = "获取模拟测试数据失败";
@@ -201,38 +203,14 @@ export default {
             this.error = null;
 
             try {
+                const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions_teacher/', {
+                    user_id: this.$store.getters.getUserId,
+                    exam_id: problemSetId
+                });
                 // 模拟从后端获取数据
-                setTimeout(() => {
-                    const questions = [
-                        {
-                            type: "单项选择题",
-                            ids: [301, 302, 303, 304, 305],
-                            currentPage: 1, // 当前页
-                        },
-                        {
-                            type: "多项选择题",
-                            ids: [441, 442, 443, 444, 445, 446],
-                            currentPage: 1,
-                        },
-                        {
-                            type: "判断题",
-                            ids: [595, 1001],
-                            currentPage: 1,
-                        },
-                        {
-                            type: "填空题",
-                            ids: [9801, 9802, 7002],
-                            currentPage: 1,
-                        },
-                        {
-                            type: "解答题",
-                            ids: [1911, 1912, 1913, 1914, 1915, 1916, 1917, 1918, 1919, 1920], // 解答题
-                            currentPage: 1,
-                        },
-                    ];
-                    this.questions = questions; // 更新组件本地的题目列表数据
-                    this.loading = false;
-                }, 100); // 模拟延迟
+                const questions = response.data.new_que;
+                this.questions = questions; // 更新组件本地的题目列表数据
+                this.loading = false;
             } catch (e) {
                 console.error("获取题目数据失败", e);
                 this.error = "获取题目数据失败";

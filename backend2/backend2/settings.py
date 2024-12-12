@@ -103,22 +103,22 @@ WSGI_APPLICATION = 'backend2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',  # 数据库后端
-#         'NAME': 'h_db22371058',  # 数据库名
-#         'HOST': '120.46.3.97',  # 主机地址
-#         'PORT': '3306',  # 端口
-#         'USER': 'u22371058',  # 用户名
-#         'PASSWORD': 'Aa961886',  # 密码
-#     }
-# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # 数据库后端
+        'NAME': 'h_db22371058',  # 数据库名
+        'HOST': '120.46.3.97',  # 主机地址
+        'PORT': '3306',  # 端口
+        'USER': 'u22371058',  # 用户名
+        'PASSWORD': 'Aa961886',  # 密码
     }
 }
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -142,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 

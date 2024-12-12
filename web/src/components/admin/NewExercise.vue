@@ -87,6 +87,7 @@
                 <v-alert-title>提示</v-alert-title>
                 你选择的题型是"{{ form.questionType }}"，选项个数为{{ form.optionsCount }}。请在题面中加入对应数量的选项。
             </v-alert>
+            <v-btn color="primary" @click="uploadFile('content')">上传图片</v-btn>
             <v-md-editor v-model="form.content" height="525px" width="20%"
                 left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
                 right-toolbar="preview toc sync-scroll" :rules="[value => !!value || '题目内容不能为空']"
@@ -128,6 +129,7 @@
                 </v-radio-group>
             </div>
             <div v-else>
+                <v-btn color="primary" @click="uploadFile('answer')">上传图片</v-btn>
                 <v-md-editor v-model="form.answer" height="525px" width="20%"
                     left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
                     right-toolbar="preview toc sync-scroll" :rules="[value => !!value || '题目答案不能为空']"
@@ -196,7 +198,7 @@
 
 <script>
 import { mapMutations, mapActions } from 'vuex';
-
+import axios from 'axios';
 export default {
     name: 'NewExercise',
     data() {
@@ -248,16 +250,21 @@ export default {
                 this.maxAllowedTab = newTab;
             }
         },
-        'form.questionType'(newValue) {
-            // 当题型改变时，如果不是选择题，清空选项数量
-            if (newValue !== '多项选择题' && newValue !== '单项选择题') {
-                this.form.optionsCount = null;
+        'form.questionType': [
+            function (newValue) {
+                console.log(newValue);
+                if (newValue !== '多项选择题' && newValue !== '单项选择题') {
+                    this.form.optionsCount = 0;
+                }
+                if (newValue === '判断题') {
+                    this.form.optionsCount = 2;
+                }
+            },
+            function () {
+                this.selectedOptions = [];
+                this.form.answer = "";
             }
-        },
-        'form.questionType'() {
-            this.selectedOptions = []
-            this.form.answer = ''
-        }
+        ]
     },
     methods: {
         ...mapMutations(['setAppTitle', 'setPageTitle']),
@@ -328,12 +335,15 @@ export default {
 
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
+                const response = await axios.post('http://127.0.0.1:8000/api/questions/upload_question/', {
+                    user_id: this.$store.getters.getUserId,
+                    data: this.form
+                });
                 this.showSnackbar({
                     message: '创建题目成功',
                     color: 'success',
                     timeout: 2000
                 });
-                console.log(this.form);
                 this.goBack();
             } catch (error) {
                 console.error('表单提交出错：', error);
@@ -343,6 +353,69 @@ export default {
                     timeout: 2000
                 });
             }
+        },
+        async uploadFile(pos) {
+            const fileInput = document.createElement("input");
+            fileInput.type = "file";
+            fileInput.accept = ".jpg, .jpeg, .png";// 只允许选择图片文件
+            // 文件选择后执行的回调
+            fileInput.onchange = (e) => {
+                const file = e.target.files[0]; // 获取用户选择的文件
+                if (file) {
+                    const reader = new FileReader();
+                    const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+                    if (!allowedExtensions.exec(file.name)) {
+                        this.showSnackbar({
+                            message: "提交文件类型仅限.jpg，.png，.jpeg格式",
+                            color: 'error',
+                            timeout: 2000
+                        });
+                        fileInput.value = '';
+                        return;
+                    }
+                    reader.onload = async (event) => {
+                        const formData = new FormData();
+                        formData.append("files", file);
+                        try {
+                            const response = await fetch("http://127.0.0.1:8000/api/images/upload-image/", {
+                                method: "POST",
+                                body: formData
+                            });
+                            const result = await response.json();
+                            if (response.ok) {
+                                this.showSnackbar({
+                                    message: '图片上传成功',
+                                    color: 'success',
+                                    timeout: 2000
+                                });
+                                const toAppend = `\n![Description](${result.url})\n\n`;
+                                if (pos === 'content') {
+                                    this.form.content = this.form.content + toAppend;
+                                } else if (pos === 'answer') {
+                                    this.form.answer = this.form.answer + toAppend;
+                                }
+                            } else {
+                                this.showSnackbar({
+                                    message: '图片上传失败',
+                                    color: 'error',
+                                    timeout: 2000
+                                });
+                                console.error("上传失败：", result.message || "发生了错误");
+                            }
+                        } catch (error) {
+                            this.showSnackbar({
+                                message: '图片上传失败',
+                                color: 'error',
+                                timeout: 2000
+                            });
+                            console.error("上传时发生错误：", error.message);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            // 点击输入框，选择文件
+            fileInput.click();
         },
     },
 };

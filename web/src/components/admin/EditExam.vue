@@ -31,7 +31,7 @@
                         <!-- 科目输入 -->
                         <v-col cols="12">
                             <v-radio-group v-model="form.subject" label="学科" inline
-                                :rules="[value => !!value || '请选择学科']" required>
+                                :rules="[value => !!value || '请选择学科']" required disabled>
                                 <v-radio label="工科数学分析（上）" value="工科数学分析（上）" />
                                 <v-radio label="工科数学分析（下）" value="工科数学分析（下）" />
                                 <v-radio label="工科高等代数" value="工科高等代数" />
@@ -160,50 +160,8 @@
                 </v-row>
             </v-tabs-window-item>
 
-            <!-- 编辑题目分值 -->
-            <v-tabs-window-item :value="3" eager>
-                <v-form ref="scoreFormRef" @submit.prevent>
-                    <v-row>
-                        <v-col cols="12">
-                            <v-alert type="info" icon="mdi-information" class="mb-4">
-                                请为每个已添加的题目设置分数。 当前总分：{{ calculateTotalScore().total }}
-                            </v-alert>
-                        </v-col>
-                        <v-col v-for="(group, groupIndex) in form.questions" :key="groupIndex" cols="12">
-                            <v-card class="mb-4 ml-2 mr-2">
-                                <v-card-title class="text-h6">
-                                    {{ group.type }} （总分：{{ calculateTotalScore()[group.type] || 0 }}）
-                                </v-card-title>
-                                <v-divider></v-divider>
-                                <v-card-text>
-                                    <v-data-table :headers="scoreHeaders" :items="group.questions" density="compact"
-                                        disable-pagination disable-sort>
-                                        <template v-slot:item.id="{ item }">
-                                            {{ item.id }}
-                                        </template>
-                                        <template v-slot:item.score="{ item, index }">
-                                            <v-text-field v-model.number="item.score" type="number" min="1" :rules="[
-                                                v => v !== null && v !== undefined || '分数为必填项',
-                                                v => Number.isInteger(v) || '分数必须是整数',
-                                                v => v > 0 || '分数必须大于0'
-                                            ]" @change="updateScore(group.type, item.id, item.score)"></v-text-field>
-                                        </template>
-                                        <template v-slot:item.actions="{ item }">
-                                            <v-btn color="primary" variant="text" small
-                                                @click="viewQuestion(group.type, item.id)">
-                                                查看题目
-                                            </v-btn>
-                                        </template>
-                                    </v-data-table>
-                                </v-card-text>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-form>
-            </v-tabs-window-item>
-
             <!-- 预览模拟测试 -->
-            <v-tabs-window-item :value="4" eager>
+            <v-tabs-window-item :value="3" eager>
                 <v-alert color="warning" class="mb-3" icon="mdi-circle-multiple-outline">
                     <v-alert-title>确认</v-alert-title>
                     请确认模拟测试信息编辑是否正确。若均填写正确，请点击下方提交按钮。直接离开本界面不会对原有测试进行更改。
@@ -359,6 +317,7 @@
 <script>
 import { mapMutations, mapActions } from "vuex";
 import axios from "axios";
+import { duration } from "moment/moment";
 export default {
     name: "AdminSet",
     props: {
@@ -376,8 +335,7 @@ export default {
             tabs: [
                 { value: 1, label: "编辑基本信息" },
                 { value: 2, label: "编辑题目" },
-                { value: 3, label: "编辑题目分值" },
-                { value: 4, label: "预览模拟测试" },
+                { value: 3, label: "预览模拟测试" },
             ],
             form: {
                 name: "",
@@ -410,14 +368,14 @@ export default {
             ],
         };
     },
-    mounted() {
+    async mounted() {
         // 更新标题
         const title = "编辑模拟测试 - " + this.id;
         this.currentId = parseInt(this.id);
         console.log('接收到的 ID:', this.currentId);
         this.setAppTitle(title);
         this.setPageTitle(title);
-        this.fetchExam(this.currentId);
+        await this.fetchExam(this.currentId);
         this.getExercises(this.form.subject);
     },
     methods: {
@@ -426,36 +384,22 @@ export default {
         goBack() {
             this.$router.push("/admin/exam");
         },
-        fetchExam(problemId) {
+        async fetchExam(problemId) {
             // 模拟直接从后端获取数据
+            const response = await axios.post('http://127.0.0.1:8000/api/exams/get_exam_questions_teacher/', {
+                user_id: this.$store.getters.getUserId,
+                exam_id: problemId,
+            });
+            const data = response.data;
             const mockProblemData = {
-                name: "史上最难数分",
-                subject: "工科数学分析（上）",
-                startTime: "2024-11-25 14:20:00",
-                duration: 120,
-                questions: [
-                    {
-                        currentPage: 1,
-                        type: "单项选择题",
-                        questions: [
-                            { id: 12, score: 1 },
-                            { id: 13, score: 1 },
-                            { id: 14, score: 10 },
-                        ]
-                    },
-                    {
-                        currentPage: 1,
-                        type: "多项选择题",
-                        questions: [
-                            { id: 121, score: 10 },
-                            { id: 131, score: 10 },
-                            { id: 141, score: 10 },
-                        ]
-                    },
-                ],
+                name: data.name,
+                subject: data.subject,
+                startTime: this.convertToDatetimeLocal(data.startTime),
+                duration: data.duration,
+                questions: data.questions,
             };
             this.form = { ...mockProblemData };
-            console.log(this.form);
+            console.log(this.form.subject);
             this.originalForm = { ...mockProblemData };
         },
         formatDate(dateString) {
@@ -473,6 +417,23 @@ export default {
                 .toLocaleString("zh-CN", options)
                 .replace(/\//g, "-");
         },
+        convertToDatetimeLocal(isoString, includeSeconds = false) {
+            const date = new Date(isoString);
+            const pad = (num) => String(num).padStart(2, '0');
+
+            const yyyy = date.getFullYear();
+            const mm = pad(date.getMonth() + 1); // 月份从0开始
+            const dd = pad(date.getDate());
+            const hh = pad(date.getHours());
+            const min = pad(date.getMinutes());
+            const ss = pad(date.getSeconds());
+
+            if (includeSeconds) {
+                return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}`;
+            } else {
+                return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+            }
+        },
         calculateTotalScore() {
             const scores = this.form.questions.reduce((result, group) => {
                 const groupTotal = group.questions.reduce((sum, question) => {
@@ -484,31 +445,15 @@ export default {
             }, { total: 0 });
             return scores;
         },
-        getExercises(subject) {
+        async getExercises(subject) {
             // Simulate fetching questions based on subject
             // This should be replaced with actual API calls
-            const questions = [
-                {
-                    type: "单项选择题",
-                    ids: [...Array(50).keys()].map((i) => i + 1), // 生成 50 道单项选择题
-                    currentPage: 1,
-                },
-                {
-                    type: "填空题",
-                    ids: [101, 102, 103], // 填空题
-                    currentPage: 1,
-                },
-                {
-                    type: "判断题",
-                    ids: [1101, 1102, 1103], // 判断题
-                    currentPage: 1,
-                },
-                {
-                    type: "解答题",
-                    ids: [201, 202], // 解答题
-                    currentPage: 1,
-                },
-            ];
+            const response = await axios.post('http://127.0.0.1:8000/api/questions/get_questions_by_subject/', {
+                user_id: this.$store.getters.getUserId,
+                subject: subject,
+            });
+            const questions = response.data.qsdata;
+            console.log(questions);
             this.questions = [...questions];
         },
         async validateForm() {
@@ -526,27 +471,6 @@ export default {
                 console.error("表单验证出错：", error);
                 this.showSnackbar({
                     message: '表单验证出错',
-                    color: 'error',
-                    timeout: 2000
-                });
-                return false;
-            }
-        },
-        async validateScoreForm() {
-            try {
-                const isValid = await this.$refs.scoreFormRef.validate();
-                if (!isValid) {
-                    this.showSnackbar({
-                        message: '请为所有题目设置有效分数！',
-                        color: 'error',
-                        timeout: 2000
-                    });
-                }
-                return isValid;
-            } catch (error) {
-                console.error("分数表单验证出错：", error);
-                this.showSnackbar({
-                    message: '分数表单验证出错',
                     color: 'error',
                     timeout: 2000
                 });
@@ -589,41 +513,6 @@ export default {
                         this.tab = 2;
                         return;
                     }
-                } else if (newTab === 4) {
-                    const isValid = await this.validateForm();
-                    console.log(isValid);
-                    if (!isValid.valid) {
-                        this.showSnackbar({
-                            message: '基本信息未填写或有误，请及时修改',
-                            color: 'error',
-                            timeout: 2000
-                        });
-                        this.tempTab = oldTab;
-                        this.tab = oldTab;
-                        return;
-                    }
-                    if (this.form.questions.length === 0) {
-                        this.showSnackbar({
-                            message: '模拟测试内容不能为空',
-                            color: 'error',
-                            timeout: 2000
-                        });
-                        this.tempTab = 2;
-                        this.tab = 2;
-                        return;
-                    }
-                    const scoreValid = await this.validateScoreForm();
-                    console.log(scoreValid);
-                    if (!scoreValid) {
-                        this.showSnackbar({
-                            message: '请为所有题目设置有效分数',
-                            color: 'error',
-                            timeout: 2000
-                        });
-                        this.tempTab = 3;
-                        this.tab = 3;
-                        return;
-                    }
                 }
                 this.maxAllowedTab = Math.max(this.maxAllowedTab, newTab); // 解锁新页面
             }
@@ -632,8 +521,7 @@ export default {
         async handleSubmit() {
             // Validate all forms
             const isValidForm = await this.validateForm();
-            const isValidScores = await this.validateScoreForm();
-
+            
             if (!isValidForm.valid) {
                 this.showSnackbar({
                     message: '基本信息未填写或有误，请及时修改',
@@ -644,7 +532,6 @@ export default {
                 this.tab = 1;
                 return;
             }
-
             if (this.form.questions.length === 0) {
                 this.showSnackbar({
                     message: '模拟测试内容不能为空',
@@ -656,19 +543,17 @@ export default {
                 return;
             }
 
-            if (!isValidScores) {
-                this.showSnackbar({
-                    message: '请为所有题目设置有效分数',
-                    color: 'error',
-                    timeout: 2000
-                });
-                this.tempTab = 3;
-                this.tab = 3;
-                return;
-            }
-
             try {
                 // TODO: 在这里添加实际的表单提交逻辑
+                const response = await axios.post('http://127.0.0.1:8000/api/exams/edit_exam/', {
+                    user_id: this.$store.getters.getUserId,
+                    exam_id: this.$route.params.id,
+                    title: this.form.name,
+                    subject: this.form.subject,
+                    start_time: this.form.startTime,
+                    duration: this.form.duration,
+                    questions: this.form.questions 
+                });
                 console.log(this.form);
                 this.showSnackbar({
                     message: '编辑考试成功',
@@ -693,7 +578,7 @@ export default {
                     user_id: this.$store.getters.getUserId,
                     question_id: id
                 });
-               
+
                 // 检查后端返回的响应
                 if (response.data.success) {
                     const question_data = response.data.question;
