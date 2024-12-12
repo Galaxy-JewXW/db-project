@@ -41,13 +41,13 @@ class CreateExam(APIView):
             # 关联题目
             all_questions = Question.objects.all()
 
-# 手动筛选 id 在 all_ids 中的问题
+            # 手动筛选 id 在 all_ids 中的问题
             filtered_questions = []
             for question in all_questions:
                 if question.id in all_ids:
                     filtered_questions.append(question)
 
-# 转换为列表以保持与 QuerySet 的一致性
+            # 转换为列表以保持与 QuerySet 的一致性
             questions = list(filtered_questions)
             exam.questions.add(*questions)
 
@@ -70,7 +70,7 @@ class EnrollExam(APIView):
             print(user_id)
             print(user)
             print(exam)
-            
+
             # 添加学生到考试 或 取消报名
             if user in exam.students.all():
                 exam.students.remove(user)
@@ -229,7 +229,7 @@ class CorrectAnswer(APIView):
                 return Response({"error": "Only teachers can correct answers."}, status=HTTP_400_BAD_REQUEST)
 
             # 获取作答记录
-            record = ExamRecord.objects.get(student=student,exam=exam,question=question)
+            record = ExamRecord.objects.get(student=student, exam=exam, question=question)
             print(record)
             record.is_correct = is_correct
             record.is_checked = True
@@ -239,7 +239,7 @@ class CorrectAnswer(APIView):
 
         except (User.DoesNotExist):
             return Response({"error": "Invalid user or record."}, status=HTTP_404_NOT_FOUND)
-        
+
         except (ExamRecord.DoesNotExist):
             return Response({"success": True, "message": "Answer corrected."}, status=HTTP_200_OK)
 
@@ -257,7 +257,7 @@ class GetAllExams(APIView):
             if data.get('user_id'):
                 user_id = data.get('user_id')
                 user = User.objects.get(student_id=user_id)
-           
+
             exams = Exam.objects.all().order_by('-start_time')
             # 构造返回数据
             exams_data = []
@@ -265,7 +265,7 @@ class GetAllExams(APIView):
             coming_exams = []
             past_exams = []
             enrolled_exams = []
-            
+
             for exam in exams:
                 if exam.get_status() == "coming":
                     coming_exams.append({
@@ -282,7 +282,7 @@ class GetAllExams(APIView):
                         "student_count": exam.students.count(),
                         "question_count": exam.questions.count(),
                     })
-                elif exam.get_status() == "past" and exam.is_published:
+                elif exam.get_status() == "past" and exam.is_published and user in exam.students.all():
                     past_exams.append({
                         "id": exam.id,
                         "name": exam.title,
@@ -330,7 +330,7 @@ class GetAllExams(APIView):
                 })
 
             return Response({
-                "success": True, 
+                "success": True,
                 "exams": exams_data,
                 "ongoing_exams": ongoing_exams,
                 "past_exams": past_exams,
@@ -398,18 +398,17 @@ class GetExamQuestionsTeacher(APIView):
                     type_questions.append({
                         "id": question.id,
                         "has_checked": has_checked,
-                        "score" : 100,
+                        "score": 100,
                     })
-                    
-                    
+
                 new_que.append({
-                        "type": type_label,
-                        "currentPage": 1,
-                        "ids": fid,
-                    })
+                    "type": type_label,
+                    "currentPage": 1,
+                    "ids": fid,
+                })
                 questions_data.append({
-                    "currentPage" : 1,
-                    "type" : type_label,
+                    "currentPage": 1,
+                    "type": type_label,
                     "questions": type_questions,
                 })
                 # 累计总提交题目数
@@ -422,10 +421,13 @@ class GetExamQuestionsTeacher(APIView):
                 #     "checked": type_checked,  # 当前类型的已提交题目数
                 #     "questions": type_questions  # 题目列表及提交状态
                 # })
+            print(exam.is_checked)
             print(total_checked_questions)
             print(total_questions)
             if total_checked_questions == total_questions:
                 exam.is_checked = True
+            else:
+                exam.is_checked = False
 
             exam.save()
             print(exam.start_time)
@@ -503,7 +505,7 @@ class GetExamQuestions(APIView):
                     # 统计已提交题目数量
                     if has_submitted:
                         fid.append(question.id)
-                        
+
                     uid.append(question.id)
                     # 添加题目数据
                     type_questions.append({
@@ -517,8 +519,8 @@ class GetExamQuestions(APIView):
                 # 按类型添加到结果
                 questions_data.append({
                     "type": type_label,
-                    "ids" : uid,
-                    "currentPage" : 1  
+                    "ids": uid,
+                    "currentPage": 1
                 })
 
             return Response({
@@ -531,7 +533,7 @@ class GetExamQuestions(APIView):
                 "total_questions": total_questions,  # 总题目数
                 "total_submitted_questions": total_submitted_questions,  # 学生已提交题目数
                 "questions": questions_data,  # 按类型的题目数据
-                "qsdata" : questions_data,
+                "qsdata": questions_data,
                 "finish": fid
             }, status=HTTP_200_OK)
 
@@ -658,7 +660,7 @@ class GetExamQuestionOfStudents(APIView):
                         "submitted_at": record.submitted_at
                     })
                 except ExamRecord.DoesNotExist:
-                   pass
+                    pass
 
             return Response({
                 "type": question.type,
@@ -695,7 +697,7 @@ class EditExam(APIView):
             print(user_id)
             print(exam_id)
             exam = Exam.objects.get(id=exam_id)
-            
+
             if user.user_role != 1 and exam.creator != user:  # 检查是否为老师
                 return Response({"error": "Only teachers can create exams."}, status=HTTP_400_BAD_REQUEST)
 
@@ -710,7 +712,7 @@ class EditExam(APIView):
                 for item in que['questions']:
                     all_ids.append(item['id'])
             print(title)
-            
+
             exam.title = title
             exam.subject = subject
             exam.start_time = start_time
@@ -718,13 +720,13 @@ class EditExam(APIView):
 
             all_questions = Question.objects.all()
 
-# 手动筛选 id 在 all_ids 中的问题
+            # 手动筛选 id 在 all_ids 中的问题
             filtered_questions = []
             for question in all_questions:
                 if question.id in all_ids:
                     filtered_questions.append(question)
 
-# 转换为列表以保持与 QuerySet 的一致性
+            # 转换为列表以保持与 QuerySet 的一致性
             new_questions = list(filtered_questions)
             # 关联题目
             # new_questions = Question.objects.filter(id__in=all_ids)
