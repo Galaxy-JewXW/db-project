@@ -35,6 +35,7 @@
     <!-- 按钮行 -->
     <v-row class="btns">
       <v-btn color="primary" @click="submitPost">发布</v-btn>
+      <v-btn variant="plain" @click="uploadFile">上传图片</v-btn>
       <v-btn variant="plain" @click="clearForm">清除</v-btn>
     </v-row>
   </div>
@@ -144,6 +145,66 @@ export default {
       this.text = "";
       this.subject = null;
       this.$refs.form.reset();
+    },
+
+    async uploadFile() {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".jpg, .jpeg, .png";// 只允许选择图片文件
+      // 文件选择后执行的回调
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0]; // 获取用户选择的文件
+        if (file) {
+          const reader = new FileReader();
+          const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+          if (!allowedExtensions.exec(file.name)) {
+            this.showSnackbar({
+              message: "提交文件类型仅限.jpg，.png，.jpeg格式",
+              color: 'error',
+              timeout: 2000
+            });
+            fileInput.value = '';
+            return;
+          }
+          reader.onload = async (event) => {
+            const formData = new FormData();
+            formData.append("files", file);
+            try {
+              const response = await fetch("http://127.0.0.1:8000/api/images/upload-image/", {
+                method: "POST",
+                body: formData
+              });
+              const result = await response.json();
+              if (response.ok) {
+
+                this.showSnackbar({
+                  message: '图片上传成功',
+                  color: 'success',
+                  timeout: 2000
+                });
+                this.text = this.text + `\n![Description](${result.url})\n\n`;
+              } else {
+                this.showSnackbar({
+                  message: '图片上传失败',
+                  color: 'error',
+                  timeout: 2000
+                });
+                console.error("上传失败：", result.message || "发生了错误");
+              }
+            } catch (error) {
+              this.showSnackbar({
+                message: '图片上传失败',
+                color: 'error',
+                timeout: 2000
+              });
+              console.error("上传时发生错误：", error.message);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      // 点击输入框，选择文件
+      fileInput.click();
     },
   },
 };

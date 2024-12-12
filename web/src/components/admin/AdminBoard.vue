@@ -31,23 +31,13 @@
           <v-divider></v-divider>
           <v-row no-gutters>
             <v-col cols="auto">
-              <v-btn
-                rounded="0"
-                variant="text"
-                :color="'#1867c0'"
-                @click="editNotice(notice)"
-              >
+              <v-btn rounded="0" variant="text" :color="'#1867c0'" @click="editNotice(notice)">
                 <v-icon left>mdi-pencil</v-icon>
                 编辑此公告
               </v-btn>
             </v-col>
             <v-col cols="auto">
-              <v-btn
-                rounded="0"
-                variant="text"
-                color="#ee3f4d"
-                @click="confirmDelete(notice)"
-              >
+              <v-btn rounded="0" variant="text" color="#ee3f4d" @click="confirmDelete(notice)">
                 <v-icon left>mdi-close</v-icon>
                 删除此公告
               </v-btn>
@@ -58,17 +48,10 @@
     </v-row>
   </v-container>
   <div v-else>
-    <v-skeleton-loader
-      class="mx-auto main-card"
-      max-width="100%"
-      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"
-    ></v-skeleton-loader>
+    <v-skeleton-loader class="mx-auto main-card" max-width="100%"
+      type="list-item-avatar-three-line, list-item-avatar-three-line, list-item-avatar-three-line"></v-skeleton-loader>
   </div>
-  <v-dialog
-    v-model="editDialogOpen"
-    transition="dialog-bottom-transition"
-    fullscreen
-  >
+  <v-dialog v-model="editDialogOpen" transition="dialog-bottom-transition" fullscreen>
     <v-card>
       <v-toolbar dark color="primary">
         <v-btn icon dark @click="editDialogOpen = false">
@@ -80,12 +63,7 @@
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
             <v-col>
-              <v-text-field
-                v-model="currentNotice.title"
-                label="标题"
-                :rules="[rules.required]"
-                variant="outlined"
-              />
+              <v-text-field v-model="currentNotice.title" label="标题" :rules="[rules.required]" variant="outlined" />
             </v-col>
           </v-row>
         </v-form>
@@ -94,16 +72,14 @@
         <v-divider></v-divider>
 
         <!-- Markdown 编辑器 -->
-        <v-md-editor
-          v-model="currentNotice.content"
-          height="325px"
+        <v-md-editor v-model="currentNotice.content" height="325px"
           left-toolbar="undo redo clear | h bold italic strikethrough quote | ul ol table hr | link image code"
-          right-toolbar="preview toc sync-scroll"
-        ></v-md-editor>
+          right-toolbar="preview toc sync-scroll"></v-md-editor>
 
         <!-- 按钮行 -->
         <v-row class="btns">
           <v-btn color="primary" @click="confirmNotice">发布</v-btn>
+          <v-btn color="primary" variant="text" @click="uploadFile">上传图片</v-btn>
           <v-btn variant="plain" @click="clearNotice">清除</v-btn>
         </v-row>
       </div>
@@ -342,6 +318,65 @@ export default {
     clearNotice() {
       this.currentNotice.title = "";
       this.currentNotice.content = "";
+    },
+    async uploadFile() {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".jpg, .jpeg, .png";// 只允许选择图片文件
+      // 文件选择后执行的回调
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0]; // 获取用户选择的文件
+        if (file) {
+          const reader = new FileReader();
+          const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+          if (!allowedExtensions.exec(file.name)) {
+            this.showSnackbar({
+              message: "提交文件类型仅限.jpg，.png，.jpeg格式",
+              color: 'error',
+              timeout: 2000
+            });
+            fileInput.value = '';
+            return;
+          }
+          reader.onload = async (event) => {
+            const formData = new FormData();
+            formData.append("files", file);
+            try {
+              const response = await fetch("http://127.0.0.1:8000/api/images/upload-image/", {
+                method: "POST",
+                body: formData
+              });
+              const result = await response.json();
+              if (response.ok) {
+
+                this.showSnackbar({
+                  message: '图片上传成功',
+                  color: 'success',
+                  timeout: 2000
+                });
+                this.currentNotice.content = this.currentNotice.content + `\n![Description](${result.url})\n\n`;
+              } else {
+                this.showSnackbar({
+                  message: '图片上传失败',
+                  color: 'error',
+                  timeout: 2000
+                });
+                console.error("上传失败：", result.message || "发生了错误");
+              }
+            } catch (error) {
+              this.showSnackbar({
+                message: '图片上传失败',
+                color: 'error',
+                timeout: 2000
+              });
+              console.error("上传时发生错误：", error.message);
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      // 点击输入框，选择文件
+      fileInput.click();
     },
   },
 };
