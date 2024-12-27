@@ -9,10 +9,10 @@ from qcloud_cos import CosS3Client
 # 正常情况日志级别使用 INFO，需要定位时可以修改为 DEBUG，此时 SDK 会打印和服务端的通信信息
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
-secret_id = 'AKIDcBSzTynfTDrOn5Qm5IS6OhF5cnwGRO7w'
-secret_key = 'w6BCAA6tSRD0y7DQhtypWDtgWRnFfZPA' 
-region = 'ap-guangzhou'
-bucket_name = 'drinkwater-1325041233'
+secret_id = None
+secret_key = None 
+region = None
+bucket_name = None
 
 config = CosConfig(Region=region, SecretId=secret_id, SecretKey=secret_key)
 client = CosS3Client(config)
